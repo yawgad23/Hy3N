@@ -24,6 +24,7 @@ import DriverHistory from '@/pages/driver/DriverHistory';
 import DriverProfile from '@/pages/driver/DriverProfile';
 import DriverSupport from '@/pages/driver/DriverSupport';
 import SOSDashboard from '@/pages/admin/SOSDashboard';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
             <Route path="/driver/profile" element={<DriverProfile />} />
             <Route path="/driver/support" element={<DriverSupport />} />
             <Route path="/admin/sos" element={<SOSDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Route>
 
           <Route path="*" element={<PageNotFound />} />

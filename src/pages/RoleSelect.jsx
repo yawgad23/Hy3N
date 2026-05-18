@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Car, Briefcase, ChevronRight } from "lucide-react";
+import { Car, Briefcase, ChevronRight, Shield } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import Logo from "@/components/shared/Logo";
 import SplashScreen from "@/components/shared/SplashScreen";
 
 export default function RoleSelect() {
   const [showSplash, setShowSplash] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    base44.auth.me().then((u) => { if (u?.role === "admin") setIsAdmin(true); }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2500);
@@ -82,6 +88,26 @@ export default function RoleSelect() {
               <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </motion.button>
           </div>
+
+          {isAdmin && (
+            <motion.button
+              onClick={() => navigate("/admin")}
+              className="w-full max-w-sm mt-4 bg-card border border-primary/30 rounded-2xl p-4 flex items-center gap-4 hover:border-primary/60 transition-all group"
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Shield className="w-7 h-7 text-primary" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="font-heading font-semibold text-lg text-foreground">Admin Dashboard</h3>
+                <p className="text-muted-foreground text-sm">Platform analytics & ops</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </motion.button>
+          )}
 
           <div className="mt-auto pt-10">
             <div className="flex items-center gap-2">
