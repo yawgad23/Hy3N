@@ -24,6 +24,7 @@ import DriverEarnings from '@/pages/driver/DriverEarnings';
 import DriverHistory from '@/pages/driver/DriverHistory';
 import DriverProfile from '@/pages/driver/DriverProfile';
 import DriverSupport from '@/pages/driver/DriverSupport';
+import DriverScheduledRides from '@/pages/driver/DriverScheduledRides';
 import SOSDashboard from '@/pages/admin/SOSDashboard';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
             <Route path="/driver/history" element={<DriverHistory />} />
             <Route path="/driver/profile" element={<DriverProfile />} />
             <Route path="/driver/support" element={<DriverSupport />} />
+            <Route path="/driver/scheduled" element={<DriverScheduledRides />} />
             <Route path="/admin/sos" element={<SOSDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>

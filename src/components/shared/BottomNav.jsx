@@ -10,6 +10,7 @@ const riderTabs = [
 
 const driverTabs = [
   { path: "/driver", icon: Home, label: "Home" },
+  { path: "/driver/scheduled", icon: CalendarClock, label: "Scheduled" },
   { path: "/driver/earnings", icon: Wallet, label: "Earnings" },
   { path: "/driver/history", icon: Clock, label: "History" },
   { path: "/driver/profile", icon: User, label: "Profile" }
@@ -21,19 +22,19 @@ export default function BottomNav({ role = "rider" }) {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+      <div className="flex justify-around items-center h-16 max-w-screen-sm mx-auto">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
           return (
             <Link
               key={tab.path}
               to={tab.path}
-              className={`flex flex-col items-center gap-1 px-3 py-2 transition-colors ${
+              className={`flex flex-col items-center gap-1 px-2 py-2 transition-colors flex-1 ${
                 isActive ? "text-primary" : "text-muted-foreground"
               }`}
             >
               <tab.icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className="text-[10px] font-medium text-center">{tab.label}</span>
             </Link>
           );
         })}

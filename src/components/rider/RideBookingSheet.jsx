@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp } from "lucide-react";
+import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
 import SplitFareModal from "./SplitFareModal";
-import { format, addMinutes } from "date-fns";
+import CalendarPicker from "./CalendarPicker";
+import { format, addMinutes, isBefore } from "date-fns";
 import { base44 } from "@/api/base44Client";
 
 const paymentIcons = {
@@ -17,20 +18,21 @@ const paymentIcons = {
 
 // Min scheduled time: 30 min from now
 function minDateTime() {
-  return format(addMinutes(new Date(), 30), "yyyy-MM-dd'T'HH:mm");
+  return addMinutes(new Date(), 30);
 }
 
 export default function RideBookingSheet({ destination, onClose, onBook, pickupLat, pickupLng }) {
   const [selectedCategory, setSelectedCategory] = useState(RIDE_CATEGORIES[0]);
   const [selectedPayment, setSelectedPayment] = useState("mobile_money");
   const [isScheduled, setIsScheduled] = useState(false);
-  const [scheduledFor, setScheduledFor] = useState("");
+  const [scheduledFor, setScheduledFor] = useState(null);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [splitData, setSplitData] = useState(null);
   const [distance] = useState(() => 5 + Math.random() * 15);
   const [surge, setSurge] = useState({ multiplier: 1.0, is_surge: false });
   const [surgeLoading, setSurgeLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(async (me) => {
@@ -196,7 +198,10 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
               <span className="text-xs font-medium">Now</span>
             </button>
             <button
-              onClick={() => setIsScheduled(true)}
+              onClick={() => {
+                setIsScheduled(true);
+                setShowCalendar(true);
+              }}
               className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
                 isScheduled ? "border-primary bg-primary/10" : "border-border bg-secondary"
               }`}
@@ -207,18 +212,23 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           </div>
 
           {isScheduled && (
-            <div className="mt-3">
-              <input
-                type="datetime-local"
-                min={minDateTime()}
-                value={scheduledFor}
-                onChange={(e) => setScheduledFor(e.target.value)}
-                className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              {isScheduled && !scheduledFor && (
-                <p className="text-xs text-destructive mt-1">Please select a pickup date & time</p>
-              )}
-            </div>
+            <button
+              onClick={() => setShowCalendar(true)}
+              className="mt-3 w-full flex items-center justify-between p-4 bg-secondary border border-border rounded-xl hover:border-primary/50 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <CalendarClock className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs text-muted-foreground">Scheduled for</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {scheduledFor ? format(scheduledFor, "EEE, MMM d · h:mm a") : "Select date & time"}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
           )}
         </div>
 
@@ -249,7 +259,7 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
               distance_km: parseFloat(distance.toFixed(1)),
               destination,
               ride_type: isScheduled ? "scheduled" : "on_demand",
-              scheduled_for: isScheduled ? new Date(scheduledFor).toISOString() : null,
+              scheduled_for: isScheduled ? scheduledFor.toISOString() : null,
               split_fare: splitData || null,
               surge_multiplier: surge.multiplier,
             });
@@ -261,6 +271,20 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           {isScheduled ? "Schedule Trip" : "Request HY3N"}
         </Button>
       </div>
+
+      <AnimatePresence>
+        {showCalendar && (
+          <CalendarPicker
+            selectedDate={scheduledFor}
+            onDateSelect={(date) => {
+              setScheduledFor(date);
+              setShowCalendar(false);
+            }}
+            minDate={minDateTime()}
+            onClose={() => setShowCalendar(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <SplitFareModal
         isOpen={showSplitModal}
