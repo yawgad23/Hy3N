@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
 import RideChatModal from "@/components/shared/RideChatModal";
+import { useDriverTracking } from "@/hooks/useDriverTracking";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
@@ -15,7 +16,20 @@ const STATUS_LABELS = {
   cancelled: "Trip cancelled"
 };
 
-export default function TripTracker({ ride, onClose }) {
+function calcEta(driverPos, targetPos) {
+  if (!driverPos || !targetPos) return null;
+  const [lat1, lng1] = driverPos;
+  const [lat2, lng2] = targetPos;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const minutes = Math.max(1, Math.round(distKm / 0.5)); // ~30 km/h city speed
+  return minutes;
+}
+
+export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
   const [currentRide, setCurrentRide] = useState(ride);
   const [rating, setRating] = useState(0);
   const [showPayment, setShowPayment] = useState(false);
@@ -26,6 +40,24 @@ export default function TripTracker({ ride, onClose }) {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
   }, []);
+
+  // Rider-side live driver tracking
+  const driverPos = useDriverTracking({
+    isDriver: false,
+    rideId: currentRide?.id,
+    status: currentRide?.status,
+  });
+
+  // Bubble driver position up to RiderHome for the map
+  useEffect(() => {
+    if (driverPos && onDriverPosUpdate) onDriverPosUpdate(driverPos);
+  }, [driverPos]);
+
+  const targetPos = currentRide?.status === "in_progress"
+    ? (currentRide.destination_lat ? [currentRide.destination_lat, currentRide.destination_lng] : null)
+    : (currentRide?.pickup_lat ? [currentRide.pickup_lat, currentRide.pickup_lng] : null);
+
+  const eta = calcEta(driverPos, targetPos);
 
   useEffect(() => {
     if (!ride?.id) return;
@@ -99,9 +131,17 @@ export default function TripTracker({ ride, onClose }) {
                   {currentRide.driver_name || "Your Driver"}
                 </h3>
               </div>
-              <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-lg">
-                <Star className="w-4 h-4 text-primary fill-primary" />
-                <span className="text-sm font-medium text-primary">4.9</span>
+              <div className="flex items-center gap-2">
+                {eta !== null && (
+                  <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-lg">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">{eta} min</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-lg">
+                  <Star className="w-4 h-4 text-primary fill-primary" />
+                  <span className="text-sm font-medium text-primary">4.9</span>
+                </div>
               </div>
             </div>
 

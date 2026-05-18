@@ -8,6 +8,7 @@ import BottomNav from "@/components/shared/BottomNav";
 import DestinationSearch from "@/components/rider/DestinationSearch";
 import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
+import LiveTrackingMap from "@/components/shared/LiveTrackingMap";
 
 function MapCenterUpdater({ center }) {
   const map = useMap();
@@ -23,6 +24,7 @@ export default function RiderHome() {
   const [destination, setDestination] = useState(null);
   const [activeRide, setActiveRide] = useState(null);
   const [user, setUser] = useState(null);
+  const [driverPos, setDriverPos] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -66,19 +68,30 @@ export default function RiderHome() {
 
       {/* Map */}
       <div className="h-full">
-        <MapContainer
-          center={location}
-          zoom={15}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+        {activeRide ? (
+          <LiveTrackingMap
+            driverPos={driverPos}
+            pickupPos={activeRide.pickup_lat ? [activeRide.pickup_lat, activeRide.pickup_lng] : null}
+            destPos={activeRide.destination_lat ? [activeRide.destination_lat, activeRide.destination_lng] : null}
+            userPos={location}
+            status={activeRide.status}
+            height="100%"
           />
-          <Marker position={location} />
-          <MapCenterUpdater center={location} />
-        </MapContainer>
+        ) : (
+          <MapContainer
+            center={location}
+            zoom={15}
+            style={{ height: "100%", width: "100%" }}
+            zoomControl={false}
+          >
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+            />
+            <Marker position={location} />
+            <MapCenterUpdater center={location} />
+          </MapContainer>
+        )}
       </div>
 
       {/* Where To? Button */}
@@ -124,7 +137,8 @@ export default function RiderHome() {
           <TripTracker
             ride={activeRide}
             userPos={location}
-            onClose={() => setActiveRide(null)}
+            onDriverPosUpdate={setDriverPos}
+            onClose={() => { setActiveRide(null); setDriverPos(null); }}
           />
         )}
       </AnimatePresence>
