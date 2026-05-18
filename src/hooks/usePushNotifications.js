@@ -35,8 +35,13 @@ export function usePushNotifications() {
           return null;
         }
 
-        // Create new subscription
-        const vapidPublicKey = "YOUR_VAPID_PUBLIC_KEY"; // Replace with actual VAPID key
+        // Create new subscription (only if VAPID key is configured)
+        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        if (!vapidPublicKey) {
+          console.warn("VAPID key not configured - push notifications disabled");
+          return null;
+        }
+        
         const convertedKey = urlBase64ToUint8Array(vapidPublicKey);
         
         subscription = await registration.pushManager.subscribe({
