@@ -1,16 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { MapPin, Calendar, Star, RefreshCw } from "lucide-react";
-import { format } from "date-fns";
+import { MapPin, RefreshCw } from "lucide-react";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
-
-const statusColors = {
-  completed: "text-ghana-green",
-  cancelled: "text-destructive",
-  in_progress: "text-primary",
-  requested: "text-muted-foreground"
-};
+import TripHistoryCard from "@/components/shared/TripHistoryCard";
 
 const PULL_THRESHOLD = 70;
 
@@ -35,17 +28,13 @@ export default function RiderHistory() {
   }, [loadRides]);
 
   const handleTouchStart = (e) => {
-    if (scrollRef.current?.scrollTop === 0) {
-      touchStartY.current = e.touches[0].clientY;
-    }
+    if (scrollRef.current?.scrollTop === 0) touchStartY.current = e.touches[0].clientY;
   };
-
   const handleTouchMove = (e) => {
     if (scrollRef.current?.scrollTop > 0) return;
     const delta = e.touches[0].clientY - touchStartY.current;
     if (delta > 0 && delta < 120) setPullY(delta);
   };
-
   const handleTouchEnd = async () => {
     if (pullY >= PULL_THRESHOLD && !refreshing) {
       setRefreshing(true);
@@ -63,7 +52,6 @@ export default function RiderHistory() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Pull-to-refresh indicator */}
       <div
         className="flex justify-center items-center overflow-hidden transition-all duration-200"
         style={{ height: pullY > 0 ? `${pullY}px` : refreshing ? "48px" : "0px" }}
@@ -71,9 +59,12 @@ export default function RiderHistory() {
         <RefreshCw className={`w-5 h-5 text-primary ${refreshing ? "animate-spin" : ""}`} style={{ transform: `rotate(${pullY * 2}deg)` }} />
       </div>
 
-      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
+      <div className="p-4 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         <Logo size="sm" />
-        <h1 className="font-heading font-bold text-xl">Ride History</h1>
+        <div>
+          <h1 className="font-heading font-bold text-xl">Ride History</h1>
+          <p className="text-xs text-muted-foreground">{rides.length} trips</p>
+        </div>
       </div>
 
       <div className="p-4 space-y-3">
@@ -89,46 +80,7 @@ export default function RiderHistory() {
           </div>
         ) : (
           rides.map((ride) => (
-            <div key={ride.id} className="bg-card border border-border rounded-xl p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-heading font-semibold text-sm capitalize">
-                    HY3N {ride.category?.replace("_", " ")}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Calendar className="w-3 h-3 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(ride.created_date), "MMM d, yyyy • h:mm a")}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-heading font-bold text-primary">
-                    GH₵{ride.final_fare || ride.fare_estimate}
-                  </p>
-                  <p className={`text-xs font-medium capitalize ${statusColors[ride.status] || "text-muted-foreground"}`}>
-                    {ride.status}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-ghana-green" />
-                  <p className="text-xs text-muted-foreground truncate">{ride.pickup_address}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <p className="text-xs text-muted-foreground truncate">{ride.destination_address}</p>
-                </div>
-              </div>
-              {ride.rating && (
-                <div className="flex items-center gap-1 mt-2">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className={`w-3 h-3 ${s <= ride.rating ? "text-primary fill-primary" : "text-muted"}`} />
-                  ))}
-                </div>
-              )}
-            </div>
+            <TripHistoryCard key={ride.id} ride={ride} role="rider" />
           ))
         )}
       </div>

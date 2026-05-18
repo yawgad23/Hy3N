@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { MapPin, Calendar, RefreshCw } from "lucide-react";
-import { format } from "date-fns";
+import { MapPin, RefreshCw } from "lucide-react";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
+import TripHistoryCard from "@/components/shared/TripHistoryCard";
 
 const PULL_THRESHOLD = 70;
 
@@ -28,17 +28,13 @@ export default function DriverHistory() {
   }, [loadRides]);
 
   const handleTouchStart = (e) => {
-    if (scrollRef.current?.scrollTop === 0) {
-      touchStartY.current = e.touches[0].clientY;
-    }
+    if (scrollRef.current?.scrollTop === 0) touchStartY.current = e.touches[0].clientY;
   };
-
   const handleTouchMove = (e) => {
     if (scrollRef.current?.scrollTop > 0) return;
     const delta = e.touches[0].clientY - touchStartY.current;
     if (delta > 0 && delta < 120) setPullY(delta);
   };
-
   const handleTouchEnd = async () => {
     if (pullY >= PULL_THRESHOLD && !refreshing) {
       setRefreshing(true);
@@ -56,7 +52,6 @@ export default function DriverHistory() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Pull-to-refresh indicator */}
       <div
         className="flex justify-center items-center overflow-hidden transition-all duration-200"
         style={{ height: pullY > 0 ? `${pullY}px` : refreshing ? "48px" : "0px" }}
@@ -64,9 +59,12 @@ export default function DriverHistory() {
         <RefreshCw className={`w-5 h-5 text-primary ${refreshing ? "animate-spin" : ""}`} style={{ transform: `rotate(${pullY * 2}deg)` }} />
       </div>
 
-      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
+      <div className="p-4 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         <Logo size="sm" />
-        <h1 className="font-heading font-bold text-xl">Ride History</h1>
+        <div>
+          <h1 className="font-heading font-bold text-xl">Trip History</h1>
+          <p className="text-xs text-muted-foreground">{rides.length} trips</p>
+        </div>
       </div>
 
       <div className="p-4 space-y-3">
@@ -77,36 +75,11 @@ export default function DriverHistory() {
         ) : rides.length === 0 ? (
           <div className="text-center py-20">
             <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No completed rides yet</p>
+            <p className="text-muted-foreground">No completed trips yet</p>
           </div>
         ) : (
           rides.map((ride) => (
-            <div key={ride.id} className="bg-card border border-border rounded-xl p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-heading font-semibold text-sm">{ride.rider_name || "Rider"}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Calendar className="w-3 h-3 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(ride.created_date), "MMM d, yyyy • h:mm a")}
-                    </p>
-                  </div>
-                </div>
-                <p className="font-heading font-bold text-ghana-green">
-                  GH₵{(ride.final_fare || ride.fare_estimate)?.toFixed(2)}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-ghana-green" />
-                  <p className="text-xs text-muted-foreground truncate">{ride.pickup_address}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <p className="text-xs text-muted-foreground truncate">{ride.destination_address}</p>
-                </div>
-              </div>
-            </div>
+            <TripHistoryCard key={ride.id} ride={ride} role="driver" />
           ))
         )}
       </div>
