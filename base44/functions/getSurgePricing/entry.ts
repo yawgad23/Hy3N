@@ -15,6 +15,12 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { lat, lng, radius_km = 5 } = await req.json();
 
     if (!lat || !lng) {

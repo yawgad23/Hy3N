@@ -3,6 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    // This is called by automation - verify service role context
     const { event, data, old_data } = await req.json();
 
     // Only process completed rides

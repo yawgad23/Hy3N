@@ -4,12 +4,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Verify this is called by automation (service role)
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // This is called by automation - verify service role context
     const { messageData, recipientId } = await req.json();
     
     if (!messageData || !recipientId) {

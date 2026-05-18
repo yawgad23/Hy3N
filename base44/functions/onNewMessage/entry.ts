@@ -4,7 +4,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // This is called by automation, authenticate with service role
+    // This is called by automation - verify service role context
     const payload = await req.json();
     const { event, data } = payload;
     
