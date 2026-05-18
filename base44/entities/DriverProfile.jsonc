@@ -76,7 +76,7 @@
     },
     "rating": {
       "type": "number",
-      "default": 5
+      "default": 5.0
     }
   },
   "required": [
@@ -97,6 +97,9 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "data.approval_status": "approved"
         }
       ]
     },
