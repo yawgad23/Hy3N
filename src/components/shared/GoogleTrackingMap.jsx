@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
+// Load Google Maps SDK without API key (key is handled server-side for API calls)
 let googleMapsLoaded = false;
 let loadPromise = null;
 
@@ -10,7 +10,8 @@ function loadGoogleMaps() {
   if (loadPromise) return loadPromise;
   loadPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry`;
+    // Load without key - we'll use backend for Directions API calls
+    script.src = `https://maps.googleapis.com/maps/api/js?libraries=geometry`;
     script.async = true;
     script.onload = () => { googleMapsLoaded = true; resolve(); };
     script.onerror = reject;
@@ -130,22 +131,25 @@ export default function GoogleTrackingMap({
       const origin = toLatLng(driverPos);
       const destination = status === "in_progress" ? toLatLng(destPos) : toLatLng(pickupPos);
       if (destination) {
-        const ds = new window.google.maps.DirectionsService();
-        ds.route(
-          { origin, destination, travelMode: window.google.maps.TravelMode.DRIVING },
-          (result, s) => {
-            if (s === "OK") {
-              routeRendererRef.current.setDirections(result);
-              const leg = result.routes[0]?.legs[0];
-              if (leg && onEtaUpdate) {
-                const minutes = leg.duration?.value
-                  ? Math.max(1, Math.round(leg.duration.value / 60))
-                  : calcEtaFromDistance(leg.distance?.value || 0);
-                onEtaUpdate(minutes);
-              }
+        // Use backend proxy for Directions API (keeps API key secure)
+        base44.functions.invoke("getGoogleMapsRoute", {
+          origin: `${driverPos[0]},${driverPos[1]}`,
+          destination: `${destination.lat},${destination.lng}`
+        }).then((response) => {
+          if (response.data?.routes?.length > 0) {
+            const result = { routes: response.data.routes };
+            routeRendererRef.current.setDirections(result);
+            const leg = result.routes[0]?.legs[0];
+            if (leg && onEtaUpdate) {
+              const minutes = leg.duration?.value
+                ? Math.max(1, Math.round(leg.duration.value / 60))
+                : calcEtaFromDistance(leg.distance?.value || 0);
+              onEtaUpdate(minutes);
             }
           }
-        );
+        }).catch((error) => {
+          console.error("Failed to fetch route:", error);
+        });
       }
     } else if (routeRendererRef.current) {
       routeRendererRef.current.setDirections({ routes: [] });
