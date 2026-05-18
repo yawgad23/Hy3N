@@ -248,7 +248,14 @@ export default function DriverHome() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
           >
-            <p className="text-xs text-primary font-medium uppercase tracking-wider mb-2">New Ride Request</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-primary font-medium uppercase tracking-wider">New Ride Request</p>
+              {incomingRide.surge_multiplier && incomingRide.surge_multiplier > 1 && (
+                <span className="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-lg font-bold">
+                  {incomingRide.surge_multiplier}x Surge
+                </span>
+              )}
+            </div>
             <h3 className="font-heading font-bold text-lg">{incomingRide.rider_name || "Rider"}</h3>
             <div className="mt-3 space-y-2">
               <div className="flex items-center gap-2">
@@ -260,7 +267,14 @@ export default function DriverHome() {
                 <p className="text-sm text-muted-foreground truncate">{incomingRide.destination_address}</p>
               </div>
             </div>
-            <p className="font-heading font-bold text-xl text-primary mt-3">GH₵{incomingRide.fare_estimate}</p>
+            <div className="flex items-center justify-between mt-3">
+              <p className="font-heading font-bold text-xl text-primary">GH₵{incomingRide.fare_estimate}</p>
+              {incomingRide.surge_multiplier && incomingRide.surge_multiplier > 1 && (
+                <p className="text-xs text-muted-foreground">
+                  Base: GH₵{(incomingRide.fare_estimate / incomingRide.surge_multiplier).toFixed(2)}
+                </p>
+              )}
+            </div>
             <div className="flex gap-3 mt-4">
               <Button onClick={declineRide} variant="outline" className="flex-1 border-destructive text-destructive">
                 <X className="w-4 h-4 mr-2" /> Decline
@@ -284,7 +298,14 @@ export default function DriverHome() {
                 <h3 className="font-heading font-bold">{activeRide.rider_name}</h3>
               </div>
               <div className="text-right">
-                <p className="font-heading font-bold text-primary">GH₵{activeRide.fare_estimate}</p>
+                <div className="flex items-center gap-2 justify-end">
+                  <p className="font-heading font-bold text-primary">GH₵{activeRide.fare_estimate}</p>
+                  {activeRide.surge_multiplier && activeRide.surge_multiplier > 1 && (
+                    <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-lg font-bold">
+                      {activeRide.surge_multiplier}x
+                    </span>
+                  )}
+                </div>
                 {eta && (
                   <p className="text-xs text-muted-foreground mt-0.5">{eta} min ETA</p>
                 )}
