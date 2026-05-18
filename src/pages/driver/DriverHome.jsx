@@ -141,8 +141,8 @@ export default function DriverHome() {
       driver_id: user.id,
       ride_id: activeRide.id,
       amount: fare,
-      commission: fare * 0.2,
-      net_amount: fare * 0.8,
+      commission: fare * 0.15,
+      net_amount: fare * 0.85,
       status: "available"
     });
     setCompletedRide(activeRide);
