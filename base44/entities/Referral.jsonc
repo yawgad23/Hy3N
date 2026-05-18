@@ -1,0 +1,57 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "referrer_id": {
+      "type": "string",
+      "description": "User ID of the person who referred"
+    },
+    "referrer_role": {
+      "type": "string",
+      "enum": [
+        "rider",
+        "driver"
+      ]
+    },
+    "referee_id": {
+      "type": "string",
+      "description": "User ID of the person who was referred"
+    },
+    "referee_email": {
+      "type": "string",
+      "description": "Email of the referred user"
+    },
+    "invite_code": {
+      "type": "string",
+      "description": "Unique invite code used"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "credited"
+      ],
+      "default": "pending",
+      "description": "pending = signed up, completed = finished first trip, credited = rewards issued"
+    },
+    "first_ride_id": {
+      "type": "string",
+      "description": "ID of the referee's first completed ride"
+    },
+    "referrer_reward": {
+      "type": "number",
+      "description": "Credit amount given to referrer"
+    },
+    "referee_reward": {
+      "type": "number",
+      "description": "Credit amount given to referee"
+    }
+  },
+  "required": [
+    "referrer_id",
+    "referrer_role",
+    "referee_id",
+    "invite_code"
+  ]
+}

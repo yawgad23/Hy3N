@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, Gift } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
@@ -14,10 +14,12 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [refereeId, setRefereeId] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,6 +47,45 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
+      
+      // Save referee ID for referral tracking
+      const me = await base44.auth.me();
+      if (me) {
+        setRefereeId(me.id);
+        
+        // If invite code was provided, create referral record
+        if (inviteCode.trim()) {
+          try {
+            // Find the referrer by invite code
+            const referrals = await base44.asServiceRole.entities.Referral.filter({});
+            const matchingReferral = referrals.find(r => r.invite_code === inviteCode.trim().toUpperCase());
+            
+            if (matchingReferral) {
+              await base44.entities.Referral.create({
+                referrer_id: matchingReferral.referrer_id,
+                referrer_role: matchingReferral.referrer_role,
+                referee_id: me.id,
+                referee_email: email,
+                invite_code: inviteCode.trim().toUpperCase(),
+                status: "pending"
+              });
+              toast({
+                title: "Referral applied!",
+                description: "You'll get GH₵10 bonus after your first trip.",
+              });
+            } else {
+              toast({
+                title: "Invalid code",
+                description: "The invite code was not found.",
+                variant: "destructive",
+              });
+            }
+          } catch (refErr) {
+            console.error("Referral error:", refErr);
+          }
+        }
+      }
+      
       window.location.href = "/";
     } catch (err) {
       setError(err.message || "Invalid verification code");
@@ -52,6 +93,8 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+
 
   const handleResend = async () => {
     setError("");
@@ -211,6 +254,22 @@ export default function Register() {
               required
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="invite">Invite Code (optional)</Label>
+          <div className="relative">
+            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="invite"
+              type="text"
+              placeholder="HY3N-XXXX-XXXXXX"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              className="pl-10 h-12"
+              autoComplete="off"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Get GH₵10 bonus on your first trip</p>
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (

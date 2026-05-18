@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
+import ReferFriendModal from "@/components/rider/ReferFriendModal";
 
 export default function RiderProfile() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function RiderProfile() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ full_name: "", phone: "", email: "" });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReferModal, setShowReferModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -133,6 +135,14 @@ export default function RiderProfile() {
               <span className="flex-1 text-left text-sm font-medium">My Wallet</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
+            <button
+              onClick={() => setShowReferModal(true)}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              <Users className="w-5 h-5 text-ghana-green" />
+              <span className="flex-1 text-left text-sm font-medium">Refer a Friend</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
             <div className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl">
               <CreditCard className="w-5 h-5 text-muted-foreground" />
               <span className="flex-1 text-left text-sm">Payment Methods</span>
@@ -177,6 +187,8 @@ export default function RiderProfile() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ReferFriendModal isOpen={showReferModal} onClose={() => setShowReferModal(false)} />
 
       <BottomNav role="rider" />
     </div>

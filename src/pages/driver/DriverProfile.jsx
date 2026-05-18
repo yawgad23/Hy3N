@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2 } from "lucide-react";
+import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,11 +9,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
+import ReferFriendModal from "@/components/driver/ReferFriendModal";
 
 export default function DriverProfile() {
   const [user, setUser] = useState(null);
   const [driver, setDriver] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReferModal, setShowReferModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,6 +109,14 @@ export default function DriverProfile() {
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
           <button
+            onClick={() => setShowReferModal(true)}
+            className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+          >
+            <Users className="w-5 h-5 text-ghana-green" />
+            <span className="flex-1 text-left text-sm font-medium">Refer a Driver</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 p-4 bg-card border border-destructive/30 rounded-xl mt-4"
           >
@@ -139,6 +149,8 @@ export default function DriverProfile() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ReferFriendModal isOpen={showReferModal} onClose={() => setShowReferModal(false)} />
 
       <BottomNav role="driver" />
     </div>
