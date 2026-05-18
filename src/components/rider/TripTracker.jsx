@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Phone, MessageSquare, MapPin, Star, X, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
@@ -16,6 +17,8 @@ const STATUS_LABELS = {
 export default function TripTracker({ ride, onClose }) {
   const [currentRide, setCurrentRide] = useState(ride);
   const [rating, setRating] = useState(0);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paid, setPaid] = useState(false);
 
   useEffect(() => {
     if (!ride?.id) return;

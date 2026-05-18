@@ -123,6 +123,7 @@ export default function RiderHome() {
         {activeRide && (
           <TripTracker
             ride={activeRide}
+            userPos={location}
             onClose={() => setActiveRide(null)}
           />
         )}

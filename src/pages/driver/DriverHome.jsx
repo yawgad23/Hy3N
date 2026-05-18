@@ -1,23 +1,18 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Power, MapPin, Navigation, Clock, Check, X } from "lucide-react";
+import { Power, MapPin, Navigation, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
-
-function MapCenterUpdater({ center }) {
-  const map = useMap();
-  useEffect(() => { if (center) map.setView(center, 15); }, [center, map]);
-  return null;
-}
+import LiveTrackingMap from "@/components/shared/LiveTrackingMap";
+import { useDriverTracking } from "@/hooks/useDriverTracking";
 
 export default function DriverHome() {
   const [user, setUser] = useState(null);
   const [driver, setDriver] = useState(null);
   const [isOnline, setIsOnline] = useState(false);
-  const [location, setLocation] = useState([5.6037, -0.1870]);
+  const [location, setLocation] = useState([5.6037, -0.187]);
   const [incomingRide, setIncomingRide] = useState(null);
   const [activeRide, setActiveRide] = useState(null);
 
@@ -30,6 +25,7 @@ export default function DriverHome() {
         if (drivers.length > 0) {
           setDriver(drivers[0]);
           setIsOnline(drivers[0].is_online || false);
+          if (drivers[0].current_lat) setLocation([drivers[0].current_lat, drivers[0].current_lng]);
         }
       }
     }
@@ -42,17 +38,28 @@ export default function DriverHome() {
     }
   }, []);
 
-  // Poll for incoming rides when online
+  // Poll for incoming rides
   useEffect(() => {
     if (!isOnline || activeRide) return;
     const interval = setInterval(async () => {
       const rides = await base44.entities.Ride.filter({ status: "requested" }, "-created_date", 1);
-      if (rides.length > 0 && !incomingRide) {
-        setIncomingRide(rides[0]);
-      }
+      if (rides.length > 0 && !incomingRide) setIncomingRide(rides[0]);
     }, 5000);
     return () => clearInterval(interval);
   }, [isOnline, activeRide, incomingRide]);
+
+  // Live position simulation — driver side
+  const driverPos = useDriverTracking({
+    isDriver: true,
+    driverProfileId: driver?.id,
+    pickupLat: activeRide?.pickup_lat,
+    pickupLng: activeRide?.pickup_lng,
+    destLat: activeRide?.destination_lat,
+    destLng: activeRide?.destination_lng,
+    status: activeRide?.status,
+    startLat: location[0],
+    startLng: location[1],
+  });
 
   const toggleOnline = async () => {
     if (driver) {
@@ -72,10 +79,6 @@ export default function DriverHome() {
     setIncomingRide(null);
   };
 
-  const declineRide = () => {
-    setIncomingRide(null);
-  };
-
   const startTrip = async () => {
     if (!activeRide) return;
     await base44.entities.Ride.update(activeRide.id, { status: "in_progress" });
@@ -85,10 +88,7 @@ export default function DriverHome() {
   const endTrip = async () => {
     if (!activeRide) return;
     const fare = activeRide.fare_estimate;
-    await base44.entities.Ride.update(activeRide.id, {
-      status: "completed",
-      final_fare: fare
-    });
+    await base44.entities.Ride.update(activeRide.id, { status: "completed", final_fare: fare });
     await base44.entities.Earning.create({
       driver_id: user.id,
       ride_id: activeRide.id,
@@ -113,6 +113,9 @@ export default function DriverHome() {
     );
   }
 
+  const pickupPos = activeRide?.pickup_lat ? [activeRide.pickup_lat, activeRide.pickup_lng] : null;
+  const destPos = activeRide?.destination_lat ? [activeRide.destination_lat, activeRide.destination_lng] : null;
+
   return (
     <div className="h-screen bg-background relative">
       {/* Header */}
@@ -131,33 +134,25 @@ export default function DriverHome() {
         </button>
       </div>
 
-      {/* Map */}
+      {/* Live Map */}
       <div className="h-full">
-        <MapContainer
-          center={location}
-          zoom={15}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; CARTO'
-          />
-          <Marker position={location} />
-          <MapCenterUpdater center={location} />
-        </MapContainer>
+        <LiveTrackingMap
+          driverPos={activeRide ? driverPos : null}
+          pickupPos={pickupPos}
+          destPos={destPos}
+          userPos={location}
+          status={activeRide?.status}
+          height="100%"
+        />
       </div>
 
-      {/* Status Banner */}
+      {/* Offline banner */}
       {!isOnline && !activeRide && (
         <div className="absolute bottom-24 left-4 right-4 z-30 bg-card border border-border rounded-2xl p-5 text-center">
           <Power className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
           <p className="font-heading font-semibold">You're offline</p>
           <p className="text-sm text-muted-foreground mt-1">Go online to receive ride requests</p>
-          <Button
-            onClick={toggleOnline}
-            className="mt-4 bg-ghana-green hover:bg-ghana-green/90 text-white w-full"
-          >
+          <Button onClick={toggleOnline} className="mt-4 bg-ghana-green hover:bg-ghana-green/90 text-white w-full">
             Go Online
           </Button>
         </div>
@@ -171,7 +166,7 @@ export default function DriverHome() {
         </div>
       )}
 
-      {/* Incoming Ride Request */}
+      {/* Incoming Ride */}
       <AnimatePresence>
         {incomingRide && (
           <motion.div
@@ -192,11 +187,9 @@ export default function DriverHome() {
                 <p className="text-sm text-muted-foreground truncate">{incomingRide.destination_address}</p>
               </div>
             </div>
-            <p className="font-heading font-bold text-xl text-primary mt-3">
-              GH₵{incomingRide.fare_estimate}
-            </p>
+            <p className="font-heading font-bold text-xl text-primary mt-3">GH₵{incomingRide.fare_estimate}</p>
             <div className="flex gap-3 mt-4">
-              <Button onClick={declineRide} variant="outline" className="flex-1 border-destructive text-destructive">
+              <Button onClick={() => setIncomingRide(null)} variant="outline" className="flex-1 border-destructive text-destructive">
                 <X className="w-4 h-4 mr-2" /> Decline
               </Button>
               <Button onClick={acceptRide} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
@@ -207,9 +200,9 @@ export default function DriverHome() {
         )}
       </AnimatePresence>
 
-      {/* Active Ride */}
+      {/* Active Ride panel */}
       {activeRide && (
-        <div className="absolute bottom-24 left-4 right-4 z-30 bg-card border border-border rounded-2xl p-5">
+        <div className="absolute bottom-20 left-4 right-4 z-30 bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-ghana-green font-medium uppercase">
