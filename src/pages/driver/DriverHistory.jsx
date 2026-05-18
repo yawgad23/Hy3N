@@ -4,6 +4,7 @@ import { MapPin, RefreshCw } from "lucide-react";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import TripHistoryCard from "@/components/shared/TripHistoryCard";
+import TripDetailsModal from "@/components/shared/TripDetailsModal";
 
 const PULL_THRESHOLD = 70;
 
@@ -12,6 +13,8 @@ export default function DriverHistory() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
+  const [selectedRide, setSelectedRide] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   const touchStartY = useRef(0);
   const scrollRef = useRef(null);
 
@@ -42,6 +45,11 @@ export default function DriverHistory() {
       setRefreshing(false);
     }
     setPullY(0);
+  };
+
+  const handleViewDetails = (ride) => {
+    setSelectedRide(ride);
+    setShowDetails(true);
   };
 
   return (
@@ -79,10 +87,22 @@ export default function DriverHistory() {
           </div>
         ) : (
           rides.map((ride) => (
-            <TripHistoryCard key={ride.id} ride={ride} role="driver" />
+            <TripHistoryCard
+              key={ride.id}
+              ride={ride}
+              currentUserRole="driver"
+              onViewDetails={handleViewDetails}
+            />
           ))
         )}
       </div>
+
+      <TripDetailsModal
+        ride={selectedRide}
+        isOpen={showDetails}
+        onClose={() => { setShowDetails(false); setSelectedRide(null); }}
+        currentUserRole="driver"
+      />
 
       <BottomNav role="driver" />
     </div>

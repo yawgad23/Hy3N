@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import TripHistoryCard from "@/components/shared/TripHistoryCard";
+import TripDetailsModal from "@/components/shared/TripDetailsModal";
 
 const PULL_THRESHOLD = 70;
 
@@ -13,6 +14,8 @@ export default function RiderHistory() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
+  const [selectedRide, setSelectedRide] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   const touchStartY = useRef(0);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
@@ -27,6 +30,11 @@ export default function RiderHistory() {
         }
       }
     });
+  };
+
+  const handleViewDetails = (ride) => {
+    setSelectedRide(ride);
+    setShowDetails(true);
   };
 
   const loadRides = useCallback(async () => {
@@ -94,10 +102,23 @@ export default function RiderHistory() {
           </div>
         ) : (
           rides.map((ride) => (
-            <TripHistoryCard key={ride.id} ride={ride} role="rider" onBookAgain={handleBookAgain} />
+            <TripHistoryCard
+              key={ride.id}
+              ride={ride}
+              currentUserRole="rider"
+              onBookAgain={handleBookAgain}
+              onViewDetails={handleViewDetails}
+            />
           ))
         )}
       </div>
+
+      <TripDetailsModal
+        ride={selectedRide}
+        isOpen={showDetails}
+        onClose={() => { setShowDetails(false); setSelectedRide(null); }}
+        currentUserRole="rider"
+      />
 
       <BottomNav role="rider" />
     </div>
