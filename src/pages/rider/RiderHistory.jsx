@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { MapPin, Calendar, Star } from "lucide-react";
+import { MapPin, Calendar, Star, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
@@ -12,29 +12,66 @@ const statusColors = {
   requested: "text-muted-foreground"
 };
 
+const PULL_THRESHOLD = 70;
+
 export default function RiderHistory() {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const touchStartY = useRef(0);
+  const scrollRef = useRef(null);
 
-  useEffect(() => {
-    async function load() {
-      const user = await base44.auth.me();
-      if (user) {
-        const data = await base44.entities.Ride.filter(
-          { rider_id: user.id },
-          "-created_date",
-          50
-        );
-        setRides(data);
-      }
-      setLoading(false);
+  const loadRides = useCallback(async () => {
+    const user = await base44.auth.me();
+    if (user) {
+      const data = await base44.entities.Ride.filter({ rider_id: user.id }, "-created_date", 50);
+      setRides(data);
     }
-    load();
   }, []);
 
+  useEffect(() => {
+    loadRides().finally(() => setLoading(false));
+  }, [loadRides]);
+
+  const handleTouchStart = (e) => {
+    if (scrollRef.current?.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (scrollRef.current?.scrollTop > 0) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0 && delta < 120) setPullY(delta);
+  };
+
+  const handleTouchEnd = async () => {
+    if (pullY >= PULL_THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      await loadRides();
+      setRefreshing(false);
+    }
+    setPullY(0);
+  };
+
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border">
+    <div
+      ref={scrollRef}
+      className="min-h-screen bg-background pb-20 overflow-y-auto"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="flex justify-center items-center overflow-hidden transition-all duration-200"
+        style={{ height: pullY > 0 ? `${pullY}px` : refreshing ? "48px" : "0px" }}
+      >
+        <RefreshCw className={`w-5 h-5 text-primary ${refreshing ? "animate-spin" : ""}`} style={{ transform: `rotate(${pullY * 2}deg)` }} />
+      </div>
+
+      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         <Logo size="sm" />
         <h1 className="font-heading font-bold text-xl">Ride History</h1>
       </div>

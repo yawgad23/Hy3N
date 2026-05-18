@@ -20,7 +20,7 @@ export default function BottomNav({ role = "rider" }) {
   const tabs = role === "rider" ? riderTabs : driverTabs;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;

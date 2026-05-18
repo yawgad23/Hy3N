@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle } from "lucide-react";
+import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 
 export default function DriverProfile() {
   const [user, setUser] = useState(null);
   const [driver, setDriver] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,9 +32,14 @@ export default function DriverProfile() {
     base44.auth.logout("/");
   };
 
+  const handleDeleteAccount = async () => {
+    if (driver) await base44.entities.DriverProfile.delete(driver.id);
+    base44.auth.logout("/");
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border">
+      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         <Logo size="sm" />
         <h1 className="font-heading font-bold text-xl">Profile</h1>
       </div>
@@ -103,8 +113,32 @@ export default function DriverProfile() {
             <LogOut className="w-5 h-5 text-destructive" />
             <span className="flex-1 text-left text-sm text-destructive">Log Out</span>
           </button>
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="w-full flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-xl mt-2"
+          >
+            <Trash2 className="w-5 h-5 text-destructive" />
+            <span className="flex-1 text-left text-sm text-destructive">Delete Account</span>
+          </button>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your driver profile and all associated data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <BottomNav role="driver" />
     </div>

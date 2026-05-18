@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -24,6 +25,7 @@ import DriverSupport from '@/pages/driver/DriverSupport';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -43,27 +45,38 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.18, ease: "easeInOut" }}
+        style={{ minHeight: "100vh" }}
+      >
+        <Routes location={location}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/" element={<RoleSelect />} />
-        <Route path="/rider" element={<RiderHome />} />
-        <Route path="/rider/history" element={<RiderHistory />} />
-        <Route path="/rider/profile" element={<RiderProfile />} />
-        <Route path="/rider/support" element={<RiderSupport />} />
-        <Route path="/driver" element={<DriverGateway />} />
-        <Route path="/driver/earnings" element={<DriverEarnings />} />
-        <Route path="/driver/history" element={<DriverHistory />} />
-        <Route path="/driver/profile" element={<DriverProfile />} />
-        <Route path="/driver/support" element={<DriverSupport />} />
-      </Route>
+          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route path="/" element={<RoleSelect />} />
+            <Route path="/rider" element={<RiderHome />} />
+            <Route path="/rider/history" element={<RiderHistory />} />
+            <Route path="/rider/profile" element={<RiderProfile />} />
+            <Route path="/rider/support" element={<RiderSupport />} />
+            <Route path="/driver" element={<DriverGateway />} />
+            <Route path="/driver/earnings" element={<DriverEarnings />} />
+            <Route path="/driver/history" element={<DriverHistory />} />
+            <Route path="/driver/profile" element={<DriverProfile />} />
+            <Route path="/driver/support" element={<DriverSupport />} />
+          </Route>
 
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
