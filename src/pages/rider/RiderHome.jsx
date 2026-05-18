@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Search, MapPin, Bell, CalendarClock, CheckCircle2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
@@ -14,6 +14,7 @@ import SOSButton from "@/components/shared/SOSButton";
 
 export default function RiderHome() {
   const navigate = useNavigate();
+  const routeLocation = useLocation();
   const [location, setLocation] = useState([5.6037, -0.1870]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [destination, setDestination] = useState(null);
@@ -31,6 +32,12 @@ export default function RiderHome() {
         (pos) => setLocation([pos.coords.latitude, pos.coords.longitude]),
         () => {}
       );
+    }
+    // Handle "Book Again" navigation from history
+    if (routeLocation.state?.bookAgain) {
+      const { address, lat, lng } = routeLocation.state.bookAgain;
+      setDestination({ name: address, lat, lng });
+      window.history.replaceState({}, "");
     }
   }, []);
 

@@ -1,4 +1,5 @@
-import { Calendar, MapPin, Star, User, Navigation } from "lucide-react";
+import { Calendar, MapPin, Star, User, Navigation, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 const statusColors = {
@@ -27,7 +28,7 @@ function StarRow({ rating, label }) {
   );
 }
 
-export default function TripHistoryCard({ ride, role }) {
+export default function TripHistoryCard({ ride, role, onBookAgain }) {
   const fare = ride.final_fare || ride.fare_estimate;
   const statusLabel = ride.status?.replace("_", " ") || "unknown";
   const statusStyle = statusColors[ride.status] || "text-muted-foreground bg-secondary";
@@ -104,6 +105,20 @@ export default function TripHistoryCard({ ride, role }) {
           {feedbackGiven && (
             <p className="text-[11px] text-muted-foreground italic mt-1">"{feedbackGiven}"</p>
           )}
+        </div>
+      )}
+
+      {/* Book Again */}
+      {role === "rider" && ride.status === "completed" && onBookAgain && (
+        <div className="pt-2 border-t border-border">
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground h-8 text-xs"
+            onClick={() => onBookAgain(ride)}
+          >
+            <RotateCcw className="w-3 h-3 mr-1.5" /> Book Again
+          </Button>
         </div>
       )}
     </div>

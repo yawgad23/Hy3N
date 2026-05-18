@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { MapPin, RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import TripHistoryCard from "@/components/shared/TripHistoryCard";
@@ -14,6 +15,19 @@ export default function RiderHistory() {
   const [pullY, setPullY] = useState(0);
   const touchStartY = useRef(0);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleBookAgain = (ride) => {
+    navigate("/rider", {
+      state: {
+        bookAgain: {
+          address: ride.destination_address,
+          lat: ride.destination_lat,
+          lng: ride.destination_lng,
+        }
+      }
+    });
+  };
 
   const loadRides = useCallback(async () => {
     const user = await base44.auth.me();
@@ -80,7 +94,7 @@ export default function RiderHistory() {
           </div>
         ) : (
           rides.map((ride) => (
-            <TripHistoryCard key={ride.id} ride={ride} role="rider" />
+            <TripHistoryCard key={ride.id} ride={ride} role="rider" onBookAgain={handleBookAgain} />
           ))
         )}
       </div>
