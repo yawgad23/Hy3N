@@ -1,0 +1,41 @@
+{
+  "name": "HY3N - Ride Ghana Forward",
+  "short_name": "HY3N",
+  "description": "Ghana's premium ride-hailing service",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "navigation", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Book a Ride",
+      "short_name": "Book",
+      "description": "Book a ride now",
+      "url": "/rider",
+      "icons": [{ "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ride History",
+      "short_name": "History",
+      "description": "View your ride history",
+      "url": "/rider/history",
+      "icons": [{ "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
+import OfflineIndicator from "@/components/shared/OfflineIndicator";
 import DestinationSearch from "@/components/rider/DestinationSearch";
 import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
@@ -122,6 +123,9 @@ export default function RiderHome() {
 
   return (
     <div className="h-screen bg-background relative">
+      {/* Offline Indicator */}
+      <OfflineIndicator />
+      
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between">
         <Logo size="sm" />

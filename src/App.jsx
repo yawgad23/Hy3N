@@ -11,6 +11,8 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import { registerServiceWorker } from '@/hooks/useServiceWorker';
+import AppEffects from '@/components/AppEffects';
 
 import RoleSelect from '@/pages/RoleSelect';
 import RiderHome from '@/pages/rider/RiderHome';
@@ -93,10 +95,13 @@ const AuthenticatedApp = () => {
 };
 
 function App() {
+  registerServiceWorker();
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <AppEffects />
           <AuthenticatedApp />
         </Router>
         <Toaster />
