@@ -1,0 +1,36 @@
+{
+  "name": "Withdrawal",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "method": {
+      "type": "string",
+      "default": "mobile_money"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "reference": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "driver_id",
+    "amount"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "SupportTicket",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_role": {
+      "type": "string",
+      "enum": [
+        "rider",
+        "driver"
+      ]
+    },
+    "subject": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "resolved"
+      ],
+      "default": "open"
+    },
+    "ride_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "subject",
+    "message"
+  ]
+}

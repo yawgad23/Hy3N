@@ -1,0 +1,88 @@
+import { useState } from "react";
+import { MapPin, Search, X, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
+
+const POPULAR_LOCATIONS = [
+  { name: "Kotoka International Airport", address: "Airport, Accra", lat: 5.6052, lng: -0.1668 },
+  { name: "Accra Mall", address: "Tetteh Quarshie, Accra", lat: 5.6228, lng: -0.1747 },
+  { name: "University of Ghana", address: "Legon, Accra", lat: 5.6508, lng: -0.1870 },
+  { name: "Kumasi Central Market", address: "Kumasi", lat: 6.6885, lng: -1.6244 },
+  { name: "Osu Oxford Street", address: "Osu, Accra", lat: 5.5560, lng: -0.1789 },
+  { name: "Makola Market", address: "Central Accra", lat: 5.5488, lng: -0.2079 }
+];
+
+export default function DestinationSearch({ isOpen, onClose, onSelect }) {
+  const [query, setQuery] = useState("");
+
+  const filtered = query.length > 0
+    ? POPULAR_LOCATIONS.filter(l =>
+        l.name.toLowerCase().includes(query.toLowerCase()) ||
+        l.address.toLowerCase().includes(query.toLowerCase())
+      )
+    : POPULAR_LOCATIONS;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 bg-background z-50 flex flex-col"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        >
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <button onClick={onClose}>
+                <X className="w-6 h-6 text-foreground" />
+              </button>
+              <h2 className="font-heading font-semibold text-lg">Where to?</h2>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Search destination..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-10 bg-secondary border-none h-12 text-foreground placeholder:text-muted-foreground"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
+              {query ? "Results" : "Popular Destinations"}
+            </p>
+            <div className="space-y-1">
+              {filtered.map((location, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    onSelect(location);
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                    {query ? (
+                      <MapPin className="w-5 h-5 text-primary" />
+                    ) : (
+                      <Clock className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-sm text-foreground">{location.name}</p>
+                    <p className="text-xs text-muted-foreground">{location.address}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}

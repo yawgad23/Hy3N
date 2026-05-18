@@ -1,0 +1,87 @@
+{
+  "name": "DriverProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "vehicle_make": {
+      "type": "string"
+    },
+    "vehicle_model": {
+      "type": "string"
+    },
+    "vehicle_year": {
+      "type": "string"
+    },
+    "vehicle_color": {
+      "type": "string"
+    },
+    "license_plate": {
+      "type": "string"
+    },
+    "ghana_card_url": {
+      "type": "string"
+    },
+    "drivers_license_url": {
+      "type": "string"
+    },
+    "vehicle_registration_url": {
+      "type": "string"
+    },
+    "insurance_url": {
+      "type": "string"
+    },
+    "roadworthy_url": {
+      "type": "string"
+    },
+    "profile_photo_url": {
+      "type": "string"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "is_online": {
+      "type": "boolean",
+      "default": false
+    },
+    "current_lat": {
+      "type": "number"
+    },
+    "current_lng": {
+      "type": "number"
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "total_rides": {
+      "type": "number",
+      "default": 0
+    },
+    "rating": {
+      "type": "number",
+      "default": 5.0
+    }
+  },
+  "required": [
+    "user_id",
+    "full_name",
+    "phone"
+  ]
+}

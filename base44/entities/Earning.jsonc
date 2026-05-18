@@ -1,0 +1,34 @@
+{
+  "name": "Earning",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string"
+    },
+    "ride_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "commission": {
+      "type": "number"
+    },
+    "net_amount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "available",
+        "withdrawn"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "driver_id",
+    "amount"
+  ]
+}

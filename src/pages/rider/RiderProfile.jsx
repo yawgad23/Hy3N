@@ -1,0 +1,133 @@
+import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { User, Phone, Mail, CreditCard, LogOut, ChevronRight, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import BottomNav from "@/components/shared/BottomNav";
+import Logo from "@/components/shared/Logo";
+
+export default function RiderProfile() {
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ full_name: "", phone: "", email: "" });
+
+  useEffect(() => {
+    async function load() {
+      const me = await base44.auth.me();
+      setUser(me);
+      if (me) {
+        const profiles = await base44.entities.RiderProfile.filter({ user_id: me.id });
+        if (profiles.length > 0) {
+          setProfile(profiles[0]);
+          setForm({ full_name: profiles[0].full_name, phone: profiles[0].phone, email: profiles[0].email || "" });
+        } else {
+          setForm({ full_name: me.full_name || "", phone: "", email: me.email || "" });
+        }
+      }
+    }
+    load();
+  }, []);
+
+  const handleSave = async () => {
+    if (profile) {
+      await base44.entities.RiderProfile.update(profile.id, form);
+    } else {
+      await base44.entities.RiderProfile.create({ ...form, user_id: user.id });
+    }
+    setEditing(false);
+  };
+
+  const handleLogout = () => {
+    base44.auth.logout("/");
+  };
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <div className="p-4 pt-6 flex items-center gap-3 border-b border-border">
+        <Logo size="sm" />
+        <h1 className="font-heading font-bold text-xl">Profile</h1>
+      </div>
+
+      <div className="p-4">
+        {/* Avatar */}
+        <div className="flex flex-col items-center py-6">
+          <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center border-2 border-primary">
+            <User className="w-10 h-10 text-primary" />
+          </div>
+          <h2 className="font-heading font-bold text-lg mt-3">{user?.full_name || "Rider"}</h2>
+          <p className="text-sm text-muted-foreground">{user?.email}</p>
+        </div>
+
+        {editing ? (
+          <div className="space-y-4 bg-card border border-border rounded-xl p-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Full Name</Label>
+              <Input
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                className="bg-secondary border-none mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Phone</Label>
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="bg-secondary border-none mt-1"
+                placeholder="+233..."
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Email</Label>
+              <Input
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="bg-secondary border-none mt-1"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSave} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
+                Save
+              </Button>
+              <Button onClick={() => setEditing(false)} variant="outline" className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <button
+              onClick={() => setEditing(true)}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              <User className="w-5 h-5 text-muted-foreground" />
+              <span className="flex-1 text-left text-sm">Edit Profile</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <div className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl">
+              <CreditCard className="w-5 h-5 text-muted-foreground" />
+              <span className="flex-1 text-left text-sm">Payment Methods</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl">
+              <Shield className="w-5 h-5 text-muted-foreground" />
+              <span className="flex-1 text-left text-sm">Safety</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-destructive/30 rounded-xl mt-4"
+            >
+              <LogOut className="w-5 h-5 text-destructive" />
+              <span className="flex-1 text-left text-sm text-destructive">Log Out</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <BottomNav role="rider" />
+    </div>
+  );
+}

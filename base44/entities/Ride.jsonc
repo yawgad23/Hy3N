@@ -1,0 +1,90 @@
+{
+  "name": "Ride",
+  "type": "object",
+  "properties": {
+    "rider_id": {
+      "type": "string",
+      "description": "User ID of the rider"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "User ID of the driver"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "matched",
+        "driver_arriving",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "requested"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "xl",
+        "executive",
+        "kantanka",
+        "express_delivery"
+      ]
+    },
+    "pickup_address": {
+      "type": "string"
+    },
+    "pickup_lat": {
+      "type": "number"
+    },
+    "pickup_lng": {
+      "type": "number"
+    },
+    "destination_address": {
+      "type": "string"
+    },
+    "destination_lat": {
+      "type": "number"
+    },
+    "destination_lng": {
+      "type": "number"
+    },
+    "fare_estimate": {
+      "type": "number"
+    },
+    "final_fare": {
+      "type": "number"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "mobile_money",
+        "cash",
+        "card"
+      ],
+      "default": "mobile_money"
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "rating": {
+      "type": "number"
+    },
+    "rider_name": {
+      "type": "string"
+    },
+    "driver_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "rider_id",
+    "category",
+    "pickup_address",
+    "destination_address"
+  ]
+}

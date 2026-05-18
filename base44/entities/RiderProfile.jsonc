@@ -1,0 +1,59 @@
+{
+  "name": "RiderProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "profile_photo_url": {
+      "type": "string"
+    },
+    "preferred_payment": {
+      "type": "string",
+      "enum": [
+        "mobile_money",
+        "cash",
+        "card"
+      ],
+      "default": "mobile_money"
+    },
+    "total_rides": {
+      "type": "number",
+      "default": 0
+    },
+    "saved_locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "user_id",
+    "full_name",
+    "phone"
+  ]
+}

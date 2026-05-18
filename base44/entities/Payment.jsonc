@@ -1,0 +1,43 @@
+{
+  "name": "Payment",
+  "type": "object",
+  "properties": {
+    "ride_id": {
+      "type": "string"
+    },
+    "rider_id": {
+      "type": "string"
+    },
+    "driver_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "mobile_money",
+        "cash",
+        "card"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "reference": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ride_id",
+    "amount",
+    "method"
+  ]
+}
