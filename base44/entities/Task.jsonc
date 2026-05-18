@@ -50,10 +50,10 @@
     "read": {
       "$or": [
         {
-          "data.assignee": "{{user.email}}"
+          "created_by": "{{user.email}}"
         },
         {
-          "created_by": "{{user.email}}"
+          "data.assignee": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -65,10 +65,10 @@
     "update": {
       "$or": [
         {
-          "data.assignee": "{{user.email}}"
+          "created_by": "{{user.email}}"
         },
         {
-          "created_by": "{{user.email}}"
+          "data.assignee": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -78,16 +78,9 @@
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "created_by": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
