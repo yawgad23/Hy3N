@@ -8,11 +8,13 @@ const iconMap = {
   Package: Package
 };
 
-export default function RideCategoryCard({ category, selected, onSelect, distance }) {
+export default function RideCategoryCard({ category, selected, onSelect, distance, surgeMultiplier = 1.0 }) {
   const Icon = iconMap[category.icon] || Car;
-  const estimatedFare = distance
-    ? (category.basePrice + category.pricePerKm * distance).toFixed(2)
-    : category.basePrice.toFixed(2);
+  const baseFare = distance
+    ? (category.basePrice + category.pricePerKm * distance)
+    : category.basePrice;
+  const estimatedFare = (baseFare * surgeMultiplier).toFixed(2);
+  const isSurge = surgeMultiplier > 1.0;
 
   return (
     <button
@@ -33,8 +35,11 @@ export default function RideCategoryCard({ category, selected, onSelect, distanc
         <p className="text-xs text-muted-foreground">{category.description}</p>
       </div>
       <div className="text-right">
-        <p className="font-heading font-bold text-foreground">GH₵{estimatedFare}</p>
-        {category.seats > 0 && (
+        <p className={`font-heading font-bold ${isSurge ? "text-destructive" : "text-foreground"}`}>GH₵{estimatedFare}</p>
+        {isSurge && (
+          <p className="text-xs text-destructive font-medium">{surgeMultiplier}x surge</p>
+        )}
+        {!isSurge && category.seats > 0 && (
           <p className="text-xs text-muted-foreground">{category.seats} seats</p>
         )}
       </div>

@@ -121,6 +121,8 @@ export default function RiderHome() {
             destination={destination}
             onClose={() => setDestination(null)}
             onBook={handleBookRide}
+            pickupLat={location[0]}
+            pickupLng={location[1]}
           />
         )}
       </AnimatePresence>

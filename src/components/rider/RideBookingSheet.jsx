@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Banknote, CreditCard, MapPin, Navigation, CalendarClock, Zap, Users } from "lucide-react";
+import { X, Smartphone, Banknote, CreditCard, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
 import SplitFareModal from "./SplitFareModal";
 import { format, addMinutes } from "date-fns";
+import { base44 } from "@/api/base44Client";
 
 const paymentIcons = {
   Smartphone: Smartphone,
@@ -18,7 +19,7 @@ function minDateTime() {
   return format(addMinutes(new Date(), 30), "yyyy-MM-dd'T'HH:mm");
 }
 
-export default function RideBookingSheet({ destination, onClose, onBook }) {
+export default function RideBookingSheet({ destination, onClose, onBook, pickupLat, pickupLng }) {
   const [selectedCategory, setSelectedCategory] = useState(RIDE_CATEGORIES[0]);
   const [selectedPayment, setSelectedPayment] = useState("mobile_money");
   const [isScheduled, setIsScheduled] = useState(false);
@@ -26,8 +27,20 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [splitData, setSplitData] = useState(null);
   const [distance] = useState(() => 5 + Math.random() * 15);
+  const [surge, setSurge] = useState({ multiplier: 1.0, is_surge: false });
+  const [surgeLoading, setSurgeLoading] = useState(false);
 
-  const fare = selectedCategory.basePrice + selectedCategory.pricePerKm * distance;
+  useEffect(() => {
+    if (!pickupLat || !pickupLng) return;
+    setSurgeLoading(true);
+    base44.functions.invoke("getSurgePricing", { lat: pickupLat, lng: pickupLng, radius_km: 5 })
+      .then((res) => setSurge(res.data || { multiplier: 1.0, is_surge: false }))
+      .catch(() => setSurge({ multiplier: 1.0, is_surge: false }))
+      .finally(() => setSurgeLoading(false));
+  }, [pickupLat, pickupLng]);
+
+  const baseFare = selectedCategory.basePrice + selectedCategory.pricePerKm * distance;
+  const fare = parseFloat((baseFare * surge.multiplier).toFixed(2));
   const yourShare = splitData ? splitData.perPersonFare : fare;
 
   const handleSplitConfirm = (data) => {
@@ -68,6 +81,17 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
           </div>
         </div>
 
+        {/* Surge banner */}
+        {surge.is_surge && !surgeLoading && (
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-destructive/10 border border-destructive/30 rounded-xl">
+            <TrendingUp className="w-4 h-4 text-destructive flex-shrink-0" />
+            <p className="text-xs text-destructive font-medium flex-1">
+              High demand nearby — {surge.multiplier}x surge pricing active
+            </p>
+            <span className="text-xs text-destructive font-bold">{surge.nearby_demand} requests / {surge.nearby_drivers} drivers</span>
+          </div>
+        )}
+
         <div className="space-y-2 mb-5">
           {RIDE_CATEGORIES.map((cat) => (
             <RideCategoryCard
@@ -76,6 +100,7 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
               selected={selectedCategory.id === cat.id}
               onSelect={setSelectedCategory}
               distance={distance}
+              surgeMultiplier={surge.multiplier}
             />
           ))}
         </div>
@@ -184,8 +209,13 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
             {splitData && (
               <p className="text-xs text-muted-foreground">Total: GH₵{fare.toFixed(2)}</p>
             )}
+            {surge.is_surge && (
+              <p className="text-xs text-destructive font-medium">{surge.multiplier}x surge applied</p>
+            )}
           </div>
-          <span className="font-heading font-bold text-xl text-primary">GH₵{yourShare.toFixed ? yourShare.toFixed(2) : yourShare}</span>
+          <span className={`font-heading font-bold text-xl ${surge.is_surge ? "text-destructive" : "text-primary"}`}>
+            GH₵{yourShare.toFixed ? yourShare.toFixed(2) : yourShare}
+          </span>
         </div>
 
         <Button
@@ -199,7 +229,8 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
               destination,
               ride_type: isScheduled ? "scheduled" : "on_demand",
               scheduled_for: isScheduled ? new Date(scheduledFor).toISOString() : null,
-              split_fare: splitData || null
+              split_fare: splitData || null,
+              surge_multiplier: surge.multiplier,
             });
           }}
           className="w-full h-14 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-bold text-lg rounded-xl"
