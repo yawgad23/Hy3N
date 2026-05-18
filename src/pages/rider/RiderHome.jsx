@@ -38,13 +38,11 @@ export default function RiderHome() {
         () => {}
       );
     }
-    // Request notification permission and subscribe to push
     requestNotificationPermission().then((granted) => {
       if (granted && user?.id) {
         subscribeToPush(user.id);
       }
     });
-    // Handle "Book Again" navigation from history
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
       setDestination({ name: address, lat, lng });

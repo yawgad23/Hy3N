@@ -14,19 +14,12 @@ import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
 
-import RoleSelect from '@/pages/RoleSelect';
 import RiderHome from '@/pages/rider/RiderHome';
 import RiderHistory from '@/pages/rider/RiderHistory';
 import RiderProfile from '@/pages/rider/RiderProfile';
 import RiderSupport from '@/pages/rider/RiderSupport';
 import ScheduledTrips from '@/pages/rider/ScheduledTrips';
 import RiderWallet from '@/pages/rider/RiderWallet';
-import DriverGateway from '@/pages/driver/DriverGateway';
-import DriverEarnings from '@/pages/driver/DriverEarnings';
-import DriverHistory from '@/pages/driver/DriverHistory';
-import DriverProfile from '@/pages/driver/DriverProfile';
-import DriverSupport from '@/pages/driver/DriverSupport';
-import DriverScheduledRides from '@/pages/driver/DriverScheduledRides';
 import SOSDashboard from '@/pages/admin/SOSDashboard';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import Tasks from '@/pages/Tasks';
@@ -70,23 +63,17 @@ const AuthenticatedApp = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-            <Route path="/" element={<RoleSelect />} />
+            <Route path="/" element={<RiderHome />} />
             <Route path="/rider" element={<RiderHome />} />
             <Route path="/rider/history" element={<RiderHistory />} />
             <Route path="/rider/profile" element={<RiderProfile />} />
             <Route path="/rider/support" element={<RiderSupport />} />
             <Route path="/rider/scheduled" element={<ScheduledTrips />} />
             <Route path="/rider/wallet" element={<RiderWallet />} />
-            <Route path="/driver" element={<DriverGateway />} />
-            <Route path="/driver/earnings" element={<DriverEarnings />} />
-            <Route path="/driver/history" element={<DriverHistory />} />
-            <Route path="/driver/profile" element={<DriverProfile />} />
-            <Route path="/driver/support" element={<DriverSupport />} />
-            <Route path="/driver/scheduled" element={<DriverScheduledRides />} />
             <Route path="/admin/sos" element={<SOSDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/tasks" element={<Tasks />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
           </Route>
 
           <Route path="*" element={<PageNotFound />} />
