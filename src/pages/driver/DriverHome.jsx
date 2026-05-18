@@ -22,6 +22,8 @@ export default function DriverHome() {
   const [completedRide, setCompletedRide] = useState(null);
   const [showRating, setShowRating] = useState(false);
   const [eta, setEta] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const lastSeenRef = { current: null };
 
   useEffect(() => {
     async function load() {
@@ -44,6 +46,19 @@ export default function DriverHome() {
       );
     }
   }, []);
+
+  // Unread message counter
+  useEffect(() => {
+    if (!activeRide?.id) { setUnreadCount(0); return; }
+    const unsubscribe = base44.entities.RideMessage.subscribe((event) => {
+      if (event.type === "create" && event.data?.ride_id === activeRide.id && event.data?.sender_role === "rider") {
+        if (!showChat) setUnreadCount(prev => prev + 1);
+      }
+    });
+    return () => unsubscribe();
+  }, [activeRide?.id, showChat]);
+
+  const openChat = () => { setShowChat(true); setUnreadCount(0); };
 
   // Subscribe to rides matched to this driver by the auto-match backend service
   useEffect(() => {
@@ -270,8 +285,13 @@ export default function DriverHome() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 border-border" onClick={() => setShowChat(true)}>
+            <Button variant="outline" className="flex-1 border-border relative" onClick={openChat}>
               <MessageSquare className="w-4 h-4 mr-2" /> Chat
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </Button>
             {activeRide.status === "driver_arriving" ? (
               <Button onClick={startTrip} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">

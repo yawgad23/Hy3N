@@ -27,10 +27,24 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [showChat, setShowChat] = useState(false);
   const [showRating, setShowRating] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
   }, []);
+
+  // Unread message counter for rider
+  useEffect(() => {
+    if (!ride?.id) return;
+    const unsubscribe = base44.entities.RideMessage.subscribe((event) => {
+      if (event.type === "create" && event.data?.ride_id === ride.id && event.data?.sender_role === "driver") {
+        if (!showChat) setUnreadCount(prev => prev + 1);
+      }
+    });
+    return () => unsubscribe();
+  }, [ride?.id, showChat]);
+
+  const openChat = () => { setShowChat(true); setUnreadCount(0); };
 
   // Rider-side live driver tracking
   const driverPos = useDriverTracking({
@@ -166,8 +180,13 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
               <Button variant="outline" className="flex-1 h-12 border-border">
                 <Phone className="w-4 h-4 mr-2" /> Call
               </Button>
-              <Button variant="outline" className="flex-1 h-12 border-border" onClick={() => setShowChat(true)}>
+              <Button variant="outline" className="flex-1 h-12 border-border relative" onClick={openChat}>
                 <MessageSquare className="w-4 h-4 mr-2" /> Message
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
               </Button>
             </div>
 
