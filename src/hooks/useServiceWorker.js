@@ -2,12 +2,12 @@ export function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('/sw.js')
-      .then((registration) => {
-        console.log('Service Worker registered successfully:', registration);
+      .then((swRegistration) => {
+        console.log('Service Worker registered successfully:', swRegistration);
         
         // Check for updates periodically
         setInterval(() => {
-          registration.update();
+          swRegistration.update();
         }, 60000); // Check every minute
       })
       .catch((error) => {
