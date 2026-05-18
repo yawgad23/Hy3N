@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Power, MapPin, Navigation, Check, X, MessageSquare } from "lucide-react";
+import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
+import DemandHeatmap from "@/components/driver/DemandHeatmap";
 import SOSButton from "@/components/shared/SOSButton";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import RideChatModal from "@/components/shared/RideChatModal";
@@ -26,6 +27,7 @@ export default function DriverHome() {
   const [showRating, setShowRating] = useState(false);
   const [eta, setEta] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const lastSeenRef = { current: null };
   const { subscribeToPush } = usePushNotifications();
 
@@ -193,30 +195,50 @@ export default function DriverHome() {
         <div className="flex items-center gap-2">
           <SOSButton role="driver" rideId={activeRide?.id || null} location={location} />
           <button
-          onClick={toggleOnline}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
-            isOnline
-              ? "bg-ghana-green/20 border-ghana-green text-ghana-green"
-              : "bg-card border-border text-muted-foreground"
-          }`}
-        >
-          <Power className="w-4 h-4" />
-          <span className="text-sm font-medium">{isOnline ? "Online" : "Offline"}</span>
-        </button>
+            onClick={() => setShowHeatmap(!showHeatmap)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-full border transition-all ${
+              showHeatmap
+                ? "bg-primary/20 border-primary text-primary"
+                : "bg-card border-border text-muted-foreground"
+            }`}
+            title="Toggle demand heatmap"
+          >
+            <TrendingUp className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggleOnline}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
+              isOnline
+                ? "bg-ghana-green/20 border-ghana-green text-ghana-green"
+                : "bg-card border-border text-muted-foreground"
+            }`}
+          >
+            <Power className="w-4 h-4" />
+            <span className="text-sm font-medium">{isOnline ? "Online" : "Offline"}</span>
+          </button>
         </div>
       </div>
 
       {/* Live Map */}
       <div className="h-full">
-        <GoogleTrackingMap
-          driverPos={activeRide ? driverPos : null}
-          pickupPos={pickupPos}
-          destPos={destPos}
-          userPos={location}
-          status={activeRide?.status}
-          height="100%"
-          onEtaUpdate={setEta}
-        />
+        {showHeatmap && isOnline ? (
+          <DemandHeatmap
+            centerLat={location[0]}
+            centerLng={location[1]}
+            isOnline={isOnline}
+            radiusKm={8}
+          />
+        ) : (
+          <GoogleTrackingMap
+            driverPos={activeRide ? driverPos : null}
+            pickupPos={pickupPos}
+            destPos={destPos}
+            userPos={location}
+            status={activeRide?.status}
+            height="100%"
+            onEtaUpdate={setEta}
+          />
+        )}
       </div>
 
       {/* Offline banner */}
