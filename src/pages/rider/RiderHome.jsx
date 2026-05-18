@@ -4,6 +4,7 @@ import { Search, MapPin, Bell, CalendarClock, CheckCircle2 } from "lucide-react"
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import DestinationSearch from "@/components/rider/DestinationSearch";
@@ -11,6 +12,8 @@ import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
 import SOSButton from "@/components/shared/SOSButton";
+import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function RiderHome() {
   const navigate = useNavigate();
@@ -24,6 +27,7 @@ export default function RiderHome() {
   const [eta, setEta] = useState(null);
   const [scheduledConfirm, setScheduledConfirm] = useState(null);
   const [splitFare, setSplitFare] = useState(null);
+  const { subscribeToPush } = usePushNotifications();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -33,13 +37,60 @@ export default function RiderHome() {
         () => {}
       );
     }
+    // Request notification permission and subscribe to push
+    requestNotificationPermission().then((granted) => {
+      if (granted && user?.id) {
+        subscribeToPush(user.id);
+      }
+    });
     // Handle "Book Again" navigation from history
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
       setDestination({ name: address, lat, lng });
       window.history.replaceState({}, "");
     }
-  }, []);
+  }, [user?.id]);
+
+  // Real-time notifications for ride status changes
+  useEffect(() => {
+    if (!activeRide?.id) return;
+    
+    const unsubscribe = base44.entities.Ride.subscribe((event) => {
+      if (event.id === activeRide.id && event.type === "update") {
+        const newStatus = event.data.status;
+        const oldStatus = activeRide.status;
+        
+        // Driver arriving notification
+        if (newStatus === "driver_arriving" && oldStatus !== "driver_arriving") {
+          showNotification(
+            "Driver is Arriving!",
+            `Your driver ${event.data.driver_name || 'is on the way'} will arrive soon.`,
+            "info"
+          );
+        }
+        
+        // Driver matched notification
+        if (newStatus === "matched" && oldStatus !== "matched") {
+          showNotification(
+            "Driver Assigned!",
+            `Your driver is ${event.data.driver_name || 'on the way'}.`,
+            "success"
+          );
+        }
+        
+        // Trip completed notification
+        if (newStatus === "completed" && oldStatus !== "completed") {
+          showNotification(
+            "Trip Complete!",
+            "You've arrived at your destination.",
+            "success"
+          );
+        }
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [activeRide?.id, activeRide?.status]);
 
   const handleBookRide = async (bookingData) => {
     const isScheduled = bookingData.ride_type === "scheduled";

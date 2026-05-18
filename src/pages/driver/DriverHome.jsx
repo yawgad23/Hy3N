@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Power, MapPin, Navigation, Check, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
@@ -10,6 +11,8 @@ import SOSButton from "@/components/shared/SOSButton";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
+import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export default function DriverHome() {
   const [user, setUser] = useState(null);
@@ -24,6 +27,7 @@ export default function DriverHome() {
   const [eta, setEta] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastSeenRef = { current: null };
+  const { subscribeToPush } = usePushNotifications();
 
   useEffect(() => {
     async function load() {
@@ -39,13 +43,19 @@ export default function DriverHome() {
       }
     }
     load();
+    // Request notification permission and subscribe to push
+    requestNotificationPermission().then((granted) => {
+      if (granted && user?.id) {
+        subscribeToPush(user.id);
+      }
+    });
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setLocation([pos.coords.latitude, pos.coords.longitude]),
         () => {}
       );
     }
-  }, []);
+  }, [user?.id]);
 
   // Unread message counter
   useEffect(() => {
@@ -67,6 +77,12 @@ export default function DriverHome() {
       if (event.type === "update" && event.data?.status === "matched" && event.data?.driver_id === user.id) {
         if (!activeRide) {
           setIncomingRide(event.data);
+          // Show notification for new ride assignment
+          showNotification(
+            "New Ride Request!",
+            `Ride from ${event.data.rider_name || "a rider"} - GH₵${event.data.fare_estimate}`,
+            "info"
+          );
         }
       }
     });

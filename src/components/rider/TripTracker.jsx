@@ -3,11 +3,13 @@ import { motion } from "framer-motion";
 import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
 import CardPaymentModal from "@/components/shared/CardPaymentModal";
 import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
+import { showNotification } from "@/lib/notificationService";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
@@ -69,15 +71,46 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
     if (!ride?.id) return;
     const unsubscribe = base44.entities.Ride.subscribe((event) => {
       if (event.id === ride.id && (event.type === "update" || event.type === "create")) {
+        const oldStatus = currentRide?.status;
+        const newStatus = event.data.status;
+        
         setCurrentRide(event.data);
+        
         // Auto-detect wallet payment completion
         if (event.data?.payment_status === "paid" && event.data?.payment_method === "wallet") {
           setPaid(true);
         }
+        
+        // Driver arriving notification
+        if (newStatus === "driver_arriving" && oldStatus !== "driver_arriving") {
+          showNotification(
+            "Driver is Arriving!",
+            "Your driver will arrive soon. Be ready!",
+            "info"
+          );
+        }
+        
+        // Trip started notification
+        if (newStatus === "in_progress" && oldStatus !== "in_progress") {
+          showNotification(
+            "Trip Started",
+            "You're on your way to your destination.",
+            "success"
+          );
+        }
+        
+        // Trip completed notification
+        if (newStatus === "completed" && oldStatus !== "completed") {
+          showNotification(
+            "Trip Complete!",
+            "You've arrived safely. Don't forget to rate your driver!",
+            "success"
+          );
+        }
       }
     });
     return unsubscribe;
-  }, [ride?.id]);
+  }, [ride?.id, currentRide?.status]);
 
   // Process wallet payment on mount if applicable
   useEffect(() => {
