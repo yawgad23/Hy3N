@@ -2,24 +2,24 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Wallet, TrendingUp, ArrowDownToLine, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
+import MoMoWithdrawModal from "@/components/shared/MoMoWithdrawModal";
 
 export default function DriverEarnings() {
   const [earnings, setEarnings] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [driver, setDriver] = useState(null);
   const [showWithdraw, setShowWithdraw] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawPhone, setWithdrawPhone] = useState("");
   const [tab, setTab] = useState("earnings");
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
       if (user) {
+        setUserId(user.id);
         const drivers = await base44.entities.DriverProfile.filter({ user_id: user.id });
         if (drivers.length > 0) setDriver(drivers[0]);
         const earns = await base44.entities.Earning.filter({ driver_id: user.id }, "-created_date", 50);
@@ -37,20 +37,12 @@ export default function DriverEarnings() {
 
   const totalEarned = earnings.reduce((sum, e) => sum + (e.net_amount || 0), 0);
 
-  const handleWithdraw = async () => {
-    if (!withdrawAmount || !withdrawPhone) return;
+  const handleWithdrawSuccess = async () => {
     const user = await base44.auth.me();
-    await base44.entities.Withdrawal.create({
-      driver_id: user.id,
-      amount: parseFloat(withdrawAmount),
-      phone_number: withdrawPhone,
-      method: "mobile_money"
-    });
-    setShowWithdraw(false);
-    setWithdrawAmount("");
-    setWithdrawPhone("");
-    const wds = await base44.entities.Withdrawal.filter({ driver_id: user.id }, "-created_date", 20);
-    setWithdrawals(wds);
+    if (user) {
+      const wds = await base44.entities.Withdrawal.filter({ driver_id: user.id }, "-created_date", 20);
+      setWithdrawals(wds);
+    }
   };
 
   return (
@@ -76,39 +68,21 @@ export default function DriverEarnings() {
 
       {/* Withdraw */}
       <div className="px-4 mb-4">
-        {showWithdraw ? (
-          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <Input
-              type="number"
-              placeholder="Amount (GH₵)"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="bg-secondary border-none"
-            />
-            <Input
-              placeholder="Mobile Money Number"
-              value={withdrawPhone}
-              onChange={(e) => setWithdrawPhone(e.target.value)}
-              className="bg-secondary border-none"
-            />
-            <div className="flex gap-2">
-              <Button onClick={handleWithdraw} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
-                Withdraw
-              </Button>
-              <Button onClick={() => setShowWithdraw(false)} variant="outline" className="flex-1">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <Button
-            onClick={() => setShowWithdraw(true)}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <ArrowDownToLine className="w-4 h-4 mr-2" /> Withdraw Funds
-          </Button>
-        )}
+        <Button
+          onClick={() => setShowWithdraw(true)}
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
+          <ArrowDownToLine className="w-4 h-4 mr-2" /> Withdraw Funds via MoMo
+        </Button>
       </div>
+
+      <MoMoWithdrawModal
+        isOpen={showWithdraw}
+        onClose={() => setShowWithdraw(false)}
+        availableBalance={totalAvailable}
+        driverId={userId}
+        onSuccess={handleWithdrawSuccess}
+      />
 
       {/* Tabs */}
       <div className="px-4 flex gap-2 mb-4">

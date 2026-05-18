@@ -131,22 +131,46 @@ export default function TripTracker({ ride, onClose }) {
             <p className="text-muted-foreground text-sm mt-1">
               Total: GH₵{currentRide.final_fare || currentRide.fare_estimate}
             </p>
-            <div className="flex justify-center gap-2 mt-4">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button key={star} onClick={() => setRating(star)}>
-                  <Star className={`w-8 h-8 ${star <= rating ? "text-primary fill-primary" : "text-muted-foreground"}`} />
-                </button>
-              ))}
-            </div>
-            <Button
-              onClick={handleRate}
-              className="mt-4 bg-ghana-green hover:bg-ghana-green/90 text-white"
-              disabled={rating === 0}
-            >
-              Submit Rating
-            </Button>
+
+            {!paid && currentRide.payment_method === "mobile_money" && (
+              <Button
+                onClick={() => setShowPayment(true)}
+                className="mt-4 w-full bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-semibold"
+              >
+                Pay GH₵{currentRide.final_fare || currentRide.fare_estimate} via MoMo
+              </Button>
+            )}
+
+            {(paid || currentRide.payment_method !== "mobile_money") && (
+              <>
+                <div className="flex justify-center gap-2 mt-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button key={star} onClick={() => setRating(star)}>
+                      <Star className={`w-8 h-8 ${star <= rating ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  onClick={handleRate}
+                  className="mt-4 bg-ghana-green hover:bg-ghana-green/90 text-white"
+                  disabled={rating === 0}
+                >
+                  Submit Rating
+                </Button>
+              </>
+            )}
           </div>
         )}
+
+        <MoMoPaymentModal
+          isOpen={showPayment}
+          onClose={() => setShowPayment(false)}
+          amount={currentRide?.final_fare || currentRide?.fare_estimate || 0}
+          rideId={currentRide?.id}
+          riderId={currentRide?.rider_id}
+          driverId={currentRide?.driver_id}
+          onSuccess={() => setPaid(true)}
+        />
       </div>
     </motion.div>
   );
