@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Clock, User, HelpCircle, Wallet } from "lucide-react";
+import { Home, Clock, User, HelpCircle, Wallet, CalendarClock } from "lucide-react";
 
 const riderTabs = [
   { path: "/rider", icon: Home, label: "Home" },
+  { path: "/rider/scheduled", icon: CalendarClock, label: "Scheduled" },
   { path: "/rider/history", icon: Clock, label: "History" },
   { path: "/rider/profile", icon: User, label: "Profile" },
-  { path: "/rider/support", icon: HelpCircle, label: "Support" }
 ];
 
 const driverTabs = [

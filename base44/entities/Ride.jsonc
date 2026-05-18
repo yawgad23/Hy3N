@@ -14,6 +14,7 @@
       "type": "string",
       "enum": [
         "requested",
+        "scheduled",
         "matched",
         "driver_arriving",
         "in_progress",
@@ -21,6 +22,18 @@
         "cancelled"
       ],
       "default": "requested"
+    },
+    "ride_type": {
+      "type": "string",
+      "enum": [
+        "on_demand",
+        "scheduled"
+      ],
+      "default": "on_demand"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "description": "ISO datetime string for scheduled pickup"
     },
     "category": {
       "type": "string",

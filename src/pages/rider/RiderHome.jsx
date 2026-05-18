@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { Search, MapPin, Bell } from "lucide-react";
+import { Search, MapPin, Bell, CalendarClock, CheckCircle2 } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import Logo from "@/components/shared/Logo";
@@ -19,12 +21,14 @@ function MapCenterUpdater({ center }) {
 }
 
 export default function RiderHome() {
+  const navigate = useNavigate();
   const [location, setLocation] = useState([5.6037, -0.1870]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [destination, setDestination] = useState(null);
   const [activeRide, setActiveRide] = useState(null);
   const [user, setUser] = useState(null);
   const [driverPos, setDriverPos] = useState(null);
+  const [scheduledConfirm, setScheduledConfirm] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -37,6 +41,7 @@ export default function RiderHome() {
   }, []);
 
   const handleBookRide = async (bookingData) => {
+    const isScheduled = bookingData.ride_type === "scheduled";
     const ride = await base44.entities.Ride.create({
       rider_id: user?.id || "anonymous",
       rider_name: user?.full_name || "Rider",
@@ -50,10 +55,16 @@ export default function RiderHome() {
       fare_estimate: bookingData.fare_estimate,
       payment_method: bookingData.payment_method,
       distance_km: bookingData.distance_km,
-      status: "requested"
+      ride_type: bookingData.ride_type || "on_demand",
+      scheduled_for: bookingData.scheduled_for || null,
+      status: isScheduled ? "scheduled" : "requested"
     });
-    setActiveRide(ride);
     setDestination(null);
+    if (!isScheduled) {
+      setActiveRide(ride);
+    } else {
+      setScheduledConfirm(ride);
+    }
   };
 
   return (
@@ -142,6 +153,38 @@ export default function RiderHome() {
           />
         )}
       </AnimatePresence>
+
+      {/* Scheduled Confirmation Toast */}
+      {scheduledConfirm && (
+        <div className="absolute top-20 left-4 right-4 z-50">
+          <div className="bg-card border border-ghana-green/40 rounded-2xl p-4 shadow-xl flex items-start gap-3">
+            <CheckCircle2 className="w-6 h-6 text-ghana-green flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-heading font-bold text-sm">Trip Scheduled!</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {scheduledConfirm.scheduled_for
+                  ? format(parseISO(scheduledConfirm.scheduled_for), "EEE, MMM d 'at' h:mm a")
+                  : ""}
+              </p>
+              <p className="text-xs text-muted-foreground truncate mt-0.5">{scheduledConfirm.destination_address}</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate("/rider/scheduled")}
+                className="text-xs text-primary font-semibold"
+              >
+                View
+              </button>
+              <button
+                onClick={() => setScheduledConfirm(null)}
+                className="text-xs text-muted-foreground"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!searchOpen && !destination && !activeRide && <BottomNav role="rider" />}
     </div>
