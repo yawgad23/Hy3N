@@ -1,6 +1,6 @@
 import { DragDropContext } from "@hello-pangea/dnd";
 import { motion } from "framer-motion";
-import { LayoutGrid, List, Plus, Search, X } from "lucide-react";
+import { LayoutGrid, List, Plus, Search, X, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,13 +10,14 @@ import KanbanColumn from "./KanbanColumn";
 import TaskForm from "./TaskForm";
 import FilterSidebar from "./FilterSidebar";
 import UpcomingDeadlines from "./UpcomingDeadlines";
+import TaskDashboard from "./TaskDashboard";
 import { useState } from "react";
 
 export default function KanbanBoard() {
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [viewMode, setViewMode] = useState("kanban"); // 'kanban' or 'list'
+  const [viewMode, setViewMode] = useState("kanban"); // 'kanban', 'list', or 'dashboard'
   const [searchQuery, setSearchQuery] = useState("");
 
   const queryClient = useQueryClient();
@@ -157,13 +158,13 @@ export default function KanbanBoard() {
                   <span className="hidden sm:inline">Board</span>
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
+                  variant={viewMode === "dashboard" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setViewMode("list")}
+                  onClick={() => setViewMode("dashboard")}
                   className="gap-2"
                 >
-                  <List className="w-4 h-4" />
-                  <span className="hidden sm:inline">List</span>
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
                 </Button>
                 <Button
                   onClick={() => {
@@ -247,8 +248,9 @@ export default function KanbanBoard() {
                 onDelete={handleDelete}
               />
             </div>
+          ) : viewMode === "dashboard" ? (
+            <TaskDashboard />
           ) : (
-            // List View (existing implementation would go here)
             <div className="text-center py-16">
               <p className="text-muted-foreground">List view coming soon</p>
             </div>
