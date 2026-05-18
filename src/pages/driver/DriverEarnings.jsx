@@ -18,7 +18,9 @@ import {
   Line,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  AreaChart,
+  Area
 } from "recharts";
 
 const COLORS = ["#D4AF37", "#006B3F", "#CE1126", "#0A0A0A", "#94a3b8"];
@@ -110,9 +112,13 @@ export default function DriverEarnings() {
           const eDate = new Date(e.created_date);
           return eDate.getHours() === hour && eDate.toDateString() === new Date().toDateString();
         });
+        const gross = hourEarnings.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const net = hourEarnings.reduce((sum, e) => sum + (e.net_amount || 0), 0);
         return {
           name: `${hour}:00`,
-          earnings: hourEarnings.reduce((sum, e) => sum + (e.net_amount || 0), 0)
+          gross,
+          net,
+          commission: gross - net
         };
       });
     } else if (selectedPeriod === "weekly") {
@@ -125,9 +131,13 @@ export default function DriverEarnings() {
           const eDate = new Date(e.created_date);
           return eDate.toDateString() === dayDate.toDateString();
         });
+        const gross = dayEarnings.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const net = dayEarnings.reduce((sum, e) => sum + (e.net_amount || 0), 0);
         return {
           name: day,
-          earnings: dayEarnings.reduce((sum, e) => sum + (e.net_amount || 0), 0)
+          gross,
+          net,
+          commission: gross - net
         };
       });
     } else {
@@ -139,13 +149,23 @@ export default function DriverEarnings() {
                  eDate.getMonth() === new Date().getMonth() && 
                  eDate.getFullYear() === new Date().getFullYear();
         });
+        const gross = dayEarnings.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const net = dayEarnings.reduce((sum, e) => sum + (e.net_amount || 0), 0);
         return {
           name: `Day ${day}`,
-          earnings: dayEarnings.reduce((sum, e) => sum + (e.net_amount || 0), 0)
+          gross,
+          net,
+          commission: gross - net
         };
       });
     }
   };
+
+  // Commission breakdown data
+  const commissionData = [
+    { name: "Driver Earnings", value: metrics.netEarnings, color: "#006B3F" },
+    { name: "Platform Commission", value: metrics.totalCommission, color: "#CE1126" }
+  ];
 
   const metrics = calculateMetrics();
   const chartData = getChartData();
@@ -250,7 +270,7 @@ export default function DriverEarnings() {
         </motion.div>
       </div>
 
-      {/* Earnings Chart */}
+      {/* Earnings Trend Chart */}
       <div className="px-4 mb-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -260,11 +280,17 @@ export default function DriverEarnings() {
         >
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-primary" />
-            <h3 className="font-heading font-semibold text-sm">Earnings Trend</h3>
+            <h3 className="font-heading font-semibold text-sm">Earnings Trend (Net)</h3>
           </div>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorNet" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                 <XAxis 
                   dataKey="name" 
@@ -284,11 +310,109 @@ export default function DriverEarnings() {
                     border: "1px solid #333",
                     borderRadius: "8px"
                   }}
-                  formatter={(value) => [`GH₵${value.toFixed(2)}`, "Earnings"]}
+                  formatter={(value) => [`GH₵${value.toFixed(2)}`, "Net Earnings"]}
                 />
-                <Bar dataKey="earnings" fill="#D4AF37" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <Area type="monotone" dataKey="net" stroke="#D4AF37" fillOpacity={1} fill="url(#colorNet)" />
+              </AreaChart>
             </ResponsiveContainer>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Commission Breakdown */}
+      <div className="px-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-card border border-border rounded-2xl p-4"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <DollarSign className="w-4 h-4 text-primary" />
+            <h3 className="font-heading font-semibold text-sm">Commission Breakdown</h3>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="h-40 w-40 flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={commissionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={60}
+                    paddingAngle={5}
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: GH₵${value.toFixed(2)}`}
+                    labelLine={false}
+                  >
+                    {commissionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1a1a1a",
+                      border: "1px solid #333",
+                      borderRadius: "8px"
+                    }}
+                    formatter={(value) => `GH₵${value.toFixed(2)}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex-1 space-y-3">
+              {commissionData.map((item) => (
+                <div key={item.name} className="flex items-center gap-3">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {((item.value / (metrics.netEarnings + metrics.totalCommission)) * 100).toFixed(1)}% of total
+                    </p>
+                  </div>
+                  <p className="font-heading font-bold text-sm">GH₵{item.value.toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Performance Stats */}
+      <div className="px-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-card border border-border rounded-2xl p-4"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Car className="w-4 h-4 text-primary" />
+            <h3 className="font-heading font-semibold text-sm">Performance Metrics</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-secondary rounded-xl p-3">
+              <p className="text-xs text-muted-foreground mb-1">Avg per Trip</p>
+              <p className="font-heading font-bold text-lg text-ghana-green">GH₵{metrics.averagePerTrip.toFixed(2)}</p>
+            </div>
+            <div className="bg-secondary rounded-xl p-3">
+              <p className="text-xs text-muted-foreground mb-1">Commission Rate</p>
+              <p className="font-heading font-bold text-lg text-destructive">
+                {metrics.totalEarnings > 0 ? ((metrics.totalCommission / metrics.totalEarnings) * 100).toFixed(1) : 0}%
+              </p>
+            </div>
+            <div className="bg-secondary rounded-xl p-3">
+              <p className="text-xs text-muted-foreground mb-1">Total Gross</p>
+              <p className="font-heading font-bold text-lg">GH₵{metrics.totalEarnings.toFixed(2)}</p>
+            </div>
+            <div className="bg-secondary rounded-xl p-3">
+              <p className="text-xs text-muted-foreground mb-1">Total Commission</p>
+              <p className="font-heading font-bold text-lg text-destructive">GH₵{metrics.totalCommission.toFixed(2)}</p>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -298,7 +422,7 @@ export default function DriverEarnings() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.6 }}
           className="bg-card border border-border rounded-2xl p-4"
         >
           <div className="flex items-center gap-2 mb-4">
