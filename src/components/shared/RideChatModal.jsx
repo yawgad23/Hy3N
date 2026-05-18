@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, MapPin, Clock, ChevronDown } from "lucide-react";
+import { X, Send, MapPin, Clock, ChevronDown, Check, CheckCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
+import { showNotification } from "@/lib/notificationService";
 
 const QUICK_REPLIES = [
   { icon: MapPin, text: "I'm at the pickup point" },
@@ -15,10 +16,14 @@ const QUICK_REPLIES = [
   { icon: Clock, text: "On my way, 5 mins" },
 ];
 
-function ChatBubble({ msg, isMine }) {
+function ChatBubble({ msg, isMine, currentRole }) {
   const time = msg.created_date
     ? format(new Date(msg.created_date), "h:mm a")
     : "";
+
+  // Check read status
+  const isRead = currentRole === 'rider' ? msg.read_by_driver : msg.read_by_rider;
+  const readTime = currentRole === 'rider' ? msg.read_at_driver : msg.read_at_rider;
 
   return (
     <div className={`flex ${isMine ? "justify-end" : "justify-start"} group`}>
@@ -37,7 +42,21 @@ function ChatBubble({ msg, isMine }) {
         >
           <p className="text-sm leading-relaxed">{msg.message}</p>
         </div>
-        <span className="text-[10px] text-muted-foreground mt-1 px-1">{time}</span>
+        <div className="flex items-center gap-1.5 mt-1 px-1">
+          <span className="text-[10px] text-muted-foreground">{time}</span>
+          {isMine && (
+            <span className="text-[10px] flex items-center gap-0.5">
+              {isRead ? (
+                <>
+                  <CheckCheck className="w-3 h-3 text-primary" />
+                  <span className="text-primary font-medium">Read</span>
+                </>
+              ) : (
+                <Check className="w-3 h-3 text-muted-foreground" />
+              )}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -48,6 +67,7 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
+  const [lastReadIndex, setLastReadIndex] = useState(-1);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -55,6 +75,7 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
     if (!isOpen || !rideId) return;
     setMessages([]);
     setShowQuickReplies(true);
+    setLastReadIndex(-1);
 
     const load = async () => {
       const msgs = await base44.entities.RideMessage.filter({ ride_id: rideId }, "created_date", 100);
@@ -64,15 +85,46 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
 
     const unsubscribe = base44.entities.RideMessage.subscribe((event) => {
       if (event.data?.ride_id !== rideId) return;
-      if (event.type === "create") setMessages(prev => [...prev, event.data]);
+      if (event.type === "create") {
+        const newMsg = event.data;
+        setMessages(prev => {
+          // Show notification if message is from other party
+          if (newMsg.sender_id !== currentUserId) {
+            showNotification(
+              `New message from ${newMsg.sender_name}`,
+              newMsg.message,
+              "info"
+            );
+          }
+          return [...prev, newMsg];
+        });
+      }
     });
 
     return () => unsubscribe();
-  }, [isOpen, rideId]);
+  }, [isOpen, rideId, currentUserId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    
+    // Mark messages as read when viewing
+    if (messages.length > 0 && lastReadIndex !== messages.length - 1) {
+      const now = new Date().toISOString();
+      const updateField = currentUserRole === 'rider' ? 'read_by_rider' : 'read_by_driver';
+      const timeField = currentUserRole === 'rider' ? 'read_at_rider' : 'read_at_driver';
+      
+      // Mark all unread messages from other party as read
+      messages.forEach((msg) => {
+        if (msg.sender_id !== currentUserId && !msg[updateField]) {
+          base44.entities.RideMessage.update(msg.id, {
+            [updateField]: true,
+            [timeField]: now
+          });
+        }
+      });
+      setLastReadIndex(messages.length - 1);
+    }
+  }, [messages, currentUserRole, currentUserId, lastReadIndex]);
 
   const sendMessage = async (messageText) => {
     const trimmed = messageText.trim();
@@ -149,6 +201,7 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
                   key={msg.id}
                   msg={msg}
                   isMine={msg.sender_id === currentUserId}
+                  currentRole={currentUserRole}
                 />
               ))}
               <div ref={bottomRef} />

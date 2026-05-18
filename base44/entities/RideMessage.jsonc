@@ -20,6 +20,20 @@
     },
     "message": {
       "type": "string"
+    },
+    "read_by_rider": {
+      "type": "boolean",
+      "default": false
+    },
+    "read_by_driver": {
+      "type": "boolean",
+      "default": false
+    },
+    "read_at_rider": {
+      "type": "string"
+    },
+    "read_at_driver": {
+      "type": "string"
     }
   },
   "required": [

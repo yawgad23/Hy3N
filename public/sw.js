@@ -1,64 +1,65 @@
-// Service Worker for HY3N Push Notifications
-const NOTIFICATION_ICON = "/logo.png";
+// Service Worker for Push Notifications
+const VAPID_PUBLIC_KEY = "YOUR_VAPID_PUBLIC_KEY"; // Replace with actual key from dashboard
 
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
-self.addEventListener("push", (event) => {
+self.addEventListener('push', function(event) {
   let data = {};
   
   if (event.data) {
     try {
       data = event.data.json();
     } catch (e) {
-      data = { title: "HY3N", body: event.data.text() };
+      data = { title: 'New Message', body: event.data.text() };
     }
   }
-  
-  const title = data.title || "HY3N Ride";
+
+  const title = data.title || 'HY3N Ride';
   const options = {
-    body: data.body || "You have a new notification",
-    icon: NOTIFICATION_ICON,
-    badge: NOTIFICATION_ICON,
+    body: data.body || 'You have a new message',
+    icon: '/logo.png',
+    badge: '/logo.png',
     vibrate: [200, 100, 200],
     data: {
-      url: data.url || "/rider"
+      rideId: data.rideId,
+      url: data.url || '/rider'
     },
     actions: [
       {
-        action: "view",
-        title: "View"
+        action: 'open',
+        title: 'Open Chat'
+      },
+      {
+        action: 'close',
+        title: 'Dismiss'
       }
-    ],
-    requireInteraction: false,
-    tag: data.tag || "hy3n-notification"
+    ]
   };
-  
+
   event.waitUntil(
     self.registration.showNotification(title, options)
   );
 });
 
-self.addEventListener("notificationclick", (event) => {
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-  
-  const urlToOpen = event.notification.data?.url || "/rider";
-  
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes(urlToOpen) && "focus" in client) {
-          return client.focus();
+
+  if (event.action === 'open' || !event.action) {
+    const urlToOpen = event.notification.data?.url || '/rider';
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then(function(clientList) {
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          if (client.url.includes(urlToOpen) && 'focus' in client) {
+            return client.focus();
+          }
         }
-      }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(urlToOpen);
-      }
-    })
-  );
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+    );
+  }
+});
+
+self.addEventListener('activate', function(event) {
+  event.waitUntil(self.clients.claim());
 });

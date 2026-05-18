@@ -61,3 +61,14 @@ export const showNotification = (title, body, type = "info") => {
   showInAppNotification(type, body);
   playNotificationSound();
 };
+
+// Send push notification via backend (for cross-device notifications)
+export const sendPushNotification = async (recipientId, title, body, rideId = null) => {
+  try {
+    // This would call a backend function that sends push via Firebase/OneSignal/etc.
+    // For now, we rely on the automation that triggers on message creation
+    console.log('Push notification queued for:', recipientId, title, body);
+  } catch (error) {
+    console.error('Failed to send push notification:', error);
+  }
+};
