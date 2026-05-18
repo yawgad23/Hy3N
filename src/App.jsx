@@ -23,6 +23,7 @@ import DriverEarnings from '@/pages/driver/DriverEarnings';
 import DriverHistory from '@/pages/driver/DriverHistory';
 import DriverProfile from '@/pages/driver/DriverProfile';
 import DriverSupport from '@/pages/driver/DriverSupport';
+import SOSDashboard from '@/pages/admin/SOSDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -73,6 +74,7 @@ const AuthenticatedApp = () => {
             <Route path="/driver/history" element={<DriverHistory />} />
             <Route path="/driver/profile" element={<DriverProfile />} />
             <Route path="/driver/support" element={<DriverSupport />} />
+            <Route path="/admin/sos" element={<SOSDashboard />} />
           </Route>
 
           <Route path="*" element={<PageNotFound />} />

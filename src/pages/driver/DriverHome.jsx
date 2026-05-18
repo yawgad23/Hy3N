@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
+import SOSButton from "@/components/shared/SOSButton";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
@@ -148,7 +149,9 @@ export default function DriverHome() {
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between">
         <Logo size="sm" />
-        <button
+        <div className="flex items-center gap-2">
+          <SOSButton role="driver" rideId={activeRide?.id || null} location={location} />
+          <button
           onClick={toggleOnline}
           className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
             isOnline
@@ -159,6 +162,7 @@ export default function DriverHome() {
           <Power className="w-4 h-4" />
           <span className="text-sm font-medium">{isOnline ? "Online" : "Offline"}</span>
         </button>
+        </div>
       </div>
 
       {/* Live Map */}

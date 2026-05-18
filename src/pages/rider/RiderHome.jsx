@@ -10,6 +10,7 @@ import DestinationSearch from "@/components/rider/DestinationSearch";
 import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
+import SOSButton from "@/components/shared/SOSButton";
 
 export default function RiderHome() {
   const navigate = useNavigate();
@@ -66,9 +67,12 @@ export default function RiderHome() {
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between">
         <Logo size="sm" />
-        <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center">
-          <Bell className="w-5 h-5 text-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          <SOSButton role="rider" rideId={activeRide?.id || null} location={location} />
+          <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center">
+            <Bell className="w-5 h-5 text-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Map */}

@@ -1,0 +1,51 @@
+{
+  "name": "SosIncident",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "user_role": {
+      "type": "string",
+      "enum": [
+        "rider",
+        "driver"
+      ]
+    },
+    "ride_id": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "address": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "resolved",
+        "false_alarm"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "sms_sent": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "user_role"
+  ]
+}
