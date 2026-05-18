@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
-import LiveTrackingMap from "@/components/shared/LiveTrackingMap";
+import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
@@ -20,6 +20,7 @@ export default function DriverHome() {
   const [showChat, setShowChat] = useState(false);
   const [completedRide, setCompletedRide] = useState(null);
   const [showRating, setShowRating] = useState(false);
+  const [eta, setEta] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -162,13 +163,14 @@ export default function DriverHome() {
 
       {/* Live Map */}
       <div className="h-full">
-        <LiveTrackingMap
+        <GoogleTrackingMap
           driverPos={activeRide ? driverPos : null}
           pickupPos={pickupPos}
           destPos={destPos}
           userPos={location}
           status={activeRide?.status}
           height="100%"
+          onEtaUpdate={setEta}
         />
       </div>
 
@@ -230,14 +232,19 @@ export default function DriverHome() {
       {activeRide && (
         <div className="absolute bottom-20 left-4 right-4 z-30 bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs text-ghana-green font-medium uppercase">
-                {activeRide.status === "matched" ? "Navigate to Pickup" : "Trip in Progress"}
-              </p>
-              <h3 className="font-heading font-bold">{activeRide.rider_name}</h3>
+              <div>
+                <p className="text-xs text-ghana-green font-medium uppercase">
+                  {activeRide.status === "matched" ? "Navigate to Pickup" : "Trip in Progress"}
+                </p>
+                <h3 className="font-heading font-bold">{activeRide.rider_name}</h3>
+              </div>
+              <div className="text-right">
+                <p className="font-heading font-bold text-primary">GH₵{activeRide.fare_estimate}</p>
+                {eta && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{eta} min ETA</p>
+                )}
+              </div>
             </div>
-            <p className="font-heading font-bold text-primary">GH₵{activeRide.fare_estimate}</p>
-          </div>
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2">
               <Navigation className="w-4 h-4 text-ghana-green" />

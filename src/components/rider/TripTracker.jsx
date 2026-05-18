@@ -17,20 +17,9 @@ const STATUS_LABELS = {
   cancelled: "Trip cancelled"
 };
 
-function calcEta(driverPos, targetPos) {
-  if (!driverPos || !targetPos) return null;
-  const [lat1, lng1] = driverPos;
-  const [lat2, lng2] = targetPos;
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const minutes = Math.max(1, Math.round(distKm / 0.5)); // ~30 km/h city speed
-  return minutes;
-}
 
-export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
+
+export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta }) {
   const [currentRide, setCurrentRide] = useState(ride);
   const [rating, setRating] = useState(0);
   const [showPayment, setShowPayment] = useState(false);
@@ -55,11 +44,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
     if (driverPos && onDriverPosUpdate) onDriverPosUpdate(driverPos);
   }, [driverPos]);
 
-  const targetPos = currentRide?.status === "in_progress"
-    ? (currentRide.destination_lat ? [currentRide.destination_lat, currentRide.destination_lng] : null)
-    : (currentRide?.pickup_lat ? [currentRide.pickup_lat, currentRide.pickup_lng] : null);
 
-  const eta = calcEta(driverPos, targetPos);
 
   useEffect(() => {
     if (!ride?.id) return;

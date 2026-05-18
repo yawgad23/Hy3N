@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { Search, MapPin, Bell, CalendarClock, CheckCircle2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
@@ -10,15 +9,7 @@ import BottomNav from "@/components/shared/BottomNav";
 import DestinationSearch from "@/components/rider/DestinationSearch";
 import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
-import LiveTrackingMap from "@/components/shared/LiveTrackingMap";
-
-function MapCenterUpdater({ center }) {
-  const map = useMap();
-  useEffect(() => {
-    if (center) map.setView(center, 15);
-  }, [center, map]);
-  return null;
-}
+import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
 
 export default function RiderHome() {
   const navigate = useNavigate();
@@ -28,6 +19,7 @@ export default function RiderHome() {
   const [activeRide, setActiveRide] = useState(null);
   const [user, setUser] = useState(null);
   const [driverPos, setDriverPos] = useState(null);
+  const [eta, setEta] = useState(null);
   const [scheduledConfirm, setScheduledConfirm] = useState(null);
 
   useEffect(() => {
@@ -79,30 +71,15 @@ export default function RiderHome() {
 
       {/* Map */}
       <div className="h-full">
-        {activeRide ? (
-          <LiveTrackingMap
-            driverPos={driverPos}
-            pickupPos={activeRide.pickup_lat ? [activeRide.pickup_lat, activeRide.pickup_lng] : null}
-            destPos={activeRide.destination_lat ? [activeRide.destination_lat, activeRide.destination_lng] : null}
-            userPos={location}
-            status={activeRide.status}
-            height="100%"
-          />
-        ) : (
-          <MapContainer
-            center={location}
-            zoom={15}
-            style={{ height: "100%", width: "100%" }}
-            zoomControl={false}
-          >
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-            />
-            <Marker position={location} />
-            <MapCenterUpdater center={location} />
-          </MapContainer>
-        )}
+        <GoogleTrackingMap
+          driverPos={activeRide ? driverPos : null}
+          pickupPos={activeRide?.pickup_lat ? [activeRide.pickup_lat, activeRide.pickup_lng] : null}
+          destPos={activeRide?.destination_lat ? [activeRide.destination_lat, activeRide.destination_lng] : null}
+          userPos={location}
+          status={activeRide?.status}
+          height="100%"
+          onEtaUpdate={setEta}
+        />
       </div>
 
       {/* Where To? Button */}
@@ -149,7 +126,8 @@ export default function RiderHome() {
             ride={activeRide}
             userPos={location}
             onDriverPosUpdate={setDriverPos}
-            onClose={() => { setActiveRide(null); setDriverPos(null); }}
+            onClose={() => { setActiveRide(null); setDriverPos(null); setEta(null); }}
+            eta={eta}
           />
         )}
       </AnimatePresence>
