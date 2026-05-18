@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 
 export default function RiderProfile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -121,6 +123,14 @@ export default function RiderProfile() {
             >
               <User className="w-5 h-5 text-muted-foreground" />
               <span className="flex-1 text-left text-sm">Edit Profile</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => navigate("/rider/wallet")}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              <Wallet className="w-5 h-5 text-primary" />
+              <span className="flex-1 text-left text-sm font-medium">My Wallet</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
             <div className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl">

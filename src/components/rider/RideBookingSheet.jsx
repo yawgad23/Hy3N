@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Banknote, CreditCard, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp } from "lucide-react";
+import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
@@ -11,7 +11,8 @@ import { base44 } from "@/api/base44Client";
 const paymentIcons = {
   Smartphone: Smartphone,
   Banknote: Banknote,
-  CreditCard: CreditCard
+  CreditCard: CreditCard,
+  Wallet: Wallet
 };
 
 // Min scheduled time: 30 min from now
@@ -29,6 +30,15 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
   const [distance] = useState(() => 5 + Math.random() * 15);
   const [surge, setSurge] = useState({ multiplier: 1.0, is_surge: false });
   const [surgeLoading, setSurgeLoading] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  useEffect(() => {
+    base44.auth.me().then(async (me) => {
+      if (!me) return;
+      const wallets = await base44.entities.Wallet.filter({ user_id: me.id });
+      setWalletBalance(wallets[0]?.balance || 0);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!pickupLat || !pickupLng) return;
@@ -107,25 +117,36 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
 
         <div className="mb-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Payment Method</p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {PAYMENT_METHODS.map((pm) => {
               const Icon = paymentIcons[pm.icon];
+              const isSelected = selectedPayment === pm.id;
+              const isWallet = pm.id === "wallet";
+              const insufficient = isWallet && yourShare > walletBalance;
               return (
                 <button
                   key={pm.id}
                   onClick={() => setSelectedPayment(pm.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                    selectedPayment === pm.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border bg-secondary"
-                  }`}
+                  className={`flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all min-w-[60px] ${
+                    isSelected ? "border-primary bg-primary/10" : "border-border bg-secondary"
+                  } ${insufficient && isSelected ? "border-destructive/60" : ""}`}
                 >
-                  <Icon className={`w-4 h-4 ${selectedPayment === pm.id ? "text-primary" : "text-muted-foreground"}`} />
+                  <Icon className={`w-4 h-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                   <span className="text-xs font-medium">{pm.name}</span>
+                  {isWallet && (
+                    <span className={`text-[10px] font-semibold ${insufficient ? "text-destructive" : "text-ghana-green"}`}>
+                      GH₵{walletBalance.toFixed(2)}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
+          {selectedPayment === "wallet" && yourShare > walletBalance && (
+            <p className="text-xs text-destructive mt-2">
+              Insufficient wallet balance. <span className="underline cursor-pointer" onClick={() => window.location.href = "/rider/wallet"}>Top up →</span>
+            </p>
+          )}
         </div>
 
         {/* Split Fare */}
@@ -234,7 +255,7 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
             });
           }}
           className="w-full h-14 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-bold text-lg rounded-xl"
-          disabled={isScheduled && !scheduledFor}
+          disabled={(isScheduled && !scheduledFor) || (selectedPayment === "wallet" && yourShare > walletBalance)}
         >
           {isScheduled ? <CalendarClock className="w-5 h-5 mr-2" /> : <Navigation className="w-5 h-5 mr-2" />}
           {isScheduled ? "Schedule Trip" : "Request HY3N"}

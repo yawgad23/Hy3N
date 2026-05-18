@@ -49,7 +49,8 @@ export const RIDE_CATEGORIES = [
 ];
 
 export const PAYMENT_METHODS = [
-  { id: "mobile_money", name: "Mobile Money", icon: "Smartphone" },
+  { id: "wallet", name: "Wallet", icon: "Wallet" },
+  { id: "mobile_money", name: "MoMo", icon: "Smartphone" },
   { id: "cash", name: "Cash", icon: "Banknote" },
   { id: "card", name: "Card", icon: "CreditCard" }
 ];

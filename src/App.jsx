@@ -18,6 +18,7 @@ import RiderHistory from '@/pages/rider/RiderHistory';
 import RiderProfile from '@/pages/rider/RiderProfile';
 import RiderSupport from '@/pages/rider/RiderSupport';
 import ScheduledTrips from '@/pages/rider/ScheduledTrips';
+import RiderWallet from '@/pages/rider/RiderWallet';
 import DriverGateway from '@/pages/driver/DriverGateway';
 import DriverEarnings from '@/pages/driver/DriverEarnings';
 import DriverHistory from '@/pages/driver/DriverHistory';
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
             <Route path="/rider/profile" element={<RiderProfile />} />
             <Route path="/rider/support" element={<RiderSupport />} />
             <Route path="/rider/scheduled" element={<ScheduledTrips />} />
+            <Route path="/rider/wallet" element={<RiderWallet />} />
             <Route path="/driver" element={<DriverGateway />} />
             <Route path="/driver/earnings" element={<DriverEarnings />} />
             <Route path="/driver/history" element={<DriverHistory />} />
