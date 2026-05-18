@@ -30,6 +30,11 @@
       "type": "number",
       "default": 0
     },
+    "rating": {
+      "type": "number",
+      "default": 5.0,
+      "description": "Average rating given by drivers"
+    },
     "saved_locations": {
       "type": "array",
       "items": {

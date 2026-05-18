@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2 } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,6 +68,13 @@ export default function RiderProfile() {
           </div>
           <h2 className="font-heading font-bold text-lg mt-3">{user?.full_name || "Rider"}</h2>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
+          {profile?.rating > 0 && (
+            <div className="flex items-center gap-1.5 mt-2 bg-primary/10 px-3 py-1 rounded-full">
+              <Star className="w-3.5 h-3.5 text-primary fill-primary" />
+              <span className="text-sm font-semibold text-primary">{profile.rating.toFixed(1)}</span>
+              <span className="text-xs text-muted-foreground">avg rating</span>
+            </div>
+          )}
         </div>
 
         {editing ? (

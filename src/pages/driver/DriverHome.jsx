@@ -8,6 +8,7 @@ import BottomNav from "@/components/shared/BottomNav";
 import LiveTrackingMap from "@/components/shared/LiveTrackingMap";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import RideChatModal from "@/components/shared/RideChatModal";
+import RatingModal from "@/components/shared/RatingModal";
 
 export default function DriverHome() {
   const [user, setUser] = useState(null);
@@ -17,6 +18,8 @@ export default function DriverHome() {
   const [incomingRide, setIncomingRide] = useState(null);
   const [activeRide, setActiveRide] = useState(null);
   const [showChat, setShowChat] = useState(false);
+  const [completedRide, setCompletedRide] = useState(null);
+  const [showRating, setShowRating] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -99,7 +102,28 @@ export default function DriverHome() {
       net_amount: fare * 0.8,
       status: "available"
     });
+    setCompletedRide(activeRide);
     setActiveRide(null);
+    setShowRating(true);
+  };
+
+  const handleDriverRate = async ({ rating, feedback }) => {
+    if (!completedRide) return;
+    await base44.entities.Ride.update(completedRide.id, {
+      driver_rating: rating,
+      driver_feedback: feedback || ""
+    });
+    // Update rider's average rating in RiderProfile
+    const riderProfiles = await base44.entities.RiderProfile.filter({ user_id: completedRide.rider_id });
+    if (riderProfiles.length > 0) {
+      const rp = riderProfiles[0];
+      const allRides = await base44.entities.Ride.filter({ rider_id: completedRide.rider_id });
+      const rated = allRides.filter((r) => r.driver_rating > 0);
+      const avg = rated.reduce((sum, r) => sum + r.driver_rating, 0) / rated.length;
+      await base44.entities.RiderProfile.update(rp.id, { rating: parseFloat(avg.toFixed(2)) });
+    }
+    setShowRating(false);
+    setCompletedRide(null);
   };
 
   if (driver?.approval_status === "pending") {
@@ -248,6 +272,14 @@ export default function DriverHome() {
         currentUserId={user?.id}
         currentUserRole="driver"
         currentUserName={driver?.full_name || "Driver"}
+      />
+
+      <RatingModal
+        isOpen={showRating}
+        onClose={() => { setShowRating(false); setCompletedRide(null); }}
+        onSubmit={handleDriverRate}
+        raterRole="driver"
+        targetName={completedRide?.rider_name}
       />
 
       <BottomNav role="driver" />

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
 import RideChatModal from "@/components/shared/RideChatModal";
+import RatingModal from "@/components/shared/RatingModal";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 
 const STATUS_LABELS = {
@@ -35,6 +36,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
   const [showPayment, setShowPayment] = useState(false);
   const [paid, setPaid] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showRating, setShowRating] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -88,16 +90,31 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
     onClose();
   };
 
-  const handleRate = async () => {
-    if (rating > 0) {
-      await base44.entities.Ride.update(currentRide.id, { rating, status: "completed" });
-      onClose();
+  const handleRate = async ({ rating: ratingValue, feedback }) => {
+    await base44.entities.Ride.update(currentRide.id, {
+      rider_rating: ratingValue,
+      rider_feedback: feedback || "",
+      rating: ratingValue // keep legacy field in sync
+    });
+    // Update driver's average rating
+    if (currentRide.driver_id) {
+      const driverProfiles = await base44.entities.DriverProfile.filter({ user_id: currentRide.driver_id });
+      if (driverProfiles.length > 0) {
+        const dp = driverProfiles[0];
+        const allRides = await base44.entities.Ride.filter({ driver_id: currentRide.driver_id });
+        const rated = allRides.filter((r) => r.rider_rating > 0);
+        const avg = rated.reduce((sum, r) => sum + r.rider_rating, 0) / rated.length;
+        await base44.entities.DriverProfile.update(dp.id, { rating: parseFloat(avg.toFixed(2)) });
+      }
     }
+    setShowRating(false);
+    onClose();
   };
 
   const status = currentRide?.status || "requested";
 
   return (
+    <>
     <motion.div
       className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-40"
       initial={{ y: "100%" }}
@@ -189,22 +206,17 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
             )}
 
             {(paid || currentRide.payment_method !== "mobile_money") && (
-              <>
-                <div className="flex justify-center gap-2 mt-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button key={star} onClick={() => setRating(star)}>
-                      <Star className={`w-8 h-8 ${star <= rating ? "text-primary fill-primary" : "text-muted-foreground"}`} />
-                    </button>
-                  ))}
-                </div>
+              <div className="space-y-3 mt-4">
                 <Button
-                  onClick={handleRate}
-                  className="mt-4 bg-ghana-green hover:bg-ghana-green/90 text-white"
-                  disabled={rating === 0}
+                  onClick={() => setShowRating(true)}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-heading font-semibold"
                 >
-                  Submit Rating
+                  <Star className="w-4 h-4 mr-2" /> Rate Your Driver
                 </Button>
-              </>
+                <button onClick={onClose} className="w-full text-sm text-muted-foreground py-2">
+                  Skip
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -229,5 +241,14 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate }) {
         />
       </div>
     </motion.div>
+
+    <RatingModal
+      isOpen={showRating}
+      onClose={() => { setShowRating(false); onClose(); }}
+      onSubmit={handleRate}
+      raterRole="rider"
+      targetName={currentRide?.driver_name}
+    />
+    </>
   );
 }

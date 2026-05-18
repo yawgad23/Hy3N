@@ -84,8 +84,25 @@
     "duration_minutes": {
       "type": "number"
     },
+    "rider_rating": {
+      "type": "number",
+      "description": "Rating given by the rider for the driver (1-5)"
+    },
+    "driver_rating": {
+      "type": "number",
+      "description": "Rating given by the driver for the rider (1-5)"
+    },
+    "rider_feedback": {
+      "type": "string",
+      "description": "Optional text feedback from rider"
+    },
+    "driver_feedback": {
+      "type": "string",
+      "description": "Optional text feedback from driver"
+    },
     "rating": {
-      "type": "number"
+      "type": "number",
+      "description": "Legacy rating field"
     },
     "rider_name": {
       "type": "string"
