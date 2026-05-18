@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Power, MapPin, Navigation, Check, X } from "lucide-react";
+import { Power, MapPin, Navigation, Check, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import LiveTrackingMap from "@/components/shared/LiveTrackingMap";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
+import RideChatModal from "@/components/shared/RideChatModal";
 
 export default function DriverHome() {
   const [user, setUser] = useState(null);
@@ -15,6 +16,7 @@ export default function DriverHome() {
   const [location, setLocation] = useState([5.6037, -0.187]);
   const [incomingRide, setIncomingRide] = useState(null);
   const [activeRide, setActiveRide] = useState(null);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -222,17 +224,31 @@ export default function DriverHome() {
               <p className="text-sm truncate">{activeRide.destination_address}</p>
             </div>
           </div>
-          {activeRide.status === "matched" ? (
-            <Button onClick={startTrip} className="w-full bg-ghana-green hover:bg-ghana-green/90 text-white">
-              Start Trip
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 border-border" onClick={() => setShowChat(true)}>
+              <MessageSquare className="w-4 h-4 mr-2" /> Chat
             </Button>
-          ) : (
-            <Button onClick={endTrip} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-              End Trip
-            </Button>
-          )}
+            {activeRide.status === "matched" ? (
+              <Button onClick={startTrip} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
+                Start Trip
+              </Button>
+            ) : (
+              <Button onClick={endTrip} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
+                End Trip
+              </Button>
+            )}
+          </div>
         </div>
       )}
+
+      <RideChatModal
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        rideId={activeRide?.id}
+        currentUserId={user?.id}
+        currentUserRole="driver"
+        currentUserName={driver?.full_name || "Driver"}
+      />
 
       <BottomNav role="driver" />
     </div>

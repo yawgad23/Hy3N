@@ -4,6 +4,7 @@ import { Phone, MessageSquare, MapPin, Star, X, Navigation } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
+import RideChatModal from "@/components/shared/RideChatModal";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
@@ -19,6 +20,12 @@ export default function TripTracker({ ride, onClose }) {
   const [rating, setRating] = useState(0);
   const [showPayment, setShowPayment] = useState(false);
   const [paid, setPaid] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser);
+  }, []);
 
   useEffect(() => {
     if (!ride?.id) return;
@@ -111,7 +118,7 @@ export default function TripTracker({ ride, onClose }) {
               <Button variant="outline" className="flex-1 h-12 border-border">
                 <Phone className="w-4 h-4 mr-2" /> Call
               </Button>
-              <Button variant="outline" className="flex-1 h-12 border-border">
+              <Button variant="outline" className="flex-1 h-12 border-border" onClick={() => setShowChat(true)}>
                 <MessageSquare className="w-4 h-4 mr-2" /> Message
               </Button>
             </div>
@@ -161,6 +168,15 @@ export default function TripTracker({ ride, onClose }) {
             )}
           </div>
         )}
+
+        <RideChatModal
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+          rideId={currentRide?.id}
+          currentUserId={currentUser?.id}
+          currentUserRole="rider"
+          currentUserName={currentUser?.full_name || "Rider"}
+        />
 
         <MoMoPaymentModal
           isOpen={showPayment}
