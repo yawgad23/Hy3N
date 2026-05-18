@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import MoMoWithdrawModal from "@/components/shared/MoMoWithdrawModal";
+import EarningsSummary from "@/components/driver/EarningsSummary";
 
 export default function DriverEarnings() {
   const [earnings, setEarnings] = useState([]);
@@ -13,6 +14,7 @@ export default function DriverEarnings() {
   const [driver, setDriver] = useState(null);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [tab, setTab] = useState("earnings");
+  const [period, setPeriod] = useState("weekly");
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -65,6 +67,9 @@ export default function DriverEarnings() {
           <p className="font-heading font-bold text-xl text-ghana-green">GH₵{totalEarned.toFixed(2)}</p>
         </div>
       </div>
+
+      {/* Period earnings summary */}
+      <EarningsSummary earnings={earnings} period={period} onPeriodChange={setPeriod} />
 
       {/* Withdraw */}
       <div className="px-4 mb-4">
