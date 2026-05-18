@@ -21,6 +21,7 @@ export default function RiderHome() {
   const [driverPos, setDriverPos] = useState(null);
   const [eta, setEta] = useState(null);
   const [scheduledConfirm, setScheduledConfirm] = useState(null);
+  const [splitFare, setSplitFare] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -51,6 +52,7 @@ export default function RiderHome() {
       scheduled_for: bookingData.scheduled_for || null,
       status: isScheduled ? "scheduled" : "requested"
     });
+    if (bookingData.split_fare) setSplitFare(bookingData.split_fare);
     setDestination(null);
     if (!isScheduled) {
       setActiveRide(ride);
@@ -126,8 +128,9 @@ export default function RiderHome() {
             ride={activeRide}
             userPos={location}
             onDriverPosUpdate={setDriverPos}
-            onClose={() => { setActiveRide(null); setDriverPos(null); setEta(null); }}
+            onClose={() => { setActiveRide(null); setDriverPos(null); setEta(null); setSplitFare(null); }}
             eta={eta}
+            splitFare={splitFare}
           />
         )}
       </AnimatePresence>

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { X, Smartphone, Banknote, CreditCard, MapPin, Navigation, CalendarClock, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Smartphone, Banknote, CreditCard, MapPin, Navigation, CalendarClock, Zap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
+import SplitFareModal from "./SplitFareModal";
 import { format, addMinutes } from "date-fns";
 
 const paymentIcons = {
@@ -22,9 +23,16 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
   const [selectedPayment, setSelectedPayment] = useState("mobile_money");
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledFor, setScheduledFor] = useState("");
-  const distance = 5 + Math.random() * 15;
+  const [showSplitModal, setShowSplitModal] = useState(false);
+  const [splitData, setSplitData] = useState(null);
+  const [distance] = useState(() => 5 + Math.random() * 15);
 
   const fare = selectedCategory.basePrice + selectedCategory.pricePerKm * distance;
+  const yourShare = splitData ? splitData.perPersonFare : fare;
+
+  const handleSplitConfirm = (data) => {
+    setSplitData(data);
+  };
 
   return (
     <motion.div
@@ -95,6 +103,39 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
           </div>
         </div>
 
+        {/* Split Fare */}
+        <div className="mb-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Split Fare</p>
+          <button
+            onClick={() => setShowSplitModal(true)}
+            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${
+              splitData ? "border-primary bg-primary/10" : "border-border bg-secondary"
+            }`}
+          >
+            <Users className={`w-4 h-4 ${splitData ? "text-primary" : "text-muted-foreground"}`} />
+            <div className="flex-1 text-left">
+              {splitData ? (
+                <>
+                  <p className="text-sm font-medium text-primary">
+                    Split with {splitData.totalPeople - 1} friend{splitData.totalPeople > 2 ? "s" : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">GH₵{splitData.perPersonFare} each</p>
+                </>
+              ) : (
+                <p className="text-sm font-medium text-muted-foreground">Split fare with friends</p>
+              )}
+            </div>
+            {splitData && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setSplitData(null); }}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </button>
+        </div>
+
         {/* Schedule toggle */}
         <div className="mb-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Trip Type</p>
@@ -136,8 +177,15 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
         </div>
 
         <div className="flex items-center justify-between mb-4 p-3 bg-secondary rounded-xl">
-          <span className="text-muted-foreground">Estimated fare</span>
-          <span className="font-heading font-bold text-xl text-primary">GH₵{fare.toFixed(2)}</span>
+          <div>
+            <span className="text-muted-foreground">
+              {splitData ? "Your share" : "Estimated fare"}
+            </span>
+            {splitData && (
+              <p className="text-xs text-muted-foreground">Total: GH₵{fare.toFixed(2)}</p>
+            )}
+          </div>
+          <span className="font-heading font-bold text-xl text-primary">GH₵{yourShare.toFixed ? yourShare.toFixed(2) : yourShare}</span>
         </div>
 
         <Button
@@ -150,7 +198,8 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
               distance_km: parseFloat(distance.toFixed(1)),
               destination,
               ride_type: isScheduled ? "scheduled" : "on_demand",
-              scheduled_for: isScheduled ? new Date(scheduledFor).toISOString() : null
+              scheduled_for: isScheduled ? new Date(scheduledFor).toISOString() : null,
+              split_fare: splitData || null
             });
           }}
           className="w-full h-14 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-bold text-lg rounded-xl"
@@ -160,6 +209,13 @@ export default function RideBookingSheet({ destination, onClose, onBook }) {
           {isScheduled ? "Schedule Trip" : "Request HY3N"}
         </Button>
       </div>
+
+      <SplitFareModal
+        isOpen={showSplitModal}
+        onClose={() => setShowSplitModal(false)}
+        totalFare={fare}
+        onConfirm={handleSplitConfirm}
+      />
     </motion.div>
   );
 }

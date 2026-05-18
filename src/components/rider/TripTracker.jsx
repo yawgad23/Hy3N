@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
@@ -19,7 +19,7 @@ const STATUS_LABELS = {
 
 
 
-export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta }) {
+export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, splitFare }) {
   const [currentRide, setCurrentRide] = useState(ride);
   const [rating, setRating] = useState(0);
   const [showPayment, setShowPayment] = useState(false);
@@ -153,8 +153,25 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta }) {
                 <p className="text-xs text-muted-foreground">Destination</p>
                 <p className="text-sm font-medium">{currentRide.destination_address}</p>
               </div>
-              <p className="font-heading font-bold text-primary">GH₵{currentRide.fare_estimate}</p>
+              <div className="text-right">
+                <p className="font-heading font-bold text-primary">GH₵{currentRide.fare_estimate}</p>
+                {splitFare && (
+                  <p className="text-xs text-ghana-green">Split ÷{splitFare.totalPeople}</p>
+                )}
+              </div>
             </div>
+
+            {splitFare && (
+              <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-xl mb-4">
+                <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-primary">
+                    Split with {splitFare.totalPeople - 1} friend{splitFare.totalPeople > 2 ? "s" : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Your share: GH₵{splitFare.perPersonFare}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3 mb-4">
               <Button variant="outline" className="flex-1 h-12 border-border">
