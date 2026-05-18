@@ -1,7 +1,8 @@
 import { DragDropContext } from "@hello-pangea/dnd";
 import { motion } from "framer-motion";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { LayoutGrid, List, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ export default function KanbanBoard() {
   const [editingTask, setEditingTask] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState("kanban"); // 'kanban' or 'list'
+  const [searchQuery, setSearchQuery] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -86,11 +88,23 @@ export default function KanbanBoard() {
     setEditingTask(null);
   };
 
+  // Filter tasks by search query (title, description, or assignee)
+  const filteredTasks = searchQuery
+    ? tasks?.filter(task => {
+        const query = searchQuery.toLowerCase();
+        return (
+          task.title?.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.assignee?.toLowerCase().includes(query)
+        );
+      }) || []
+    : tasks || [];
+
   // Group tasks by status
   const tasksByStatus = {
-    pending: tasks?.filter(t => t.status === "pending") || [],
-    in_progress: tasks?.filter(t => t.status === "in_progress") || [],
-    completed: tasks?.filter(t => t.status === "completed") || []
+    pending: filteredTasks?.filter(t => t.status === "pending") || [],
+    in_progress: filteredTasks?.filter(t => t.status === "in_progress") || [],
+    completed: filteredTasks?.filter(t => t.status === "completed") || []
   };
 
   const taskCounts = {
@@ -115,51 +129,73 @@ export default function KanbanBoard() {
         {/* Main Content */}
         <main className="flex-1 p-6 lg:p-8 overflow-x-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 hover:bg-secondary rounded-lg"
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </button>
-              <div>
-                <h1 className="font-heading font-bold text-3xl">Task Board</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {taskCounts.all} tasks • {taskCounts.completed} completed
-                </p>
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 hover:bg-secondary rounded-lg"
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                </button>
+                <div>
+                  <h1 className="font-heading font-bold text-3xl">Task Board</h1>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {searchQuery ? `${filteredTasks?.length || 0} results` : `${taskCounts.all} tasks • ${taskCounts.completed} completed`}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === "kanban" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("kanban")}
+                  className="gap-2"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="hidden sm:inline">Board</span>
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="gap-2"
+                >
+                  <List className="w-4 h-4" />
+                  <span className="hidden sm:inline">List</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingTask(null);
+                    setShowForm(!showForm);
+                  }}
+                  className="bg-primary hover:bg-primary/90 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">New Task</span>
+                </Button>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "kanban" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("kanban")}
-                className="gap-2"
-              >
-                <LayoutGrid className="w-4 h-4" />
-                <span className="hidden sm:inline">Board</span>
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="gap-2"
-              >
-                <List className="w-4 h-4" />
-                <span className="hidden sm:inline">List</span>
-              </Button>
-              <Button
-                onClick={() => {
-                  setEditingTask(null);
-                  setShowForm(!showForm);
-                }}
-                className="bg-primary hover:bg-primary/90 gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">New Task</span>
-              </Button>
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by title, description, or assignee..."
+                className="pl-10 pr-10 bg-secondary border-border focus:border-primary/50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
