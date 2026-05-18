@@ -6,41 +6,35 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { phone, provider, amount, ride_id, rider_id, driver_id } = await req.json();
+    const { card_token, amount, ride_id, rider_id, driver_id } = await req.json();
 
-    if (!phone || !provider || !amount) {
+    if (!amount || !ride_id) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const PAYSTACK_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
+    const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 
-    // If Paystack key is configured, use real API
-    if (PAYSTACK_KEY) {
-      const providerMap = { mtn: "mtn", vodafone: "vod", airteltigo: "tgo" };
-      const clean = phone.replace(/\s/g, "").replace(/^\+?233/, "").replace(/^0/, "");
-      const fullPhone = "233" + clean;
-
-      const paystackRes = await fetch("https://api.paystack.co/charge", {
+    // If Stripe key is configured, use real API
+    if (STRIPE_KEY) {
+      const stripeRes = await fetch("https://api.stripe.com/v1/charges", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${PAYSTACK_KEY}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${STRIPE_KEY}`,
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-          amount: Math.round(amount * 100), // kobo/pesewas
-          currency: "GHS",
-          mobile_money: {
-            phone: fullPhone,
-            provider: providerMap[provider] || "mtn"
-          },
-          email: user.email || `${fullPhone}@hy3n.gh`
+        body: new URLSearchParams({
+          amount: Math.round(amount * 100), // cents
+          currency: "ghs",
+          source: card_token,
+          description: `HY3N Ride Payment - ${ride_id}`,
+          metadata: JSON.stringify({ ride_id, rider_id: rider_id || user.id })
         })
       });
 
-      const paystackData = await paystackRes.json();
+      const stripeData = await stripeRes.json();
 
-      if (!paystackData.status) {
-        return Response.json({ success: false, error: paystackData.message }, { status: 400 });
+      if (!stripeRes.ok || stripeData.error) {
+        return Response.json({ success: false, error: stripeData.error?.message }, { status: 400 });
       }
 
       // Record payment
@@ -49,9 +43,9 @@ Deno.serve(async (req) => {
         rider_id: rider_id || user.id,
         driver_id,
         amount,
-        method: "mobile_money",
+        method: "card",
         status: "completed",
-        reference: paystackData.data?.reference || ""
+        reference: stripeData.id || ""
       });
 
       // Update ride status to paid
@@ -61,20 +55,20 @@ Deno.serve(async (req) => {
         payment_reference: payment.reference
       });
 
-      return Response.json({ success: true, reference: paystackData.data?.reference, payment_id: payment.id });
+      return Response.json({ success: true, reference: stripeData.id, payment_id: payment.id });
     }
 
     // Simulated payment (no API key) — for demo/testing
-    await new Promise(r => setTimeout(r, 2500));
+    await new Promise(r => setTimeout(r, 2000));
 
-    const reference = `HY3N-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+    const reference = `CARD-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
 
     const payment = await base44.asServiceRole.entities.Payment.create({
       ride_id,
       rider_id: rider_id || user.id,
       driver_id,
       amount,
-      method: "mobile_money",
+      method: "card",
       status: "completed",
       reference
     });

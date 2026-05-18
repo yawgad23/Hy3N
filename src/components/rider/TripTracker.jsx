@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
+import CardPaymentModal from "@/components/shared/CardPaymentModal";
 import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
@@ -22,7 +23,8 @@ const STATUS_LABELS = {
 export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, splitFare }) {
   const [currentRide, setCurrentRide] = useState(ride);
   const [rating, setRating] = useState(0);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showMoMoPayment, setShowMoMoPayment] = useState(false);
+  const [showCardPayment, setShowCardPayment] = useState(false);
   const [paid, setPaid] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showRating, setShowRating] = useState(false);
@@ -68,10 +70,63 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
     const unsubscribe = base44.entities.Ride.subscribe((event) => {
       if (event.id === ride.id && (event.type === "update" || event.type === "create")) {
         setCurrentRide(event.data);
+        // Auto-detect wallet payment completion
+        if (event.data?.payment_status === "paid" && event.data?.payment_method === "wallet") {
+          setPaid(true);
+        }
       }
     });
     return unsubscribe;
   }, [ride?.id]);
+
+  // Process wallet payment on mount if applicable
+  useEffect(() => {
+    if (!ride?.id || ride.payment_method !== "wallet" || ride.payment_status === "paid") return;
+    processWalletPayment();
+  }, [ride?.id, ride?.payment_method]);
+
+  const processWalletPayment = async () => {
+    try {
+      const me = await base44.auth.me();
+      const wallets = await base44.entities.Wallet.filter({ user_id: me.id });
+      const wallet = wallets[0];
+      
+      if (!wallet || wallet.balance < (ride.final_fare || ride.fare_estimate)) {
+        // Insufficient balance - will show payment UI
+        return;
+      }
+
+      const amount = ride.final_fare || ride.fare_estimate;
+      
+      // Create wallet transaction
+      await base44.entities.WalletTransaction.create({
+        user_id: me.id,
+        type: "ride_payment",
+        amount: amount,
+        balance_after: wallet.balance - amount,
+        description: `Ride payment - ${ride.destination_address}`,
+        ride_id: ride.id,
+        status: "completed",
+        reference: `HY3N-WALLET-${Date.now()}`
+      });
+
+      // Update wallet balance
+      await base44.entities.Wallet.update(wallet.id, {
+        balance: wallet.balance - amount,
+        total_spent: (wallet.total_spent || 0) + amount
+      });
+
+      // Update ride payment status
+      await base44.entities.Ride.update(ride.id, {
+        payment_status: "paid",
+        payment_reference: `WALLET-${ride.id}`
+      });
+
+      setPaid(true);
+    } catch (error) {
+      console.error("Wallet payment error:", error);
+    }
+  };
 
   const handleCancel = async () => {
     await base44.entities.Ride.update(currentRide.id, { status: "cancelled" });
@@ -206,13 +261,33 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
               Total: GH₵{currentRide.final_fare || currentRide.fare_estimate}
             </p>
 
-            {!paid && currentRide.payment_method === "mobile_money" && (
-              <Button
-                onClick={() => setShowPayment(true)}
-                className="mt-4 w-full bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-semibold"
-              >
-                Pay GH₵{currentRide.final_fare || currentRide.fare_estimate} via MoMo
-              </Button>
+            {!paid && (
+              <div className="space-y-3 mt-4">
+                {currentRide.payment_method === "mobile_money" && (
+                  <Button
+                    onClick={() => setShowMoMoPayment(true)}
+                    className="w-full bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-semibold gap-2"
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    Pay GH₵{currentRide.final_fare || currentRide.fare_estimate} via MoMo
+                  </Button>
+                )}
+                {currentRide.payment_method === "card" && (
+                  <Button
+                    onClick={() => setShowCardPayment(true)}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-heading font-semibold gap-2"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    Pay GH₵{currentRide.final_fare || currentRide.fare_estimate} with Card
+                  </Button>
+                )}
+                {currentRide.payment_method === "wallet" && (
+                  <div className="bg-ghana-green/10 border border-ghana-green/30 rounded-xl p-4 text-center">
+                    <p className="text-sm font-medium text-ghana-green">Paid with Wallet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Amount deducted from your wallet balance</p>
+                  </div>
+                )}
+              </div>
             )}
 
             {(paid || currentRide.payment_method !== "mobile_money") && (
@@ -241,8 +316,18 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
         />
 
         <MoMoPaymentModal
-          isOpen={showPayment}
-          onClose={() => setShowPayment(false)}
+          isOpen={showMoMoPayment}
+          onClose={() => setShowMoMoPayment(false)}
+          amount={currentRide?.final_fare || currentRide?.fare_estimate || 0}
+          rideId={currentRide?.id}
+          riderId={currentRide?.rider_id}
+          driverId={currentRide?.driver_id}
+          onSuccess={() => setPaid(true)}
+        />
+
+        <CardPaymentModal
+          isOpen={showCardPayment}
+          onClose={() => setShowCardPayment(false)}
           amount={currentRide?.final_fare || currentRide?.fare_estimate || 0}
           rideId={currentRide?.id}
           riderId={currentRide?.rider_id}

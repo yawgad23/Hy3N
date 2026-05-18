@@ -74,9 +74,25 @@
       "enum": [
         "mobile_money",
         "cash",
-        "card"
+        "card",
+        "wallet"
       ],
       "default": "mobile_money"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Payment status for the ride"
+    },
+    "payment_reference": {
+      "type": "string",
+      "description": "Payment transaction reference ID"
     },
     "distance_km": {
       "type": "number"
