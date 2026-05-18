@@ -45,15 +45,18 @@ export default function DriverHome() {
     }
   }, []);
 
-  // Poll for incoming rides
+  // Subscribe to rides matched to this driver by the auto-match backend service
   useEffect(() => {
-    if (!isOnline || activeRide) return;
-    const interval = setInterval(async () => {
-      const rides = await base44.entities.Ride.filter({ status: "requested" }, "-created_date", 1);
-      if (rides.length > 0 && !incomingRide) setIncomingRide(rides[0]);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isOnline, activeRide, incomingRide]);
+    if (!user?.id) return;
+    const unsubscribe = base44.entities.Ride.subscribe((event) => {
+      if (event.type === "update" && event.data?.status === "matched" && event.data?.driver_id === user.id) {
+        if (!activeRide) {
+          setIncomingRide(event.data);
+        }
+      }
+    });
+    return unsubscribe;
+  }, [user?.id, activeRide]);
 
   // Live position simulation — driver side
   const driverPos = useDriverTracking({
@@ -77,12 +80,19 @@ export default function DriverHome() {
 
   const acceptRide = async () => {
     if (!incomingRide || !driver) return;
+    await base44.entities.Ride.update(incomingRide.id, { status: "driver_arriving" });
+    setActiveRide({ ...incomingRide, status: "driver_arriving" });
+    setIncomingRide(null);
+  };
+
+  const declineRide = async () => {
+    if (!incomingRide) return;
+    // Release the ride back to requested so the matcher can try another driver
     await base44.entities.Ride.update(incomingRide.id, {
-      status: "matched",
-      driver_id: user.id,
-      driver_name: driver.full_name
+      status: "requested",
+      driver_id: null,
+      driver_name: null,
     });
-    setActiveRide({ ...incomingRide, status: "matched" });
     setIncomingRide(null);
   };
 
@@ -221,7 +231,7 @@ export default function DriverHome() {
             </div>
             <p className="font-heading font-bold text-xl text-primary mt-3">GH₵{incomingRide.fare_estimate}</p>
             <div className="flex gap-3 mt-4">
-              <Button onClick={() => setIncomingRide(null)} variant="outline" className="flex-1 border-destructive text-destructive">
+              <Button onClick={declineRide} variant="outline" className="flex-1 border-destructive text-destructive">
                 <X className="w-4 h-4 mr-2" /> Decline
               </Button>
               <Button onClick={acceptRide} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
@@ -238,7 +248,7 @@ export default function DriverHome() {
           <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-xs text-ghana-green font-medium uppercase">
-                  {activeRide.status === "matched" ? "Navigate to Pickup" : "Trip in Progress"}
+                  {activeRide.status === "driver_arriving" ? "Navigate to Pickup" : "Trip in Progress"}
                 </p>
                 <h3 className="font-heading font-bold">{activeRide.rider_name}</h3>
               </div>
@@ -263,7 +273,7 @@ export default function DriverHome() {
             <Button variant="outline" className="flex-1 border-border" onClick={() => setShowChat(true)}>
               <MessageSquare className="w-4 h-4 mr-2" /> Chat
             </Button>
-            {activeRide.status === "matched" ? (
+            {activeRide.status === "driver_arriving" ? (
               <Button onClick={startTrip} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
                 Start Trip
               </Button>

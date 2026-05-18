@@ -46,29 +46,18 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
 
 
+
+
+  // Real-time ride status updates via subscription (handles auto-matching from backend)
   useEffect(() => {
     if (!ride?.id) return;
-    const interval = setInterval(async () => {
-      const rides = await base44.entities.Ride.filter({ id: ride.id });
-      if (rides.length > 0) setCurrentRide(rides[0]);
-    }, 5000);
-    return () => clearInterval(interval);
+    const unsubscribe = base44.entities.Ride.subscribe((event) => {
+      if (event.id === ride.id && (event.type === "update" || event.type === "create")) {
+        setCurrentRide(event.data);
+      }
+    });
+    return unsubscribe;
   }, [ride?.id]);
-
-  // Simulate driver matching
-  useEffect(() => {
-    if (currentRide?.status === "requested") {
-      const timer = setTimeout(async () => {
-        await base44.entities.Ride.update(currentRide.id, {
-          status: "matched",
-          driver_name: "Kwame Asante",
-          driver_id: "demo_driver"
-        });
-        setCurrentRide(prev => ({ ...prev, status: "matched", driver_name: "Kwame Asante" }));
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentRide?.status]);
 
   const handleCancel = async () => {
     await base44.entities.Ride.update(currentRide.id, { status: "cancelled" });
