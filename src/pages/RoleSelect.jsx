@@ -40,7 +40,7 @@ export default function RoleSelect() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            Welcome to HY3N
+            Akwaaba to HY3N
           </motion.h1>
           <motion.p
             className="text-muted-foreground text-sm mt-2 text-center"
