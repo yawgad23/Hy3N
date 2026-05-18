@@ -1,14 +1,29 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Pencil, Trash2, Calendar, User } from "lucide-react";
+import { Pencil, Trash2, Calendar, User, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "./StatusBadge";
+import { cn } from "@/lib/utils";
 
 const priorityColors = {
   low: "bg-gray-100 text-gray-800",
   medium: "bg-blue-100 text-blue-800",
   high: "bg-red-100 text-red-800"
 };
+
+function getDueDateStyle(dueDate) {
+  if (!dueDate) return { color: "text-muted-foreground", bg: "bg-muted" };
+  
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMs = due - now;
+  const diffHours = diffMs / (1000 * 60 * 60);
+  
+  if (diffHours < 0) return { color: "text-destructive", bg: "bg-destructive/10 border-destructive/30" };
+  if (diffHours < 24) return { color: "text-destructive", bg: "bg-destructive/10 border-destructive/30" };
+  if (diffHours < 48) return { color: "text-primary", bg: "bg-primary/10 border-primary/30" };
+  return { color: "text-muted-foreground", bg: "bg-muted" };
+}
 
 export default function TaskCard({ task, onStatusChange, onEdit, onDelete }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,11 +51,13 @@ export default function TaskCard({ task, onStatusChange, onEdit, onDelete }) {
             <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
           )}
 
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs">
             {task.due_date && (
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{new Date(task.due_date).toLocaleDateString()}</span>
+              <div className={cn("flex items-center gap-1 px-2 py-1 rounded-lg border", getDueDateStyle(task.due_date).bg)}>
+                <Clock className={cn("w-3.5 h-3.5", getDueDateStyle(task.due_date).color)} />
+                <span className={cn("font-medium", getDueDateStyle(task.due_date).color)}>
+                  {new Date(task.due_date).toLocaleDateString()}
+                </span>
               </div>
             )}
             {task.assignee && (

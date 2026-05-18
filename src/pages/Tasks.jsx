@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import FilterSidebar from "@/components/tasks/FilterSidebar";
 import TaskForm from "@/components/tasks/TaskForm";
 import TaskCard from "@/components/tasks/TaskCard";
+import UpcomingDeadlines from "@/components/tasks/UpcomingDeadlines";
 
 export default function TasksPage() {
   const [showForm, setShowForm] = useState(false);
@@ -145,6 +146,9 @@ export default function TasksPage() {
             />
           )}
         </AnimatePresence>
+
+        {/* Upcoming Deadlines */}
+        <UpcomingDeadlines tasks={tasks} />
 
         {/* Task List */}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
