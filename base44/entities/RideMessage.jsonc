@@ -47,62 +47,14 @@
       "data.sender_id": "{{user.id}}"
     },
     "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "data.ride_id": {
-            "$in": {
-              "$query": {
-                "entity": "Ride",
-                "field": "id",
-                "filter": {
-                  "$or": [
-                    {
-                      "rider_id": "{{user.id}}"
-                    },
-                    {
-                      "driver_id": "{{user.id}}"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "data.ride_id": {
-            "$in": {
-              "$query": {
-                "entity": "Ride",
-                "field": "id",
-                "filter": {
-                  "$or": [
-                    {
-                      "rider_id": "{{user.id}}"
-                    },
-                    {
-                      "driver_id": "{{user.id}}"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {
