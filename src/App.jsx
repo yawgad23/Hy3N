@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import React from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -13,6 +14,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
+import SplashScreen from '@/components/shared/SplashScreen';
 
 import RiderHome from '@/pages/rider/RiderHome';
 import RiderHistory from '@/pages/rider/RiderHistory';
@@ -81,11 +83,13 @@ const AuthenticatedApp = () => {
 
 function App() {
   registerServiceWorker();
+  const [showSplash, setShowSplash] = React.useState(true);
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
           <AppEffects />
           <AuthenticatedApp />
         </Router>
