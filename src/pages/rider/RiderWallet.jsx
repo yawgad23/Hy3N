@@ -6,6 +6,8 @@ import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import BottomNav from "@/components/shared/BottomNav";
 import WalletTopUpModal from "@/components/rider/WalletTopUpModal";
+import ConnectionStatus from "@/components/shared/ConnectionStatus";
+import EmptyState from "@/components/shared/EmptyState";
 
 const TX_ICONS = {
   top_up: ArrowDownLeft,
@@ -71,6 +73,8 @@ export default function RiderWallet() {
         </button>
       </div>
 
+      <ConnectionStatus />
+
       <div className="p-4 space-y-4">
         {/* Balance Card */}
         <div className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/30 rounded-2xl p-6">
@@ -118,11 +122,10 @@ export default function RiderWallet() {
               <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-12 bg-card border border-border rounded-xl">
-              <Wallet className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="text-muted-foreground text-sm">No transactions yet</p>
-              <p className="text-xs text-muted-foreground mt-1">Top up to get started</p>
-            </div>
+            <EmptyState
+              type="payments"
+              onAction={() => setShowTopUp(true)}
+            />
           ) : (
             <div className="space-y-2">
               {transactions.map((tx) => {

@@ -7,6 +7,8 @@ import Logo from "@/components/shared/Logo";
 import TripHistoryCard from "@/components/shared/TripHistoryCard";
 import TripDetailsModal from "@/components/shared/TripDetailsModal";
 import RideReportModal from "@/components/rider/RideReportModal";
+import ConnectionStatus from "@/components/shared/ConnectionStatus";
+import EmptyState from "@/components/shared/EmptyState";
 
 const PULL_THRESHOLD = 70;
 
@@ -97,17 +99,18 @@ export default function RiderHistory() {
         </div>
       </div>
 
+      <ConnectionStatus />
+
       <div className="p-4 space-y-3">
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : rides.length === 0 ? (
-          <div className="text-center py-20">
-            <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No rides yet</p>
-            <p className="text-sm text-muted-foreground mt-1">Your ride history will appear here</p>
-          </div>
+          <EmptyState
+            type="rides"
+            onAction={() => navigate("/")}
+          />
         ) : (
           rides.map((ride) => (
             <TripHistoryCard

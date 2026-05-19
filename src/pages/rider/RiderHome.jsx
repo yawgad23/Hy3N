@@ -18,10 +18,14 @@ import SOSButton from "@/components/shared/SOSButton";
 import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
+import Onboarding from "@/components/shared/Onboarding";
+import ConnectionStatus from "@/components/shared/ConnectionStatus";
 
 export default function RiderHome() {
+  // All hooks must be called at the top level, before any conditional returns
   const navigate = useNavigate();
   const routeLocation = useLocation();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [location, setLocation] = useState([5.6037, -0.1870]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [destination, setDestination] = useState(null);
@@ -35,6 +39,17 @@ export default function RiderHome() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
   const { subscribeToPush } = usePushNotifications();
+
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
+    if (!hasSeenOnboarding && user) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
+
+  if (showOnboarding) {
+    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -202,6 +217,9 @@ export default function RiderHome() {
   return (
     <div className="h-screen-safe bg-background relative">
       {showSplash && <RiderSplashScreen onComplete={() => setShowSplash(false)} />}
+      
+      {/* Connection Status Banner */}
+      <ConnectionStatus />
       
       {/* Offline Indicator */}
       <OfflineIndicator />

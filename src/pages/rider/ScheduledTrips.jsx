@@ -5,6 +5,8 @@ import { ArrowLeft, CalendarClock, MapPin, Clock, Trash2, AlertCircle } from "lu
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/shared/BottomNav";
 import { format, isPast, parseISO } from "date-fns";
+import ConnectionStatus from "@/components/shared/ConnectionStatus";
+import EmptyState from "@/components/shared/EmptyState";
 
 const CATEGORY_LABELS = {
   standard: "Standard",
@@ -58,6 +60,8 @@ export default function ScheduledTrips() {
         </div>
       </div>
 
+      <ConnectionStatus />
+
       <div className="p-4 space-y-6">
         {loading ? (
           <div className="flex justify-center py-16">
@@ -69,16 +73,10 @@ export default function ScheduledTrips() {
             <section>
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Upcoming</h2>
               {upcoming.length === 0 ? (
-                <div className="flex flex-col items-center py-10 text-center">
-                  <CalendarClock className="w-12 h-12 text-muted-foreground/40 mb-3" />
-                  <p className="text-muted-foreground text-sm">No upcoming scheduled trips</p>
-                  <Button
-                    onClick={() => navigate("/rider")}
-                    className="mt-4 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-semibold"
-                  >
-                    Book a Trip
-                  </Button>
-                </div>
+                <EmptyState
+                  type="scheduled"
+                  onAction={() => navigate("/rider")}
+                />
               ) : (
                 <div className="space-y-3">
                   {upcoming.map((trip) => (
