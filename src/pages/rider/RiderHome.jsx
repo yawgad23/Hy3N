@@ -122,7 +122,10 @@ export default function RiderHome() {
     }
 
     // Persist in background — replace optimistic with real record
-    const ride = await base44.entities.Ride.create(rideData);
+    const ride = await base44.entities.Ride.create({
+      ...rideData,
+      surge_multiplier: bookingData.surge_multiplier || 1.0
+    });
     if (!isScheduled) {
       setActiveRide(ride);
     } else {

@@ -125,6 +125,11 @@
     },
     "driver_name": {
       "type": "string"
+    },
+    "surge_multiplier": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Surge pricing multiplier applied to base fare"
     }
   },
   "required": [
