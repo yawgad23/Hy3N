@@ -24,7 +24,13 @@
   ],
   "screenshots": [
     {
-      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/6a5713202_ChatGPTImageMay19202602_18_57PM.png",
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/099a8d5c4_ChatGPTImageMay19202602_56_28PM.png",
+      "sizes": "1024x500",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/099a8d5c4_ChatGPTImageMay19202602_56_28PM.png",
       "sizes": "540x720",
       "type": "image/png",
       "form_factor": "narrow"
