@@ -22,8 +22,7 @@ export default function BottomNav({ role = "rider" }) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 pb-safe"
     >
       <div className="flex justify-around items-center h-16 max-w-screen-sm mx-auto">
         {tabs.map((tab) => {

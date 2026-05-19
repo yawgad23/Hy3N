@@ -120,12 +120,12 @@ export default function RiderHome() {
   };
 
   return (
-    <div className="h-screen bg-background relative">
+    <div className="h-screen-safe bg-background relative">
       {/* Offline Indicator */}
       <OfflineIndicator />
       
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-between">
         <Logo size="sm" />
         <div className="flex items-center gap-2">
           <SOSButton role="rider" rideId={activeRide?.id || null} location={location} />

@@ -188,9 +188,9 @@ export default function DriverHome() {
   const destPos = activeRide?.destination_lat ? [activeRide.destination_lat, activeRide.destination_lng] : null;
 
   return (
-    <div className="h-screen bg-background relative">
+    <div className="h-screen-safe bg-background relative">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-between">
         <Logo size="sm" variant="driver" />
         <div className="flex items-center gap-2">
           <SOSButton role="driver" rideId={activeRide?.id || null} location={location} />
