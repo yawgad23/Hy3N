@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
-    const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${apiKey}&types=geocode&components=country:gh`);
+    const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${apiKey}&components=country:gh`);
     const data = await response.json();
     
     return Response.json({ predictions: data.predictions || [] });
