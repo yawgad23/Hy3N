@@ -66,6 +66,15 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+
+  // Push history entry so back button closes the modal
+  useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ modal: "chat" }, "");
+    const onPop = () => onClose();
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [isOpen]);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [lastReadIndex, setLastReadIndex] = useState(-1);
   const bottomRef = useRef(null);
@@ -88,6 +97,12 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
       if (event.type === "create") {
         const newMsg = event.data;
         setMessages(prev => {
+          // Remove matching optimistic message (same sender + text), then add real one
+          const filtered = prev.filter(m =>
+            !(m.id?.toString().startsWith("optimistic-") &&
+              m.sender_id === newMsg.sender_id &&
+              m.message === newMsg.message)
+          );
           if (newMsg.sender_id !== currentUserId) {
             showNotification(
               `New message from ${newMsg.sender_name || (currentUserRole === 'rider' ? 'Driver' : 'Rider')}`,
@@ -95,7 +110,7 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
               "info"
             );
           }
-          return [...prev, newMsg];
+          return [...filtered, newMsg];
         });
       } else if (event.type === "update") {
         // Live read-receipt update — refresh the affected message
@@ -132,6 +147,23 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
     const trimmed = messageText.trim();
     if (!trimmed || sending) return;
     setSending(true);
+
+    // Optimistic update — add message to UI immediately
+    const optimisticMsg = {
+      id: `optimistic-${Date.now()}`,
+      ride_id: rideId,
+      sender_id: currentUserId,
+      sender_role: currentUserRole,
+      sender_name: currentUserName || currentUserRole,
+      message: trimmed,
+      created_date: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+    setText("");
+    setShowQuickReplies(false);
+    inputRef.current?.focus();
+
+    // Persist in background — real record will replace via subscription
     await base44.entities.RideMessage.create({
       ride_id: rideId,
       sender_id: currentUserId,
@@ -139,10 +171,7 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
       sender_name: currentUserName || currentUserRole,
       message: trimmed
     });
-    setText("");
     setSending(false);
-    setShowQuickReplies(false);
-    inputRef.current?.focus();
   };
 
   const handleSend = () => sendMessage(text);

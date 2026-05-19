@@ -93,7 +93,7 @@ export default function RiderHome() {
 
   const handleBookRide = async (bookingData) => {
     const isScheduled = bookingData.ride_type === "scheduled";
-    const ride = await base44.entities.Ride.create({
+    const rideData = {
       rider_id: user?.id || "anonymous",
       rider_name: user?.full_name || "Rider",
       category: bookingData.category,
@@ -109,9 +109,20 @@ export default function RiderHome() {
       ride_type: bookingData.ride_type || "on_demand",
       scheduled_for: bookingData.scheduled_for || null,
       status: isScheduled ? "scheduled" : "requested"
-    });
+    };
+
+    // Optimistic update — immediately show the ride in UI
+    const optimisticRide = { ...rideData, id: `optimistic-${Date.now()}` };
     if (bookingData.split_fare) setSplitFare(bookingData.split_fare);
     setDestination(null);
+    if (!isScheduled) {
+      setActiveRide(optimisticRide);
+    } else {
+      setScheduledConfirm(optimisticRide);
+    }
+
+    // Persist in background — replace optimistic with real record
+    const ride = await base44.entities.Ride.create(rideData);
     if (!isScheduled) {
       setActiveRide(ride);
     } else {

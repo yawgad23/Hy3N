@@ -22,6 +22,13 @@ function minDateTime() {
 }
 
 export default function RideBookingSheet({ destination, onClose, onBook, pickupLat, pickupLng }) {
+  // Push a history entry so the OS back button dismisses this sheet
+  useEffect(() => {
+    window.history.pushState({ modal: "booking" }, "");
+    const onPop = () => onClose();
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   const [selectedCategory, setSelectedCategory] = useState(RIDE_CATEGORIES[0]);
   const [selectedPayment, setSelectedPayment] = useState("mobile_money");
   const [isScheduled, setIsScheduled] = useState(false);

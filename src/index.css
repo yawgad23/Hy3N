@@ -9,6 +9,7 @@
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
 
+    /* Brand default: dark theme */
     --background: 0 0% 4%;
     --foreground: 45 30% 95%;
     --card: 0 0% 7%;
@@ -102,6 +103,44 @@
   }
   input, textarea, select {
     font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+
+/* System light mode overrides — brand is dark by default; respect user preference */
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --background: 0 0% 97%;
+    --foreground: 0 0% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+    --primary: 43 56% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 15%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 153 100% 21%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 4 84% 44%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 86%;
+    --input: 0 0% 86%;
+    --ring: 43 56% 40%;
+    --chart-1: 43 56% 40%;
+    --chart-2: 153 100% 21%;
+    --chart-3: 4 84% 44%;
+    --chart-4: 45 30% 50%;
+    --chart-5: 153 60% 35%;
+    --sidebar-background: 0 0% 95%;
+    --sidebar-foreground: 0 0% 15%;
+    --sidebar-primary: 43 56% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 90%;
+    --sidebar-accent-foreground: 0 0% 15%;
+    --sidebar-border: 0 0% 86%;
+    --sidebar-ring: 43 56% 40%;
   }
 }
 

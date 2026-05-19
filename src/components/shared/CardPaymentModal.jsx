@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, CreditCard, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,15 @@ export default function CardPaymentModal({ isOpen, onClose, amount, rideId, ride
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  // Push history entry so back button closes the modal
+  useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ modal: "card-payment" }, "");
+    const onPop = () => onClose();
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
