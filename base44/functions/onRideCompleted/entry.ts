@@ -46,7 +46,8 @@ Deno.serve(async (req) => {
 
     const currentTier = loyalty?.tier || "bronze";
     const baseRidePoints = POINTS_PER_RIDE[currentTier];
-    const farePoints = data.final_fare ? Math.floor((data.final_fare / 10) * POINTS_PER_10_GHS) : 0;
+    const totalWithTip = (data.final_fare || 0) + (data.tip_amount || 0);
+    const farePoints = totalWithTip ? Math.floor((totalWithTip / 10) * POINTS_PER_10_GHS) : 0;
     const earnedPoints = baseRidePoints + farePoints;
 
     if (loyalty) {
@@ -74,10 +75,33 @@ Deno.serve(async (req) => {
       console.log(`New loyalty record created for rider ${data.rider_id} with ${earnedPoints} pts`);
     }
 
+    // Create driver earnings record (includes tip)
+    if (data.driver_id) {
+      const driverEarnings = await base44.asServiceRole.entities.Earning.filter({ ride_id: data.id });
+      if (driverEarnings.length === 0) {
+        const commissionRate = 0.2; // 20% platform commission
+        const grossAmount = (data.final_fare || 0) + (data.tip_amount || 0);
+        const commission = grossAmount * commissionRate;
+        const netAmount = grossAmount - commission;
+
+        await base44.asServiceRole.entities.Earning.create({
+          driver_id: data.driver_id,
+          ride_id: data.id,
+          amount: grossAmount,
+          tip_amount: data.tip_amount || 0,
+          commission: commission,
+          net_amount: netAmount,
+          status: "available"
+        });
+        console.log(`Driver earnings created: GH₵${netAmount.toFixed(2)} (incl. GH₵${data.tip_amount || 0} tip)`);
+      }
+    }
+
     return Response.json({
       success: true,
       message: "Ride completion processed",
       points_awarded: earnedPoints,
+      tip_amount: data.tip_amount || 0,
       first_ride: completedRides.length === 1
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import MoMoPaymentModal from "@/components/shared/MoMoPaymentModal";
 import CardPaymentModal from "@/components/shared/CardPaymentModal";
 import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
+import TipModal from "@/components/rider/TipModal";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import { showNotification } from "@/lib/notificationService";
 
@@ -30,6 +31,8 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [paid, setPaid] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showRating, setShowRating] = useState(false);
+  const [showTip, setShowTip] = useState(false);
+  const [tipAdded, setTipAdded] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [mapExpanded, setMapExpanded] = useState(false);
@@ -358,7 +361,13 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
             <Navigation className="w-12 h-12 text-ghana-green mx-auto mb-3" />
             <h3 className="font-heading font-bold text-lg">Trip Complete!</h3>
             <p className="text-muted-foreground text-sm mt-1">
-              Total: GH₵{currentRide.final_fare || currentRide.fare_estimate}
+              Base Fare: GH₵{currentRide.fare_estimate || 0}
+              {currentRide.tip_amount > 0 && (
+                <span className="text-ghana-green"> • Tip: GH₵{currentRide.tip_amount}</span>
+              )}
+            </p>
+            <p className="font-heading font-bold text-primary text-xl mt-1">
+              Total: GH₵{(currentRide.final_fare || currentRide.fare_estimate || 0) + (currentRide.tip_amount || 0)}
             </p>
 
             {!paid && (
@@ -392,6 +401,21 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
             {(paid || currentRide.payment_method !== "mobile_money") && (
               <div className="space-y-3 mt-4">
+                {!tipAdded && (
+                  <Button
+                    onClick={() => setShowTip(true)}
+                    variant="outline"
+                    className="w-full border-ghana-green/40 text-ghana-green hover:bg-ghana-green/10"
+                  >
+                    <DollarSign className="w-4 h-4 mr-2" /> Add Tip
+                  </Button>
+                )}
+                {tipAdded && (
+                  <div className="bg-ghana-green/10 border border-ghana-green/30 rounded-xl p-4 text-center">
+                    <p className="text-sm font-medium text-ghana-green">Tip Added: GH₵{currentRide.tip_amount}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Thank you for your generosity!</p>
+                  </div>
+                )}
                 <Button
                   onClick={() => setShowRating(true)}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-heading font-semibold"
@@ -443,6 +467,21 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
       onSubmit={handleRate}
       raterRole="rider"
       targetName={currentRide?.driver_name}
+    />
+
+    <TipModal
+      isOpen={showTip}
+      onClose={() => setShowTip(false)}
+      rideId={currentRide?.id}
+      baseFare={currentRide?.final_fare || currentRide?.fare_estimate || 0}
+      onSuccess={(tipAmount) => {
+        setTipAdded(true);
+        setCurrentRide((prev) => ({
+          ...prev,
+          tip_amount: tipAmount,
+          final_fare: (prev?.final_fare || prev?.fare_estimate || 0) + tipAmount
+        }));
+      }}
     />
     </>
   );

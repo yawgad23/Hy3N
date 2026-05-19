@@ -11,6 +11,11 @@
     "amount": {
       "type": "number"
     },
+    "tip_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Tip amount included in this earning"
+    },
     "commission": {
       "type": "number"
     },

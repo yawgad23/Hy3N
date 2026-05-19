@@ -69,6 +69,11 @@
     "final_fare": {
       "type": "number"
     },
+    "tip_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Tip amount added by rider after trip completion"
+    },
     "payment_method": {
       "type": "string",
       "enum": [

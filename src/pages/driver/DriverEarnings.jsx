@@ -446,7 +446,7 @@ export default function DriverEarnings() {
                     +GH₵{earning.net_amount?.toFixed(2)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    GH₵{earning.amount?.toFixed(2)} - GH₵{earning.commission?.toFixed(2)} comm.
+                    GH₵{earning.amount?.toFixed(2)} {earning.tip_amount > 0 && `(incl. GH₵${earning.tip_amount} tip)`} - GH₵{earning.commission?.toFixed(2)} comm.
                   </p>
                 </div>
               </div>
