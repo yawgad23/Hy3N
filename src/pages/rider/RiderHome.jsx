@@ -31,24 +31,31 @@ export default function RiderHome() {
   const { subscribeToPush } = usePushNotifications();
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setLocation([pos.coords.latitude, pos.coords.longitude]),
-        () => {}
-      );
-    }
-    requestNotificationPermission().then((granted) => {
-      if (granted && user?.id) {
-        subscribeToPush(user.id);
+    const init = async () => {
+      try {
+        const me = await base44.auth.me();
+        setUser(me);
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => setLocation([pos.coords.latitude, pos.coords.longitude]),
+            () => {}
+          );
+        }
+        const granted = await requestNotificationPermission();
+        if (granted && me?.id) {
+          subscribeToPush(me.id);
+        }
+      } catch (err) {
+        console.error("Init error:", err);
       }
-    });
+    };
+    init();
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
       setDestination({ name: address, lat, lng });
       window.history.replaceState({}, "");
     }
-  }, [user?.id]);
+  }, []);
 
   // Real-time notifications for ride status changes
   useEffect(() => {
