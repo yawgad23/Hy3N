@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search, MapPin, Bell, CalendarClock, CheckCircle2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -31,6 +31,7 @@ export default function RiderHome() {
   const [eta, setEta] = useState(null);
   const [scheduledConfirm, setScheduledConfirm] = useState(null);
   const [splitFare, setSplitFare] = useState(null);
+  const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
   const { subscribeToPush } = usePushNotifications();
@@ -68,6 +69,28 @@ export default function RiderHome() {
       window.history.replaceState({}, "");
     }
   }, []);
+
+  // Fetch nearby drivers when no active ride
+  const fetchNearbyDrivers = useCallback(async () => {
+    if (!user || activeRide) return;
+    try {
+      const res = await base44.functions.invoke("getNearbyDrivers", {
+        lat: location[0],
+        lng: location[1],
+        radius: 5000
+      });
+      setNearbyDrivers(res.data?.drivers || []);
+    } catch (err) {
+      console.error("Failed to fetch nearby drivers:", err);
+    }
+  }, [user, activeRide, location]);
+
+  useEffect(() => {
+    if (!user || activeRide) return;
+    fetchNearbyDrivers();
+    const interval = setInterval(fetchNearbyDrivers, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, [user, activeRide, fetchNearbyDrivers]);
 
   // Real-time notifications for ride status changes
   useEffect(() => {
@@ -202,6 +225,7 @@ export default function RiderHome() {
           destPos={activeRide?.destination_lat ? [activeRide.destination_lat, activeRide.destination_lng] : null}
           userPos={location}
           status={activeRide?.status}
+          nearbyDrivers={!activeRide ? nearbyDrivers : []}
           height="100%"
           onEtaUpdate={setEta}
         />

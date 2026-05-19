@@ -46,6 +46,7 @@ export default function GoogleTrackingMap({
   status,
   height = "100%",
   onEtaUpdate,
+  nearbyDrivers = [],
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -86,6 +87,12 @@ export default function GoogleTrackingMap({
   useEffect(() => {
     if (!loaded || !mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
+
+    // Clear nearby driver markers when an active ride starts
+    if (driverPos && markersRef.current.nearby) {
+      Object.values(markersRef.current.nearby).forEach(m => m.setMap(null));
+      delete markersRef.current.nearby;
+    }
 
     // Driver marker — smooth animated movement
     if (driverPos) {
@@ -161,6 +168,39 @@ export default function GoogleTrackingMap({
         });
       }
       markersRef.current.user.setPosition(toLatLng(userPos));
+    }
+
+    // Nearby available drivers markers (when no active ride)
+    if (!driverPos && nearbyDrivers.length > 0) {
+      // Create or update nearby driver markers
+      if (!markersRef.current.nearby) markersRef.current.nearby = {};
+      
+      // Update existing or create new markers
+      nearbyDrivers.forEach((driver, idx) => {
+        const key = `nearby_${driver.id}`;
+        const pos = toLatLng([driver.current_lat, driver.current_lng]);
+        
+        if (!markersRef.current.nearby[key]) {
+          markersRef.current.nearby[key] = new window.google.maps.Marker({
+            map,
+            icon: nearbyDriverIcon(),
+            title: `${driver.vehicle_make} ${driver.vehicle_model}`,
+          });
+        }
+        markersRef.current.nearby[key].setPosition(pos);
+      });
+      
+      // Remove markers for drivers no longer in range
+      Object.keys(markersRef.current.nearby).forEach(key => {
+        if (!nearbyDrivers.find(d => `nearby_${d.id}` === key)) {
+          markersRef.current.nearby[key].setMap(null);
+          delete markersRef.current.nearby[key];
+        }
+      });
+    } else if (!driverPos && markersRef.current.nearby) {
+      // Clear all nearby markers if there are no nearby drivers
+      Object.values(markersRef.current.nearby).forEach(m => m.setMap(null));
+      delete markersRef.current.nearby;
     }
 
     // Pan map to follow driver (or user)
@@ -244,6 +284,19 @@ function driverMarkerIcon() {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
     scaledSize: new window.google.maps.Size(40, 40),
     anchor: new window.google.maps.Point(20, 20),
+  };
+}
+
+function nearbyDriverIcon() {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="15" fill="#006B3F" stroke="#fff" stroke-width="2" opacity="0.85"/>
+      <circle cx="16" cy="16" r="6" fill="#fff"/>
+    </svg>`;
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new window.google.maps.Size(32, 32),
+    anchor: new window.google.maps.Point(16, 16),
   };
 }
 
