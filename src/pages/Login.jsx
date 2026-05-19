@@ -13,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [savedEmail, setSavedEmail] = useState("");
 
@@ -28,41 +29,42 @@ export default function Login() {
   }, []);
 
   const handleBiometricLogin = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      // Get challenge from backend
-      const challengeRes = await base44.functions.invoke("getLoginChallenge", { email: savedEmail });
-      const challenge = challengeRes.data.challenge;
+  setError("");
+  setLoading(true);
+  try {
+  // Get challenge from backend
+  const challengeRes = await base44.functions.invoke("getLoginChallenge", { email: savedEmail });
+  const challenge = challengeRes.data.challenge;
 
-      // Request biometric authentication
-      const assertion = await navigator.credentials.get({
-        publicKey: {
-          challenge: new Uint8Array(challenge),
-          rpId: window.location.hostname,
-          allowCredentials: [],
-          userVerification: "required"
-        }
-      });
-
-      // Verify with backend
-      const verifyRes = await base44.functions.invoke("verifyBiometricLogin", {
-        email: savedEmail,
-        credential: Array.from(new Uint8Array(assertion.response.signature))
-      });
-
-      if (verifyRes.data.success) {
-        await base44.auth.loginViaEmailPassword(savedEmail, verifyRes.data.tempPassword);
-        window.location.href = "/";
-      } else {
-        setError("Biometric verification failed");
-      }
-    } catch (err) {
-      console.error("Biometric login error:", err);
-      setError(err.message || "Biometric login failed");
-    } finally {
-      setLoading(false);
+  // Request biometric authentication
+  const assertion = await navigator.credentials.get({
+    publicKey: {
+      challenge: new Uint8Array(challenge),
+      rpId: window.location.hostname,
+      allowCredentials: [],
+      userVerification: "required"
     }
+  });
+
+  // Verify with backend
+  const verifyRes = await base44.functions.invoke("verifyBiometricLogin", {
+    email: savedEmail,
+    credential: Array.from(new Uint8Array(assertion.response.signature))
+  });
+
+  if (verifyRes.data.success) {
+    await base44.auth.loginViaEmailPassword(savedEmail, verifyRes.data.tempPassword);
+    localStorage.setItem("rememberMe", "true");
+    window.location.href = "/";
+  } else {
+    setError("Biometric verification failed");
+  }
+  } catch (err) {
+  console.error("Biometric login error:", err);
+  setError(err.message || "Biometric login failed");
+  } finally {
+  setLoading(false);
+  }
   };
 
   const handleSubmit = async (e) => {
@@ -71,9 +73,13 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      // Save email for future biometric login
+      // Save email for future biometric login and remember me
       if (window.PublicKeyCredential) {
         localStorage.setItem("biometricEmail", email);
+      }
+      // Token is automatically saved by the SDK
+      if (rememberMe) {
+        localStorage.setItem("rememberMe", "true");
       }
       window.location.href = "/";
     } catch (err) {
@@ -84,7 +90,9 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+  // Mark session as persistent before redirect
+  localStorage.setItem("rememberMe", "true");
+  base44.auth.loginWithProvider("google", "/");
   };
 
   return (
@@ -136,6 +144,18 @@ export default function Login() {
           {error}
         </div>
       )}
+
+      <div className="flex items-center justify-between mb-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+          />
+          <span className="text-sm text-muted-foreground">Remember me</span>
+        </label>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">

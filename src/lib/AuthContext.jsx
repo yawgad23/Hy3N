@@ -100,16 +100,30 @@ export const AuthProvider = ({ children }) => {
       setAuthChecked(true);
     } catch (error) {
       console.error('User auth check failed:', error);
-      setIsLoadingAuth(false);
-      setIsAuthenticated(false);
-      setAuthChecked(true);
       
-      // If user auth fails, it might be an expired token
+      // Check if user had a persistent session
+      const rememberMe = localStorage.getItem('rememberMe') === 'true';
+      
       if (error.status === 401 || error.status === 403) {
+        // Token expired but user wanted to stay logged in
+        if (rememberMe) {
+          // Clear expired token and redirect to login
+          localStorage.removeItem('rememberMe');
+          localStorage.removeItem('base44_access_token');
+          localStorage.removeItem('token');
+        }
+        
+        setIsLoadingAuth(false);
+        setIsAuthenticated(false);
+        setAuthChecked(true);
         setAuthError({
           type: 'auth_required',
-          message: 'Authentication required'
+          message: 'Session expired. Please log in again.'
         });
+      } else {
+        setIsLoadingAuth(false);
+        setIsAuthenticated(false);
+        setAuthChecked(true);
       }
     }
   };
@@ -117,6 +131,9 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    
+    // Clear persistent session flag
+    localStorage.removeItem('rememberMe');
     
     if (shouldRedirect) {
       // Use the SDK's logout method which handles token cleanup and redirect
