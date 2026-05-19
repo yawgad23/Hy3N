@@ -1,27 +1,49 @@
 {
-  "name": "HY3N - Your Ride, Your Way",
+  "name": "HY3N - Rider App",
   "short_name": "HY3N",
-  "description": "Book safe and reliable rides in Ghana with HY3N",
+  "description": "HY3N Rider - Book affordable, safe rides in Ghana. Track your driver, split fares, and enjoy premium transportation.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0A0A0A",
+  "orientation": "portrait-primary",
   "theme_color": "#D4AF37",
-  "orientation": "portrait",
+  "background_color": "#0A0A0A",
   "icons": [
     {
-      "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png",
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/6a5713202_ChatGPTImageMay19202602_18_57PM.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png",
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/6a5713202_ChatGPTImageMay19202602_18_57PM.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["travel", "navigation"],
-  "lang": "en",
-  "dir": "ltr"
+  "screenshots": [
+    {
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/6a5713202_ChatGPTImageMay19202602_18_57PM.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["transportation"],
+  "shortcuts": [
+    {
+      "name": "Book a Ride",
+      "short_name": "Book Ride",
+      "description": "Quickly book your next ride",
+      "url": "/?shortcut=book",
+      "icons": [
+        {
+          "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/6a5713202_ChatGPTImageMay19202602_18_57PM.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }
