@@ -72,24 +72,38 @@ export function useDriverTracking({
     return () => clearInterval(interval);
   }, [isDriver, driverProfileId, status, pickupLat, pickupLng, destLat, destLng]);
 
-  // ── Rider side: poll DriverProfile for live position ──
+  // ── Rider side: real-time subscription to DriverProfile updates ──
   useEffect(() => {
     if (isDriver || !rideId) return;
     if (status !== "matched" && status !== "driver_arriving" && status !== "in_progress") return;
 
-    const poll = setInterval(async () => {
-      const rides = await base44.entities.Ride.filter({ id: rideId });
+    let driverProfileId = null;
+
+    // Initial fetch to get driver profile id and seed position
+    base44.entities.Ride.filter({ id: rideId }).then((rides) => {
       if (!rides.length) return;
       const dId = rides[0].driver_id;
       if (!dId) return;
-      const drivers = await base44.entities.DriverProfile.filter({ user_id: dId });
-      if (drivers.length > 0) {
-        const { current_lat, current_lng } = drivers[0];
-        if (current_lat && current_lng) setDriverPos([current_lat, current_lng]);
-      }
-    }, 2000);
+      base44.entities.DriverProfile.filter({ user_id: dId }).then((drivers) => {
+        if (drivers.length > 0) {
+          driverProfileId = drivers[0].id;
+          const { current_lat, current_lng } = drivers[0];
+          if (current_lat && current_lng) setDriverPos([current_lat, current_lng]);
+        }
+      });
+    });
 
-    return () => clearInterval(poll);
+    // Subscribe to real-time DriverProfile updates
+    const unsubscribe = base44.entities.DriverProfile.subscribe((event) => {
+      if (event.type === "update" && event.data?.current_lat && event.data?.current_lng) {
+        // Only update if this is the driver for our ride
+        if (!driverProfileId || event.id === driverProfileId) {
+          setDriverPos([event.data.current_lat, event.data.current_lng]);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, [isDriver, rideId, status]);
 
   return driverPos;

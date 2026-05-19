@@ -38,6 +38,7 @@ export default function GoogleTrackingMap({
   const mapInstanceRef = useRef(null);
   const markersRef = useRef({});
   const routeRendererRef = useRef(null);
+  const animFrameRef = useRef(null);
   const [loaded, setLoaded] = useState(googleMapsLoaded);
 
   // Load Google Maps SDK once
@@ -71,16 +72,41 @@ export default function GoogleTrackingMap({
     if (!loaded || !mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
 
-    // Driver marker
+    // Driver marker — smooth animated movement
     if (driverPos) {
       if (!markersRef.current.driver) {
         markersRef.current.driver = new window.google.maps.Marker({
           map,
           icon: driverMarkerIcon(),
           zIndex: 10,
+          position: toLatLng(driverPos),
         });
+      } else {
+        // Smoothly animate marker to new position over 800ms
+        const startPos = markersRef.current.driver.getPosition();
+        const endPos = toLatLng(driverPos);
+        if (startPos) {
+          const startLat = startPos.lat();
+          const startLng = startPos.lng();
+          const dLat = endPos.lat - startLat;
+          const dLng = endPos.lng - startLng;
+          const duration = 800;
+          const startTime = performance.now();
+          if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+          const animate = (now) => {
+            const t = Math.min((now - startTime) / duration, 1);
+            const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // ease-in-out
+            markersRef.current.driver?.setPosition({
+              lat: startLat + dLat * ease,
+              lng: startLng + dLng * ease,
+            });
+            if (t < 1) animFrameRef.current = requestAnimationFrame(animate);
+          };
+          animFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          markersRef.current.driver.setPosition(endPos);
+        }
       }
-      markersRef.current.driver.setPosition(toLatLng(driverPos));
     }
 
     // Pickup marker
