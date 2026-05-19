@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -23,6 +24,7 @@ export default function RiderProfile() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
   const [showLoyalty, setShowLoyalty] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -35,6 +37,16 @@ export default function RiderProfile() {
           setForm({ full_name: profiles[0].full_name, phone: profiles[0].phone, email: profiles[0].email || "" });
         } else {
           setForm({ full_name: me.full_name || "", phone: "", email: me.email || "" });
+        }
+        
+        // Check biometric status
+        try {
+          const keys = await base44.entities.BiometricKey.filter({ user_id: me.id });
+          if (keys.length > 0 && keys[0].enabled) {
+            setBiometricEnabled(true);
+          }
+        } catch (e) {
+          // Entity might not exist
         }
       }
     }
@@ -57,6 +69,60 @@ export default function RiderProfile() {
   const handleDeleteAccount = async () => {
     if (profile) await base44.entities.RiderProfile.delete(profile.id);
     base44.auth.logout("/");
+  };
+
+  const handleSetupBiometric = async () => {
+    try {
+      // Get registration challenge
+      const res = await base44.functions.invoke("generateBiometricKey", {});
+      
+      // Request biometric authentication from device
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: new Uint8Array(res.data.challenge),
+          rp: {
+            name: "HY3N",
+            id: window.location.hostname,
+          },
+          user: {
+            id: new Uint8Array(user.id.split('').map(c => c.charCodeAt(0))),
+            name: user.email,
+            displayName: user.full_name,
+          },
+          pubKeyCredParams: [
+            { type: "public-key", alg: -7 },
+            { type: "public-key", alg: -257 },
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            requireResidentKey: false,
+            userVerification: "required",
+          },
+          timeout: 60000,
+        }
+      });
+
+      // Verify and save
+      const verifyRes = await base44.functions.invoke("verifyBiometricKey", {
+        credential: credential
+      });
+
+      if (verifyRes.data.success) {
+        setBiometricEnabled(true);
+        localStorage.setItem("biometricEmail", user.email);
+        toast({
+          title: "Biometric enabled!",
+          description: "You can now use biometric login.",
+        });
+      }
+    } catch (err) {
+      console.error("Biometric setup error:", err);
+      toast({
+        title: "Setup failed",
+        description: err.message || "Could not enable biometric authentication",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -150,6 +216,21 @@ export default function RiderProfile() {
                 <LoyaltyCard userId={user.id} />
               </div>
             )}
+            <button
+              onClick={handleSetupBiometric}
+              disabled={!window.PublicKeyCredential}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl disabled:opacity-50"
+            >
+              <Fingerprint className={`w-5 h-5 ${biometricEnabled ? 'text-ghana-green' : 'text-muted-foreground'}`} />
+              <span className="flex-1 text-left text-sm font-medium">
+                {biometricEnabled ? 'Biometric Enabled' : 'Enable Biometric Login'}
+              </span>
+              {biometricEnabled ? (
+                <Shield className="w-4 h-4 text-ghana-green" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
             <button
               onClick={() => setShowReferModal(true)}
               className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"

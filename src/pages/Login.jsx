@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, Fingerprint } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 
@@ -13,6 +13,57 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [savedEmail, setSavedEmail] = useState("");
+
+  // Check if biometric auth is available and if user has saved credentials
+  useEffect(() => {
+    // Check for WebAuthn support
+    if (window.PublicKeyCredential) {
+      setBiometricAvailable(true);
+      // Check for saved email
+      const saved = localStorage.getItem("biometricEmail");
+      if (saved) setSavedEmail(saved);
+    }
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      // Get challenge from backend
+      const challengeRes = await base44.functions.invoke("getLoginChallenge", { email: savedEmail });
+      const challenge = challengeRes.data.challenge;
+
+      // Request biometric authentication
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: new Uint8Array(challenge),
+          rpId: window.location.hostname,
+          allowCredentials: [],
+          userVerification: "required"
+        }
+      });
+
+      // Verify with backend
+      const verifyRes = await base44.functions.invoke("verifyBiometricLogin", {
+        email: savedEmail,
+        credential: Array.from(new Uint8Array(assertion.response.signature))
+      });
+
+      if (verifyRes.data.success) {
+        await base44.auth.loginViaEmailPassword(savedEmail, verifyRes.data.tempPassword);
+        window.location.href = "/";
+      } else {
+        setError("Biometric verification failed");
+      }
+    } catch (err) {
+      console.error("Biometric login error:", err);
+      setError(err.message || "Biometric login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,6 +71,10 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      // Save email for future biometric login
+      if (window.PublicKeyCredential) {
+        localStorage.setItem("biometricEmail", email);
+      }
       window.location.href = "/";
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -48,12 +103,24 @@ export default function Login() {
     >
       <Button
         variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
+        className="w-full h-12 text-sm font-medium mb-4"
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
         Continue with Google
       </Button>
+
+      {biometricAvailable && savedEmail && (
+        <Button
+          variant="outline"
+          className="w-full h-12 text-sm font-medium mb-4 border-primary/40"
+          onClick={handleBiometricLogin}
+          disabled={loading}
+        >
+          <Fingerprint className="w-5 h-5 mr-2 text-primary" />
+          Use Biometric Login
+        </Button>
+      )}
 
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center">
@@ -119,6 +186,12 @@ export default function Login() {
             "Log in"
           )}
         </Button>
+
+        {biometricAvailable && !savedEmail && (
+          <p className="text-xs text-center text-muted-foreground mt-4">
+            Log in with email to enable biometric authentication
+          </p>
+        )}
       </form>
     </AuthLayout>
   );
