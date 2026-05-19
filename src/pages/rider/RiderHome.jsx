@@ -205,7 +205,7 @@ export default function RiderHome() {
 
       {/* Where To? Button */}
       {!destination && !activeRide && (
-        <div className="absolute bottom-24 left-4 right-4 z-30">
+        <div className="absolute bottom-20 left-4 right-4 z-20 pb-20">
           <button
             onClick={() => setSearchOpen(true)}
             className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-black/30"
