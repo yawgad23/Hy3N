@@ -37,6 +37,15 @@ export const RIDE_CATEGORIES = [
     basePrice: 25,
     pricePerKm: 5,
     seats: 4
+  },
+  {
+    id: "express_delivery",
+    name: "HY3N Express Delivery",
+    description: "Fast package delivery",
+    icon: "Package",
+    basePrice: 12,
+    pricePerKm: 2,
+    seats: 0
   }
 ];
 

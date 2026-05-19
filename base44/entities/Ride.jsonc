@@ -41,7 +41,8 @@
         "standard",
         "comfort",
         "kantanka",
-        "executive"
+        "executive",
+        "express_delivery"
       ]
     },
     "pickup_address": {
