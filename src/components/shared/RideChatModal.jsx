@@ -88,16 +88,18 @@ export default function RideChatModal({ isOpen, onClose, rideId, currentUserId, 
       if (event.type === "create") {
         const newMsg = event.data;
         setMessages(prev => {
-          // Show notification if message is from other party
           if (newMsg.sender_id !== currentUserId) {
             showNotification(
-              `New message from ${newMsg.sender_name}`,
+              `New message from ${newMsg.sender_name || (currentUserRole === 'rider' ? 'Driver' : 'Rider')}`,
               newMsg.message,
               "info"
             );
           }
           return [...prev, newMsg];
         });
+      } else if (event.type === "update") {
+        // Live read-receipt update — refresh the affected message
+        setMessages(prev => prev.map(m => m.id === event.id ? { ...m, ...event.data } : m));
       }
     });
 
