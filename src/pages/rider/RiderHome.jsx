@@ -217,8 +217,8 @@ export default function RiderHome() {
         </div>
       </div>
 
-      {/* Map - hidden */}
-      <div className="h-full hidden">
+      {/* Map */}
+      <div className="h-full">
         <GoogleTrackingMap
           driverPos={activeRide ? driverPos : null}
           pickupPos={activeRide?.pickup_lat ? [activeRide.pickup_lat, activeRide.pickup_lng] : null}
