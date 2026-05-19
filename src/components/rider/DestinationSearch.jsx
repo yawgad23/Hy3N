@@ -53,12 +53,8 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
       setLoading(true);
       const timer = setTimeout(async () => {
         try {
-          // Use Google Maps Places API via backend
-          const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${await getGoogleMapsKey()}&types=geocode&components=country:gh`);
-          const data = await response.json();
-          if (data.predictions) {
-            setSuggestions(data.predictions);
-          }
+          const res = await base44.functions.invoke("placesAutocomplete", { query });
+          setSuggestions(res.data.predictions || []);
         } catch (err) {
           console.error("Places API error:", err);
           setSuggestions([]);
@@ -72,21 +68,16 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
     }
   }, [query, isOpen]);
 
-  const getGoogleMapsKey = async () => {
-    const res = await base44.functions.invoke("getGoogleMapsKey", {});
-    return res.data.key;
-  };
-
   const handleSelectPlace = async (placeId) => {
     try {
-      const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${await getGoogleMapsKey()}`);
-      const data = await response.json();
-      if (data.result) {
+      const res = await base44.functions.invoke("placeDetails", { placeId });
+      const data = res.data.result;
+      if (data && data.geometry) {
         onSelect({
-          name: data.result.name || data.result.formatted_address,
-          address: data.result.formatted_address,
-          lat: data.result.geometry.location.lat,
-          lng: data.result.geometry.location.lng
+          name: data.name || data.formatted_address,
+          address: data.formatted_address,
+          lat: data.geometry.location.lat,
+          lng: data.geometry.location.lng
         });
         onClose();
       }
