@@ -51,6 +51,7 @@ export default function RiderHome() {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
 
+  // All hooks must be called before any conditional returns
   useEffect(() => {
     const init = async () => {
       try {
@@ -103,11 +104,10 @@ export default function RiderHome() {
   useEffect(() => {
     if (!user || activeRide) return;
     fetchNearbyDrivers();
-    const interval = setInterval(fetchNearbyDrivers, 10000); // Update every 10 seconds
+    const interval = setInterval(fetchNearbyDrivers, 10000);
     return () => clearInterval(interval);
   }, [user, activeRide, fetchNearbyDrivers]);
 
-  // Real-time notifications for ride status changes
   useEffect(() => {
     if (!activeRide?.id) return;
     
@@ -115,36 +115,17 @@ export default function RiderHome() {
       if (event.id === activeRide.id && event.type === "update") {
         const newStatus = event.data.status;
         const oldStatus = activeRide.status;
-        
-        // Driver arriving notification
         if (newStatus === "driver_arriving" && oldStatus !== "driver_arriving") {
-          showNotification(
-            "Driver is Arriving!",
-            `Your driver ${event.data.driver_name || 'is on the way'} will arrive soon.`,
-            "info"
-          );
+          showNotification("Driver is Arriving!", `Your driver ${event.data.driver_name || 'is on the way'} will arrive soon.`, "info");
         }
-        
-        // Driver matched notification
         if (newStatus === "matched" && oldStatus !== "matched") {
-          showNotification(
-            "Driver Assigned!",
-            `Your driver is ${event.data.driver_name || 'on the way'}.`,
-            "success"
-          );
+          showNotification("Driver Assigned!", `Your driver is ${event.data.driver_name || 'on the way'}.`, "success");
         }
-        
-        // Trip completed notification
         if (newStatus === "completed" && oldStatus !== "completed") {
-          showNotification(
-            "Trip Complete!",
-            "You've arrived at your destination.",
-            "success"
-          );
+          showNotification("Trip Complete!", "You've arrived at your destination.", "success");
         }
       }
     });
-    
     return () => unsubscribe();
   }, [activeRide?.id, activeRide?.status]);
 
