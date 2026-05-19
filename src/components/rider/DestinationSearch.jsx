@@ -46,7 +46,39 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchHistory, setSearchHistory] = useState([]);
   const autocompleteRef = useRef(null);
+
+  // Load search history from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("destinationSearchHistory");
+    if (saved) {
+      try {
+        setSearchHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load search history");
+      }
+    }
+  }, []);
+
+  // Save to search history when a location is selected
+  const saveToHistory = (location) => {
+    const newEntry = {
+      name: location.name,
+      address: location.address,
+      lat: location.lat,
+      lng: location.lng,
+      timestamp: Date.now()
+    };
+    setSearchHistory(prev => {
+      // Remove duplicate if exists
+      const filtered = prev.filter(l => l.name !== location.name);
+      // Add new entry at the beginning, keep last 10
+      const updated = [newEntry, ...filtered].slice(0, 10);
+      localStorage.setItem("destinationSearchHistory", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   useEffect(() => {
     if (isOpen && query.length > 2) {
@@ -73,12 +105,14 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
       const res = await base44.functions.invoke("placeDetails", { placeId });
       const data = res.data.result;
       if (data && data.geometry) {
-        onSelect({
+        const location = {
           name: data.name || data.formatted_address,
           address: data.formatted_address,
           lat: data.geometry.location.lat,
           lng: data.geometry.location.lng
-        });
+        };
+        saveToHistory(location);
+        onSelect(location);
         onClose();
       }
     } catch (err) {
@@ -86,12 +120,23 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
     }
   };
 
+  const handleSelectFromHistory = (location) => {
+    saveToHistory(location);
+    onSelect(location);
+    onClose();
+  };
+
+  const clearHistory = () => {
+    localStorage.removeItem("destinationSearchHistory");
+    setSearchHistory([]);
+  };
+
   const filtered = query.length > 0 && suggestions.length === 0
     ? POPULAR_LOCATIONS.filter(l =>
         l.name.toLowerCase().includes(query.toLowerCase()) ||
         l.address.toLowerCase().includes(query.toLowerCase())
       )
-    : suggestions.length > 0 ? [] : POPULAR_LOCATIONS;
+    : suggestions.length > 0 ? [] : (query ? POPULAR_LOCATIONS : []);
 
   return (
     <AnimatePresence>
@@ -124,6 +169,40 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
+            {/* Search History - Show when no query */}
+            {!query && searchHistory.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Recent Searches
+                  </p>
+                  <button
+                    onClick={clearHistory}
+                    className="text-xs text-destructive hover:underline"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  {searchHistory.map((location, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSelectFromHistory(location)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="font-medium text-sm text-foreground">{location.name}</p>
+                        <p className="text-xs text-muted-foreground">{location.address}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {loading && (
               <div className="flex items-center justify-center py-8">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -160,6 +239,11 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
                   {query ? "Popular Places" : "Popular Destinations"}
                 </p>
+                {!query && searchHistory.length > 0 && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Scroll up to see recent searches
+                  </p>
+                )}
                 <div className="space-y-1">
                   {filtered.map((location, i) => (
                     <button
