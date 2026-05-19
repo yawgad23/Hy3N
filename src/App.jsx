@@ -30,6 +30,7 @@ import DriverSupport from '@/pages/driver/DriverSupport';
 import DriverScheduledRides from '@/pages/driver/DriverScheduledRides';
 import SOSDashboard from '@/pages/admin/SOSDashboard';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminPortal from '@/pages/admin/AdminPortal';
 import Tasks from '@/pages/Tasks';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
             <Route path="/driver-app/scheduled" element={<DriverScheduledRides />} />
             <Route path="/admin/sos" element={<SOSDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/portal" element={<AdminPortal />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
           </Route>
