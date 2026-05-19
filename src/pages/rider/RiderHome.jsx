@@ -17,6 +17,7 @@ import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
 import SOSButton from "@/components/shared/SOSButton";
 import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
 
 export default function RiderHome() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function RiderHome() {
   const [scheduledConfirm, setScheduledConfirm] = useState(null);
   const [splitFare, setSplitFare] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
   const { subscribeToPush } = usePushNotifications();
 
   useEffect(() => {
@@ -176,6 +178,8 @@ export default function RiderHome() {
 
   return (
     <div className="h-screen-safe bg-background relative">
+      {showSplash && <RiderSplashScreen onComplete={() => setShowSplash(false)} />}
+      
       {/* Offline Indicator */}
       <OfflineIndicator />
       
