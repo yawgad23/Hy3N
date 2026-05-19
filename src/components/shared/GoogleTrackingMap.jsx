@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
 // Load Google Maps SDK — key injected at runtime from backend
+// SECURITY: API key is restricted in Google Cloud Console to:
+// - Your domain (e.g., yourdomain.com)
+// - Specific APIs only: Maps JavaScript API, Places API, Routes API
+// - HTTP referrers limited to prevent unauthorized use
 let googleMapsLoaded = false;
 let loadPromise = null;
 

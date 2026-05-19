@@ -1,65 +1,62 @@
-// Service Worker for Push Notifications
-const VAPID_PUBLIC_KEY = "YOUR_VAPID_PUBLIC_KEY"; // Replace with actual key from dashboard
+// Service Worker for HY3N Rider App
+// Push notifications require VAPID keys configured via environment variables
 
-self.addEventListener('push', function(event) {
-  let data = {};
-  
-  if (event.data) {
-    try {
-      data = event.data.json();
-    } catch (e) {
-      data = { title: 'New Message', body: event.data.text() };
-    }
-  }
+const CACHE_NAME = 'hy3n-rider-v1';
 
-  const title = data.title || 'HY3N Ride';
-  const options = {
-    body: data.body || 'You have a new message',
-    icon: '/logo.png',
-    badge: '/logo.png',
-    vibrate: [200, 100, 200],
-    data: {
-      rideId: data.rideId,
-      url: data.url || '/rider'
-    },
-    actions: [
-      {
-        action: 'open',
-        title: 'Open Chat'
-      },
-      {
-        action: 'close',
-        title: 'Dismiss'
-      }
-    ]
-  };
-
+// Install event - cache assets
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/manifest.json'
+      ]);
+    })
   );
 });
 
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-
-  if (event.action === 'open' || !event.action) {
-    const urlToOpen = event.notification.data?.url || '/rider';
-    event.waitUntil(
-      clients.matchAll({ type: 'window' }).then(function(clientList) {
-        for (let i = 0; i < clientList.length; i++) {
-          const client = clientList[i];
-          if (client.url.includes(urlToOpen) && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      })
-    );
-  }
+// Activate event - clean old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
+      );
+    })
+  );
 });
 
-self.addEventListener('activate', function(event) {
-  event.waitUntil(self.clients.claim());
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() || {};
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'HY3N', {
+      body: data.body || 'New notification',
+      icon: 'https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png',
+      badge: 'https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png',
+      data: data.data || {}
+    })
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  event.waitUntil(
+    clients.openWindow(event.notification.data?.url || '/')
+  );
 });

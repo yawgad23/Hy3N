@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 
 export function usePushNotifications() {
   useEffect(() => {
@@ -35,8 +36,8 @@ export function usePushNotifications() {
           return null;
         }
 
-        // Create new subscription (only if VAPID key is configured)
-        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        // Fetch VAPID public key securely from backend
+        const { vapidPublicKey } = await base44.functions.invoke("getVapidPublicKey", {});
         if (!vapidPublicKey) {
           console.warn("VAPID key not configured - push notifications disabled");
           return null;
