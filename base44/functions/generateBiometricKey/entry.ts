@@ -10,10 +10,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get origin from request headers
+    const origin = req.headers.get('origin') || req.headers.get('host') || 'localhost';
+    const rpID = origin.replace(/^https?:\/\//, '').split(':')[0].split('.')[0] === 'localhost' 
+      ? 'localhost' 
+      : origin.replace(/^https?:\/\//, '').split(':')[0];
+
     // Generate registration options for WebAuthn
     const options = await generateRegistrationOptions({
       rpName: 'HY3N',
-      rpID: window.location.hostname || 'localhost',
+      rpID: rpID || 'localhost',
       userID: user.id,
       userName: user.email,
       attestationType: 'none',

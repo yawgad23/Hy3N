@@ -40,17 +40,6 @@ export default function RiderHome() {
   const [showSplash, setShowSplash] = useState(true);
   const { subscribeToPush } = usePushNotifications();
 
-  useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
-    if (!hasSeenOnboarding && user) {
-      setShowOnboarding(true);
-    }
-  }, [user]);
-
-  if (showOnboarding) {
-    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
-  }
-
   // All hooks must be called before any conditional returns
   useEffect(() => {
     const init = async () => {
@@ -128,6 +117,11 @@ export default function RiderHome() {
     });
     return () => unsubscribe();
   }, [activeRide?.id, activeRide?.status]);
+
+  // Conditional return AFTER all hooks
+  if (showOnboarding) {
+    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
+  }
 
   const handleBookRide = async (bookingData) => {
     const isScheduled = bookingData.ride_type === "scheduled";
