@@ -39,10 +39,9 @@
       "type": "string",
       "enum": [
         "standard",
-        "xl",
-        "executive",
+        "comfort",
         "kantanka",
-        "express_delivery"
+        "executive"
       ]
     },
     "pickup_address": {

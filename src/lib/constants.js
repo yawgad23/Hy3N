@@ -12,13 +12,22 @@ export const RIDE_CATEGORIES = [
     seats: 4
   },
   {
-    id: "xl",
-    name: "HY3N XL",
-    description: "Extra space for groups",
-    icon: "Bus",
+    id: "comfort",
+    name: "HY3N Comfort",
+    description: "Comfortable rides with extra amenities",
+    icon: "Star",
     basePrice: 15,
     pricePerKm: 3.5,
-    seats: 6
+    seats: 4
+  },
+  {
+    id: "kantanka",
+    name: "Kantanka HY3N",
+    description: "Ride made in Ghana",
+    icon: "Bus",
+    basePrice: 10,
+    pricePerKm: 3,
+    seats: 4
   },
   {
     id: "executive",
@@ -28,24 +37,6 @@ export const RIDE_CATEGORIES = [
     basePrice: 25,
     pricePerKm: 5,
     seats: 4
-  },
-  {
-    id: "kantanka",
-    name: "Kantanka Hyen",
-    description: "Ride made in Ghana",
-    icon: "Star",
-    basePrice: 10,
-    pricePerKm: 3,
-    seats: 4
-  },
-  {
-    id: "express_delivery",
-    name: "HY3N Express",
-    description: "Fast package delivery",
-    icon: "Package",
-    basePrice: 12,
-    pricePerKm: 2,
-    seats: 0
   }
 ];
 
