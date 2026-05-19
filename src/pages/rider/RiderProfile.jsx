@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import ReferFriendModal from "@/components/rider/ReferFriendModal";
+import LoyaltyCard from "@/components/rider/LoyaltyCard";
 
 export default function RiderProfile() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function RiderProfile() {
   const [form, setForm] = useState({ full_name: "", phone: "", email: "" });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
+  const [showLoyalty, setShowLoyalty] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -135,6 +137,19 @@ export default function RiderProfile() {
               <span className="flex-1 text-left text-sm font-medium">My Wallet</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
+            <button
+              onClick={() => setShowLoyalty(!showLoyalty)}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-primary/30 rounded-xl"
+            >
+              <Trophy className="w-5 h-5 text-primary" />
+              <span className="flex-1 text-left text-sm font-medium text-primary">Loyalty Rewards</span>
+              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showLoyalty ? "rotate-90" : ""}`} />
+            </button>
+            {showLoyalty && user && (
+              <div className="mt-1">
+                <LoyaltyCard userId={user.id} />
+              </div>
+            )}
             <button
               onClick={() => setShowReferModal(true)}
               className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
