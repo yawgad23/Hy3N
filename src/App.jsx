@@ -15,6 +15,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
 import SplashScreen from '@/components/shared/SplashScreen';
+import { base44 } from '@/api/base44Client';
 
 import RiderHome from '@/pages/rider/RiderHome';
 import RiderHistory from '@/pages/rider/RiderHistory';
@@ -84,12 +85,23 @@ const AuthenticatedApp = () => {
 function App() {
   registerServiceWorker();
   const [showSplash, setShowSplash] = React.useState(true);
+  const [isAuth, setIsAuth] = React.useState(null);
+
+  React.useEffect(() => {
+    (async () => {
+      const auth = await base44.auth.isAuthenticated();
+      setIsAuth(auth);
+      if (!auth) {
+        setShowSplash(false);
+      }
+    })();
+  }, []);
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+          {showSplash && isAuth && <SplashScreen onComplete={() => setShowSplash(false)} />}
           <AppEffects />
           <AuthenticatedApp />
         </Router>
