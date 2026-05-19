@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapPin, Search, X, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
 
 const POPULAR_LOCATIONS = [
   { name: "Kotoka International Airport", address: "Airport, Accra", lat: 5.6052, lng: -0.1668 },
@@ -43,13 +44,63 @@ const POPULAR_LOCATIONS = [
 
 export default function DestinationSearch({ isOpen, onClose, onSelect }) {
   const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const autocompleteRef = useRef(null);
 
-  const filtered = query.length > 0
+  useEffect(() => {
+    if (isOpen && query.length > 2) {
+      setLoading(true);
+      const timer = setTimeout(async () => {
+        try {
+          // Use Google Maps Places API via backend
+          const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${await getGoogleMapsKey()}&types=geocode&components=country:gh`);
+          const data = await response.json();
+          if (data.predictions) {
+            setSuggestions(data.predictions);
+          }
+        } catch (err) {
+          console.error("Places API error:", err);
+          setSuggestions([]);
+        } finally {
+          setLoading(false);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setSuggestions([]);
+    }
+  }, [query, isOpen]);
+
+  const getGoogleMapsKey = async () => {
+    const res = await base44.functions.invoke("getGoogleMapsKey", {});
+    return res.data.key;
+  };
+
+  const handleSelectPlace = async (placeId) => {
+    try {
+      const response = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${await getGoogleMapsKey()}`);
+      const data = await response.json();
+      if (data.result) {
+        onSelect({
+          name: data.result.name || data.result.formatted_address,
+          address: data.result.formatted_address,
+          lat: data.result.geometry.location.lat,
+          lng: data.result.geometry.location.lng
+        });
+        onClose();
+      }
+    } catch (err) {
+      console.error("Place details error:", err);
+    }
+  };
+
+  const filtered = query.length > 0 && suggestions.length === 0
     ? POPULAR_LOCATIONS.filter(l =>
         l.name.toLowerCase().includes(query.toLowerCase()) ||
         l.address.toLowerCase().includes(query.toLowerCase())
       )
-    : POPULAR_LOCATIONS;
+    : suggestions.length > 0 ? [] : POPULAR_LOCATIONS;
 
   return (
     <AnimatePresence>
@@ -82,33 +133,75 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
-              {query ? "Results" : "Popular Destinations"}
-            </p>
-            <div className="space-y-1">
-              {filtered.map((location, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    onSelect(location);
-                    onClose();
-                  }}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                    {query ? (
-                      <MapPin className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Clock className="w-5 h-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium text-sm text-foreground">{location.name}</p>
-                    <p className="text-xs text-muted-foreground">{location.address}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
+            {loading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            
+            {!loading && suggestions.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
+                  Suggestions
+                </p>
+                <div className="space-y-1">
+                  {suggestions.map((place) => (
+                    <button
+                      key={place.place_id}
+                      onClick={() => handleSelectPlace(place.place_id)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="font-medium text-sm text-foreground">{place.structured_formatting?.main_text || place.description}</p>
+                        <p className="text-xs text-muted-foreground">{place.structured_formatting?.secondary_text || ""}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!loading && suggestions.length === 0 && filtered.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
+                  {query ? "Popular Places" : "Popular Destinations"}
+                </p>
+                <div className="space-y-1">
+                  {filtered.map((location, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        onSelect(location);
+                        onClose();
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                        {query ? (
+                          <MapPin className="w-5 h-5 text-primary" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <p className="font-medium text-sm text-foreground">{location.name}</p>
+                        <p className="text-xs text-muted-foreground">{location.address}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!loading && suggestions.length === 0 && filtered.length === 0 && query.length > 2 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No results found</p>
+                <p className="text-xs mt-1">Try a different search term</p>
+              </div>
+            )}
           </div>
         </motion.div>
       )}
