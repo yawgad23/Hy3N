@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [showRating, setShowRating] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mapExpanded, setMapExpanded] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
@@ -191,6 +192,61 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
   return (
     <>
+    {/* Full-screen map overlay */}
+    <AnimatePresence>
+      {mapExpanded && (
+        <motion.div
+          className="fixed inset-0 z-50 bg-background"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Map fills entire screen — GoogleTrackingMap is rendered in RiderHome beneath */}
+          <div className="absolute inset-0" />
+          {/* Live ETA + driver info overlay at top */}
+          <div className="absolute top-0 left-0 right-0 pt-safe px-4 pt-4 z-10">
+            <div className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-3 flex items-center justify-between shadow-xl">
+              <div>
+                <p className="text-xs text-ghana-green font-medium uppercase tracking-wider">{STATUS_LABELS[status]}</p>
+                <p className="font-heading font-bold text-sm">{currentRide?.driver_name || "Your Driver"}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {eta !== null && (
+                  <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-lg">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-sm font-bold text-foreground">{eta} min</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setMapExpanded(false)}
+                  className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center"
+                >
+                  <ChevronDown className="w-4 h-4 text-foreground" />
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Driver info at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 pb-safe px-4 pb-6 z-10">
+            <div className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Navigation className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{currentRide?.driver_name || "Driver"}</p>
+                    <p className="text-xs text-muted-foreground">{currentRide?.destination_address}</p>
+                  </div>
+                </div>
+                <p className="font-heading font-bold text-primary text-lg">GH₵{currentRide?.fare_estimate}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
     <motion.div
       className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-40"
       initial={{ y: "100%" }}
@@ -262,6 +318,17 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                   <p className="text-xs text-muted-foreground">Your share: GH₵{splitFare.perPersonFare}</p>
                 </div>
               </div>
+            )}
+
+            {driverPos && (
+              <button
+                onClick={() => setMapExpanded(true)}
+                className="w-full flex items-center justify-center gap-2 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/30 text-primary font-medium text-sm"
+              >
+                <Map className="w-4 h-4" />
+                Track driver on map
+                <ChevronUp className="w-4 h-4" />
+              </button>
             )}
 
             <div className="flex gap-3 mb-4">
