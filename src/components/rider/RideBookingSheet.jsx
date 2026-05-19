@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp, ChevronRight } from "lucide-react";
+import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
@@ -35,11 +35,13 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
   const [scheduledFor, setScheduledFor] = useState(null);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [splitData, setSplitData] = useState(null);
-  const [distance] = useState(() => 5 + Math.random() * 15);
+  const [distance, setDistance] = useState(null);
+  const [duration, setDuration] = useState(null);
   const [surge, setSurge] = useState({ multiplier: 1.0, is_surge: false });
   const [surgeLoading, setSurgeLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [calculatingFare, setCalculatingFare] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(async (me) => {
@@ -49,6 +51,30 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
     }).catch(() => {});
   }, []);
 
+  // Calculate distance and duration
+  useEffect(() => {
+    if (!pickupLat || !pickupLng || !destination?.lat || !destination?.lng) return;
+    
+    setCalculatingFare(true);
+    base44.functions.invoke("calculateDistance", {
+      pickup_lat: pickupLat,
+      pickup_lng: pickupLng,
+      dest_lat: destination.lat,
+      dest_lng: destination.lng
+    })
+      .then((res) => {
+        setDistance(res.data.distance_km);
+        setDuration(res.data.duration_minutes);
+      })
+      .catch((err) => {
+        console.error("Distance calculation error:", err);
+        setDistance(5); // Fallback
+        setDuration(15);
+      })
+      .finally(() => setCalculatingFare(false));
+  }, [pickupLat, pickupLng, destination]);
+
+  // Get surge pricing
   useEffect(() => {
     if (!pickupLat || !pickupLng) return;
     setSurgeLoading(true);
@@ -58,8 +84,8 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
       .finally(() => setSurgeLoading(false));
   }, [pickupLat, pickupLng]);
 
-  const baseFare = selectedCategory.basePrice + selectedCategory.pricePerKm * distance;
-  const fare = parseFloat((baseFare * surge.multiplier).toFixed(2));
+  const baseFare = distance ? selectedCategory.basePrice + selectedCategory.pricePerKm * distance : selectedCategory.basePrice;
+  const fare = distance ? parseFloat((baseFare * surge.multiplier).toFixed(2)) : 0;
   const yourShare = splitData ? splitData.perPersonFare : fare;
 
   const handleSplitConfirm = (data) => {
@@ -82,22 +108,45 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           </button>
         </div>
 
-        <div className="flex items-center gap-3 mb-5 p-3 bg-secondary rounded-xl">
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-3 h-3 rounded-full border-2 border-ghana-green" />
-            <div className="w-0.5 h-6 bg-border" />
-            <MapPin className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex-1 space-y-3">
-            <div>
-              <p className="text-xs text-muted-foreground">Pickup</p>
-              <p className="text-sm font-medium text-foreground">Current Location</p>
+        {/* Route Summary with Distance & Duration */}
+        <div className="mb-5 p-4 bg-secondary rounded-xl">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="flex flex-col items-center gap-1 mt-1">
+              <div className="w-3 h-3 rounded-full border-2 border-ghana-green" />
+              <div className="w-0.5 h-8 bg-border" />
+              <MapPin className="w-4 h-4 text-primary" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Destination</p>
-              <p className="text-sm font-medium text-foreground">{destination?.name || "Selected destination"}</p>
+            <div className="flex-1 space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Pickup</p>
+                <p className="text-sm font-medium text-foreground">Current Location</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Destination</p>
+                <p className="text-sm font-medium text-foreground">{destination?.name || "Selected destination"}</p>
+              </div>
             </div>
           </div>
+          
+          {/* Distance & Duration Badge */}
+          {distance && duration && (
+            <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-border">
+              <div className="flex items-center gap-2">
+                <Navigation className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Distance</p>
+                  <p className="text-sm font-bold text-foreground">{distance.toFixed(1)} km</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarClock className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Duration</p>
+                  <p className="text-sm font-bold text-foreground">~{duration} min</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Surge banner */}
@@ -111,17 +160,27 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           </div>
         )}
 
-        <div className="space-y-2 mb-5">
-          {RIDE_CATEGORIES.map((cat) => (
-            <RideCategoryCard
-              key={cat.id}
-              category={cat}
-              selected={selectedCategory.id === cat.id}
-              onSelect={setSelectedCategory}
-              distance={distance}
-              surgeMultiplier={surge.multiplier}
-            />
-          ))}
+        {/* Ride Category Selection */}
+        <div className="mb-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Choose Ride</p>
+          <div className="space-y-2">
+            {calculatingFare ? (
+              <div className="flex items-center justify-center p-8 bg-secondary rounded-xl">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              RIDE_CATEGORIES.map((cat) => (
+                <RideCategoryCard
+                  key={cat.id}
+                  category={cat}
+                  selected={selectedCategory.id === cat.id}
+                  onSelect={setSelectedCategory}
+                  distance={distance}
+                  surgeMultiplier={surge.multiplier}
+                />
+              ))
+            )}
+          </div>
         </div>
 
         <div className="mb-5">
@@ -239,21 +298,42 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           )}
         </div>
 
-        <div className="flex items-center justify-between mb-4 p-3 bg-secondary rounded-xl">
-          <div>
-            <span className="text-muted-foreground">
-              {splitData ? "Your share" : "Estimated fare"}
-            </span>
-            {splitData && (
-              <p className="text-xs text-muted-foreground">Total: GH₵{fare.toFixed(2)}</p>
-            )}
-            {surge.is_surge && (
-              <p className="text-xs text-destructive font-medium">{surge.multiplier}x surge applied</p>
-            )}
+        {/* Fare Breakdown */}
+        <div className="mb-4 space-y-2">
+          <div className="flex items-center justify-between p-3 bg-secondary rounded-xl">
+            <div>
+              <p className="text-xs text-muted-foreground">Base Fare</p>
+              <p className="text-sm font-medium">GH₵{distance ? (selectedCategory.basePrice).toFixed(2) : "0.00"}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Distance</p>
+              <p className="text-sm font-medium">{distance ? distance.toFixed(1) : "-"} km</p>
+            </div>
           </div>
-          <span className={`font-heading font-bold text-xl ${surge.is_surge ? "text-destructive" : "text-primary"}`}>
-            GH₵{yourShare.toFixed ? yourShare.toFixed(2) : yourShare}
-          </span>
+          
+          {surge.is_surge && (
+            <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-destructive" />
+                <p className="text-xs text-destructive font-medium">Surge ({surge.multiplier}x)</p>
+              </div>
+              <p className="text-sm font-bold text-destructive">+GH₵{distance ? (selectedCategory.basePrice * (surge.multiplier - 1)).toFixed(2) : "0.00"}</p>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-xl">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                {splitData ? "Your Share" : "Total Fare"}
+              </p>
+              {splitData && (
+                <p className="text-xs text-muted-foreground">Total: GH₵{fare.toFixed(2)}</p>
+              )}
+            </div>
+            <span className={`font-heading font-bold text-2xl ${surge.is_surge ? "text-destructive" : "text-primary"}`}>
+              GH₵{yourShare.toFixed ? yourShare.toFixed(2) : "0.00"}
+            </span>
+          </div>
         </div>
 
         <Button
