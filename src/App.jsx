@@ -24,6 +24,7 @@ import RiderSupport from '@/pages/rider/RiderSupport';
 import ScheduledTrips from '@/pages/rider/ScheduledTrips';
 import RiderWallet from '@/pages/rider/RiderWallet';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminRideReports from '@/components/admin/AdminRideReports';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 
 const AuthenticatedApp = () => {
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
             <Route path="/scheduled" element={<ScheduledTrips />} />
             <Route path="/wallet" element={<RiderWallet />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/reports" element={<AdminRideReports />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
           </Route>
 

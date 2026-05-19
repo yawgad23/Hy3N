@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, MapPin, Navigation, Star, Calendar, Clock, DollarSign } from "lucide-react";
+import { X, MapPin, Navigation, Star, Calendar, Clock, DollarSign, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
 
-export default function TripDetailsModal({ ride, isOpen, onClose, currentUserRole }) {
+export default function TripDetailsModal({ ride, isOpen, onClose, currentUserRole, onReportIssue }) {
   if (!isOpen || !ride) return null;
 
   const isRider = currentUserRole === "rider";
@@ -178,6 +178,21 @@ export default function TripDetailsModal({ ride, isOpen, onClose, currentUserRol
               </div>
             </div>
           </div>
+
+          {/* Report Issue Button - Only for completed rides */}
+          {ride.status === "completed" && isRider && onReportIssue && (
+            <Button
+              onClick={() => {
+                onClose();
+                onReportIssue(ride);
+              }}
+              variant="outline"
+              className="w-full border-ghana-red/40 text-ghana-red hover:bg-ghana-red/10"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Report an Issue
+            </Button>
+          )}
         </div>
       </motion.div>
     </motion.div>

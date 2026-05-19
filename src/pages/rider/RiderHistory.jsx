@@ -6,6 +6,7 @@ import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import TripHistoryCard from "@/components/shared/TripHistoryCard";
 import TripDetailsModal from "@/components/shared/TripDetailsModal";
+import RideReportModal from "@/components/rider/RideReportModal";
 
 const PULL_THRESHOLD = 70;
 
@@ -16,6 +17,8 @@ export default function RiderHistory() {
   const [pullY, setPullY] = useState(0);
   const [selectedRide, setSelectedRide] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [reportRide, setReportRide] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
   const touchStartY = useRef(0);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
@@ -35,6 +38,11 @@ export default function RiderHistory() {
   const handleViewDetails = (ride) => {
     setSelectedRide(ride);
     setShowDetails(true);
+  };
+
+  const handleReportIssue = (ride) => {
+    setReportRide(ride);
+    setShowReportModal(true);
   };
 
   const loadRides = useCallback(async () => {
@@ -118,6 +126,13 @@ export default function RiderHistory() {
         isOpen={showDetails}
         onClose={() => { setShowDetails(false); setSelectedRide(null); }}
         currentUserRole="rider"
+        onReportIssue={handleReportIssue}
+      />
+
+      <RideReportModal
+        ride={reportRide}
+        isOpen={showReportModal}
+        onClose={() => { setShowReportModal(false); setReportRide(null); }}
       />
 
       <BottomNav role="rider" />

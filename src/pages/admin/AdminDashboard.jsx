@@ -8,7 +8,7 @@ import {
 import { format, parseISO, subDays, startOfDay } from "date-fns";
 import {
   Car, TrendingUp, DollarSign, Users, AlertTriangle, Shield,
-  RefreshCw, ChevronRight, MapPin
+  RefreshCw, ChevronRight, MapPin, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/shared/Logo";
@@ -324,6 +324,7 @@ export default function AdminDashboard() {
           <p className="font-heading font-semibold text-sm px-4 pt-4 pb-2">Quick Actions</p>
           {[
             { label: "SOS Incident Monitor", path: "/admin/sos", icon: AlertTriangle, color: "text-destructive" },
+            { label: "Ride Reports", path: "/admin/reports", icon: FileText, color: "text-primary" },
           ].map((item) => (
             <button
               key={item.path}
