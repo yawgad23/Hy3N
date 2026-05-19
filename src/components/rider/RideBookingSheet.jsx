@@ -146,7 +146,7 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           </div>
           {selectedPayment === "wallet" && yourShare > walletBalance && (
             <p className="text-xs text-destructive mt-2">
-              Insufficient wallet balance. <span className="underline cursor-pointer" onClick={() => window.location.href = "/rider/wallet"}>Top up →</span>
+              Insufficient wallet balance. <span className="underline cursor-pointer" onClick={() => window.location.href = "/wallet"}>Top up →</span>
             </p>
           )}
         </div>
