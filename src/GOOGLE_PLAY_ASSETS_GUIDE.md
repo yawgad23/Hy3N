@@ -65,7 +65,7 @@
 ### Contact Details
 - **Email:** [Your support email]
 - **Website:** [Your website URL]
-- **Privacy Policy:** Available in-app at `/privacy`
+- **Privacy Policy:** `https://your-domain.com/privacy` (in-app route: `/privacy`)
 
 ---
 
@@ -149,7 +149,7 @@ bubblewrap build
 - [ ] Feature graphic (1024x500 PNG/JPG)
 - [ ] Minimum 2 phone screenshots
 - [ ] App name and descriptions written
-- [ ] Privacy policy URL ready
+- [ ] Privacy policy URL ready (e.g., `https://your-domain.com/privacy`)
 - [ ] Contact email configured
 - [ ] Content rating completed
 - [ ] TWA/Android package built and signed
