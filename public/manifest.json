@@ -30,7 +30,19 @@
       "form_factor": "wide"
     },
     {
-      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/099a8d5c4_ChatGPTImageMay19202602_56_28PM.png",
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/f05c9bdda_Screenshot2026-05-19at14-37-40HY3NBase44.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/84d010c97_Screenshot2026-05-19at14-39-24HY3NBase44.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/762d04f3a_Screenshot2026-05-19at14-40-02HY3NBase44.png",
       "sizes": "540x720",
       "type": "image/png",
       "form_factor": "narrow"
