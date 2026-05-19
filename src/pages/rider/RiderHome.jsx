@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Search, MapPin, Bell, CalendarClock, CheckCircle2 } from "lucide-react";
+import { Search, MapPin, Bell, CalendarClock, CheckCircle2, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
@@ -217,7 +217,7 @@ export default function RiderHome() {
         </div>
       </div>
 
-      {/* Map */}
+      {/* Map - Full Screen */}
       <div className="absolute inset-0 z-0">
         <GoogleTrackingMap
           driverPos={activeRide ? driverPos : null}
@@ -231,22 +231,50 @@ export default function RiderHome() {
         />
       </div>
 
-      {/* Where To? Button */}
+      {/* Nearby Cars Indicator (when no active ride) */}
+      {!activeRide && nearbyDrivers.length > 0 && (
+        <div className="absolute top-24 left-4 z-10 bg-card/90 backdrop-blur-md border border-border rounded-xl px-3 py-2 shadow-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <p className="text-xs font-semibold text-foreground">{nearbyDrivers.length} cars nearby</p>
+          </div>
+        </div>
+      )}
+
+      {/* Where To? Search Bar - Uber/Bolt Style */}
       {!destination && !activeRide && (
-        <div className="fixed bottom-20 left-4 right-4 z-20 max-w-sm mx-auto" style={{ width: 'calc(100% - 2rem)' }}>
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 shadow-lg shadow-black/30"
-          >
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Search className="w-5 h-5 text-primary" />
+        <div className="absolute bottom-0 left-0 right-0 z-20 pb-safe">
+          <div className="bg-card border-t border-border rounded-t-3xl p-4 shadow-2xl">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-full bg-secondary hover:bg-secondary/80 rounded-2xl p-4 flex items-center gap-4 transition-colors"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
+                <Search className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="font-heading font-bold text-lg text-foreground">Where to?</p>
+                <p className="text-sm text-muted-foreground">Enter your destination</p>
+              </div>
+              <MapPin className="w-6 h-6 text-muted-foreground" />
+            </button>
+            
+            {/* Quick Actions */}
+            <div className="flex gap-3 mt-4 overflow-x-auto">
+              <button className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Home</span>
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Work</span>
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Recent</span>
+              </button>
             </div>
-            <div className="text-left flex-1">
-              <p className="font-heading font-semibold text-foreground">Where to?</p>
-              <p className="text-xs text-muted-foreground">Search destination</p>
-            </div>
-            <MapPin className="w-5 h-5 text-muted-foreground" />
-          </button>
+          </div>
         </div>
       )}
 

@@ -274,39 +274,61 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
         {(status === "matched" || status === "driver_arriving" || status === "in_progress") && (
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs text-ghana-green font-medium uppercase tracking-wider">
-                  {STATUS_LABELS[status]}
-                </p>
-                <h3 className="font-heading font-bold text-lg mt-1">
-                  {currentRide.driver_name || "Your Driver"}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2">
+            {/* Live ETA Banner - Uber Style */}
+            <div className="bg-primary/10 border border-primary/30 rounded-2xl p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                    <Navigation className="w-6 h-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-ghana-green font-bold uppercase tracking-wider">
+                      {status === "driver_arriving" ? "Driver Arriving" : status === "matched" ? "Driver Assigned" : "On Trip"}
+                    </p>
+                    <p className="font-heading font-bold text-lg">{currentRide.driver_name || "Your Driver"}</p>
+                  </div>
+                </div>
                 {eta !== null && (
-                  <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-lg">
-                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">{eta} min</span>
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-primary">{eta}</p>
+                    <p className="text-xs text-muted-foreground">min</p>
                   </div>
                 )}
-                <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-lg">
-                  <Star className="w-4 h-4 text-primary fill-primary" />
-                  <span className="text-sm font-medium text-primary">4.9</span>
-                </div>
               </div>
             </div>
 
+            {/* Driver Details */}
             <div className="flex items-center gap-3 p-3 bg-secondary rounded-xl mb-4">
-              <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Star className="w-5 h-5 text-primary fill-primary" />
+              </div>
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Destination</p>
-                <p className="text-sm font-medium">{currentRide.destination_address}</p>
+                <p className="font-semibold text-sm">4.9 ★ Rating</p>
+                <p className="text-xs text-muted-foreground">White Toyota Camry • ABC 123 A</p>
+              </div>
+            </div>
+
+            {/* Trip Route */}
+            <div className="flex items-start gap-3 p-4 bg-secondary/50 rounded-xl mb-4 border-l-4 border-primary">
+              <div className="flex flex-col items-center gap-1 mt-1">
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <div className="w-0.5 h-8 bg-border" />
+                <div className="w-3 h-3 rounded-full bg-primary" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Pickup</p>
+                  <p className="text-sm font-medium">{currentRide.pickup_address}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Destination</p>
+                  <p className="text-sm font-medium">{currentRide.destination_address}</p>
+                </div>
               </div>
               <div className="text-right">
-                <p className="font-heading font-bold text-primary">GH₵{currentRide.fare_estimate}</p>
+                <p className="font-heading font-bold text-primary text-lg">GH₵{currentRide.fare_estimate}</p>
                 {splitFare && (
-                  <p className="text-xs text-ghana-green">Split ÷{splitFare.totalPeople}</p>
+                  <p className="text-xs text-ghana-green">÷{splitFare.totalPeople}</p>
                 )}
               </div>
             </div>
@@ -323,22 +345,24 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
               </div>
             )}
 
+            {/* Expand Map Button */}
             {driverPos && (
               <button
                 onClick={() => setMapExpanded(true)}
-                className="w-full flex items-center justify-center gap-2 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/30 text-primary font-medium text-sm"
+                className="w-full flex items-center justify-center gap-2 mb-4 p-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
               >
                 <Map className="w-4 h-4" />
-                Track driver on map
+                Track Driver on Map
                 <ChevronUp className="w-4 h-4" />
               </button>
             )}
 
+            {/* Action Buttons */}
             <div className="flex gap-3 mb-4">
-              <Button variant="outline" className="flex-1 h-12 border-border">
+              <Button variant="outline" className="flex-1 h-12 border-border bg-secondary hover:bg-secondary/80">
                 <Phone className="w-4 h-4 mr-2" /> Call
               </Button>
-              <Button variant="outline" className="flex-1 h-12 border-border relative" onClick={openChat}>
+              <Button variant="outline" className="flex-1 h-12 border-border bg-secondary hover:bg-secondary/80 relative" onClick={openChat}>
                 <MessageSquare className="w-4 h-4 mr-2" /> Message
                 {unreadCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
