@@ -1,11 +1,11 @@
 {
-  "name": "HY3N — Ride Ghana Forward",
+  "name": "HY3N - Your Ride, Your Way",
   "short_name": "HY3N",
-  "description": "Ghana's premium ride-hailing service",
+  "description": "Book safe and reliable rides in Ghana with HY3N",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0A0A",
-  "theme_color": "#0A0A0A",
+  "theme_color": "#D4AF37",
   "orientation": "portrait",
   "icons": [
     {
@@ -21,19 +21,7 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["travel", "transportation"],
-  "shortcuts": [
-    {
-      "name": "Book a Ride",
-      "short_name": "Book",
-      "url": "/",
-      "icons": [{ "src": "https://media.base44.com/images/public/user_6a0b47df1b4c35b2346c0b24/97a3a2b69_ed10837d-36bf-405d-9043-0f9ff87a5b4e.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Driver App",
-      "short_name": "Drive",
-      "url": "/driver-app",
-      "icons": [{ "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png", "sizes": "96x96" }]
-    }
-  ]
+  "categories": ["travel", "navigation"],
+  "lang": "en",
+  "dir": "ltr"
 }

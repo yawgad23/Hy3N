@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import OfflineIndicator from "@/components/shared/OfflineIndicator";
+import PWAInstallPrompt from "@/components/shared/PWAInstallPrompt";
+import InstallGuide from "@/components/shared/InstallGuide";
 import DestinationSearch from "@/components/rider/DestinationSearch";
 import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
@@ -287,6 +289,8 @@ export default function RiderHome() {
       )}
 
       <BottomNav role="rider" />
+      <PWAInstallPrompt />
+      <InstallGuide />
     </div>
   );
 }
