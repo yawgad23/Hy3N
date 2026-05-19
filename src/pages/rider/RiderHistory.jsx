@@ -21,7 +21,7 @@ export default function RiderHistory() {
   const navigate = useNavigate();
 
   const handleBookAgain = (ride) => {
-    navigate("/rider", {
+    navigate("/", {
       state: {
         bookAgain: {
           address: ride.destination_address,

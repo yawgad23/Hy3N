@@ -31,12 +31,12 @@ export default function DriverProfile() {
   }, []);
 
   const handleLogout = () => {
-    base44.auth.logout("/");
+    base44.auth.logout("/driver-app");
   };
 
   const handleDeleteAccount = async () => {
     if (driver) await base44.entities.DriverProfile.delete(driver.id);
-    base44.auth.logout("/");
+    base44.auth.logout("/driver-app");
   };
 
   return (
@@ -101,7 +101,7 @@ export default function DriverProfile() {
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </div>
           <button
-            onClick={() => navigate("/driver/support")}
+            onClick={() => navigate("/driver-app/support")}
             className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
           >
             <HelpCircle className="w-5 h-5 text-muted-foreground" />

@@ -217,7 +217,7 @@ export default function RiderHome() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => navigate("/rider/scheduled")}
+                onClick={() => navigate("/scheduled")}
                 className="text-xs text-primary font-semibold"
               >
                 View

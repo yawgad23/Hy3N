@@ -14,7 +14,6 @@ import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
 
-import RoleSelect from '@/pages/RoleSelect';
 import RiderHome from '@/pages/rider/RiderHome';
 import RiderHistory from '@/pages/rider/RiderHistory';
 import RiderProfile from '@/pages/rider/RiderProfile';
@@ -70,19 +69,21 @@ const AuthenticatedApp = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-            <Route path="/" element={<RoleSelect />} />
-            <Route path="/rider" element={<RiderHome />} />
-            <Route path="/rider/history" element={<RiderHistory />} />
-            <Route path="/rider/profile" element={<RiderProfile />} />
-            <Route path="/rider/support" element={<RiderSupport />} />
-            <Route path="/rider/scheduled" element={<ScheduledTrips />} />
-            <Route path="/rider/wallet" element={<RiderWallet />} />
-            <Route path="/driver" element={<DriverGateway />} />
-            <Route path="/driver/earnings" element={<DriverEarnings />} />
-            <Route path="/driver/history" element={<DriverHistory />} />
-            <Route path="/driver/profile" element={<DriverProfile />} />
-            <Route path="/driver/support" element={<DriverSupport />} />
-            <Route path="/driver/scheduled" element={<DriverScheduledRides />} />
+            {/* Rider App — entry point: / */}
+            <Route path="/" element={<RiderHome />} />
+            <Route path="/history" element={<RiderHistory />} />
+            <Route path="/profile" element={<RiderProfile />} />
+            <Route path="/support" element={<RiderSupport />} />
+            <Route path="/scheduled" element={<ScheduledTrips />} />
+            <Route path="/wallet" element={<RiderWallet />} />
+
+            {/* Driver App — entry point: /driver-app */}
+            <Route path="/driver-app" element={<DriverGateway />} />
+            <Route path="/driver-app/earnings" element={<DriverEarnings />} />
+            <Route path="/driver-app/history" element={<DriverHistory />} />
+            <Route path="/driver-app/profile" element={<DriverProfile />} />
+            <Route path="/driver-app/support" element={<DriverSupport />} />
+            <Route path="/driver-app/scheduled" element={<DriverScheduledRides />} />
             <Route path="/admin/sos" element={<SOSDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/tasks" element={<Tasks />} />

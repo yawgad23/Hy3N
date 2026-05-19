@@ -2,18 +2,18 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Clock, User, Wallet, CalendarClock } from "lucide-react";
 
 const riderTabs = [
-  { path: "/rider", icon: Home, label: "Home" },
-  { path: "/rider/scheduled", icon: CalendarClock, label: "Scheduled" },
-  { path: "/rider/history", icon: Clock, label: "History" },
-  { path: "/rider/profile", icon: User, label: "Profile" },
+  { path: "/", icon: Home, label: "Home" },
+  { path: "/scheduled", icon: CalendarClock, label: "Scheduled" },
+  { path: "/history", icon: Clock, label: "History" },
+  { path: "/profile", icon: User, label: "Profile" },
 ];
 
 const driverTabs = [
-  { path: "/driver", icon: Home, label: "Home" },
-  { path: "/driver/scheduled", icon: CalendarClock, label: "Scheduled" },
-  { path: "/driver/earnings", icon: Wallet, label: "Earnings" },
-  { path: "/driver/history", icon: Clock, label: "History" },
-  { path: "/driver/profile", icon: User, label: "Profile" },
+  { path: "/driver-app", icon: Home, label: "Home" },
+  { path: "/driver-app/scheduled", icon: CalendarClock, label: "Scheduled" },
+  { path: "/driver-app/earnings", icon: Wallet, label: "Earnings" },
+  { path: "/driver-app/history", icon: Clock, label: "History" },
+  { path: "/driver-app/profile", icon: User, label: "Profile" },
 ];
 
 export default function BottomNav({ role = "rider" }) {
@@ -27,10 +27,12 @@ export default function BottomNav({ role = "rider" }) {
     >
       <div className="flex justify-around items-center h-16 max-w-screen-sm mx-auto">
         {tabs.map((tab) => {
-          // Active if exact match, OR current path starts with tab path + "/"
+          // For root "/" use exact match only; others use startsWith
           const isActive =
-            location.pathname === tab.path ||
-            location.pathname.startsWith(tab.path + "/");
+            tab.path === "/"
+              ? location.pathname === "/"
+              : location.pathname === tab.path ||
+                location.pathname.startsWith(tab.path + "/");
           const Icon = tab.icon;
           return (
             <Link
