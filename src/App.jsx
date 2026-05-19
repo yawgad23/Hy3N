@@ -21,6 +21,8 @@ import RiderSupport from '@/pages/rider/RiderSupport';
 import ScheduledTrips from '@/pages/rider/ScheduledTrips';
 import RiderWallet from '@/pages/rider/RiderWallet';
 import DriverGateway from '@/pages/driver/DriverGateway';
+import DriverLogin from '@/pages/driver/DriverLogin';
+import DriverRegister from '@/pages/driver/DriverRegister';
 import DriverEarnings from '@/pages/driver/DriverEarnings';
 import DriverHistory from '@/pages/driver/DriverHistory';
 import DriverProfile from '@/pages/driver/DriverProfile';
@@ -67,6 +69,8 @@ const AuthenticatedApp = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/driver-app/login" element={<DriverLogin />} />
+          <Route path="/driver-app/register" element={<DriverRegister />} />
 
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             {/* Rider App — entry point: / */}

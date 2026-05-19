@@ -31,18 +31,18 @@ export default function DriverProfile() {
   }, []);
 
   const handleLogout = () => {
-    base44.auth.logout("/driver-app");
+    base44.auth.logout("/driver-app/login");
   };
 
   const handleDeleteAccount = async () => {
     if (driver) await base44.entities.DriverProfile.delete(driver.id);
-    base44.auth.logout("/driver-app");
+    base44.auth.logout("/driver-app/login");
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="p-4 pt-6 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
-        <Logo size="sm" />
+        <Logo size="sm" variant="driver" />
         <h1 className="font-heading font-bold text-xl">Profile</h1>
       </div>
 

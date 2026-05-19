@@ -9,12 +9,18 @@ export default function DriverGateway() {
 
   useEffect(() => {
     async function check() {
+      const isAuthed = await base44.auth.isAuthenticated();
+      if (!isAuthed) {
+        window.location.href = "/driver-app/login";
+        return;
+      }
       const user = await base44.auth.me();
       if (user) {
         const profiles = await base44.entities.DriverProfile.filter({ user_id: user.id });
         setHasProfile(profiles.length > 0);
       } else {
-        setHasProfile(false);
+        window.location.href = "/driver-app/login";
+        return;
       }
       setLoading(false);
     }

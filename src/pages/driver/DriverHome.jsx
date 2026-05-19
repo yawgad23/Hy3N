@@ -174,7 +174,7 @@ export default function DriverHome() {
   if (driver?.approval_status === "pending") {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-        <Logo size="lg" />
+        <Logo size="lg" variant="driver" />
         <div className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent animate-spin mt-8" />
         <h2 className="font-heading font-bold text-xl mt-6">Awaiting Approval</h2>
         <p className="text-muted-foreground text-sm text-center mt-2">
@@ -191,7 +191,7 @@ export default function DriverHome() {
     <div className="h-screen bg-background relative">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between">
-        <Logo size="sm" />
+        <Logo size="sm" variant="driver" />
         <div className="flex items-center gap-2">
           <SOSButton role="driver" rideId={activeRide?.id || null} location={location} />
           <button
