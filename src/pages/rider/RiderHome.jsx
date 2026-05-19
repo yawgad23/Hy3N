@@ -233,7 +233,7 @@ export default function RiderHome() {
         </div>
       )}
 
-      {!searchOpen && !destination && !activeRide && <BottomNav role="rider" />}
+      <BottomNav role="rider" />
     </div>
   );
 }

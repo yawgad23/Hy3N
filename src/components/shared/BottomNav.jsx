@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Clock, User, HelpCircle, Wallet, CalendarClock } from "lucide-react";
+import { Home, Clock, User, Wallet, CalendarClock } from "lucide-react";
 
 const riderTabs = [
   { path: "/rider", icon: Home, label: "Home" },
@@ -13,7 +13,7 @@ const driverTabs = [
   { path: "/driver/scheduled", icon: CalendarClock, label: "Scheduled" },
   { path: "/driver/earnings", icon: Wallet, label: "Earnings" },
   { path: "/driver/history", icon: Clock, label: "History" },
-  { path: "/driver/profile", icon: User, label: "Profile" }
+  { path: "/driver/profile", icon: User, label: "Profile" },
 ];
 
 export default function BottomNav({ role = "rider" }) {
@@ -21,20 +21,39 @@ export default function BottomNav({ role = "rider" }) {
   const tabs = role === "rider" ? riderTabs : driverTabs;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="flex justify-around items-center h-16 max-w-screen-sm mx-auto">
         {tabs.map((tab) => {
-          const isActive = location.pathname === tab.path;
+          // Active if exact match, OR current path starts with tab path + "/"
+          const isActive =
+            location.pathname === tab.path ||
+            location.pathname.startsWith(tab.path + "/");
+          const Icon = tab.icon;
           return (
             <Link
               key={tab.path}
               to={tab.path}
+              replace={location.pathname === tab.path} // don't stack same page
               className={`flex flex-col items-center gap-1 px-2 py-2 transition-colors flex-1 ${
                 isActive ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              <tab.icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium text-center">{tab.label}</span>
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                )}
+              </div>
+              <span
+                className={`text-[10px] font-medium text-center ${
+                  isActive ? "font-semibold" : ""
+                }`}
+              >
+                {tab.label}
+              </span>
             </Link>
           );
         })}
