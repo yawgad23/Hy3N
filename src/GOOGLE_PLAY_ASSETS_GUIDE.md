@@ -37,6 +37,7 @@
 
 ### App Details
 - **App Name:** HY3N - Rider App
+- **Package Name:** `com.hy3n.rider` (or your preferred unique identifier)
 - **Short Description:** Book affordable, safe rides in Ghana
 - **Full Description:** 
   ```
@@ -79,7 +80,8 @@
 1. Click "Create app"
 2. Select "App" (not Game)
 3. Enter app name: "HY3N - Rider App"
-4. Select default language: English (United States)
+4. Enter package name: `com.hy3n.rider` (must be unique, reverse domain notation)
+5. Select default language: English (United States)
 
 ### Step 3: Complete Store Listing
 1. **Graphics:**
@@ -122,7 +124,7 @@ Since HY3N is a PWA, you'll need to wrap it as a TWA for Google Play:
 ### Option 1: Use Bubblewrap (Recommended)
 ```bash
 npm install -g @bubblewrap/cli
-bubblewrap init --manifest https://your-domain.com/manifest.json
+bubblewrap init --manifest https://your-domain.com/manifest.json --package com.hy3n.rider
 bubblewrap build
 ```
 
@@ -165,6 +167,8 @@ bubblewrap build
 3. **Testing:** Use Internal Testing track before Production release
 4. **Compliance:** Ensure all features comply with Google Play policies
 5. **Permissions:** Only request necessary permissions in your TWA
+6. **Package Name:** Cannot be changed after first upload - choose carefully!
+7. **Package Name Format:** Must be unique, use reverse domain (e.g., `com.company.appname`)
 
 ---
 
