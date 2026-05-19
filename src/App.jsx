@@ -75,7 +75,7 @@ const AuthenticatedApp = () => {
 
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             {/* Rider App — entry point: / */}
-            <Route path="/" element={<RiderHome />} />
+            <Route path="/" element={<Navigate to="/admin/portal" replace />} />
             <Route path="/history" element={<RiderHistory />} />
             <Route path="/profile" element={<RiderProfile />} />
             <Route path="/support" element={<RiderSupport />} />
