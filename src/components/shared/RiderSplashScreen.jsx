@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { User } from "lucide-react";
 
 export default function RiderSplashScreen({ onComplete }) {
   const [show, setShow] = useState(true);
@@ -15,95 +16,118 @@ export default function RiderSplashScreen({ onComplete }) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-background z-[9999] flex flex-col items-center justify-center">
+    <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center">
       {/* Logo container */}
       <motion.div
-        className="flex flex-col items-center gap-6"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="flex flex-col items-center gap-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
       >
         {/* HY3N Logo */}
         <div className="relative">
           <motion.div
-            className="flex items-center justify-center text-7xl font-black tracking-tighter"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex items-center justify-center gap-0 relative"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <span className="text-white">HY</span>
-            <motion.span
-              className="relative"
-              initial={{ scale: 0, rotate: -180 }}
+            {/* HY in white */}
+            <span className="text-8xl font-black text-white leading-none" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.02em' }}>
+              HY
+            </span>
+
+            {/* 3 with Ghana flag */}
+            <motion.div
+              className="relative text-8xl font-black leading-none"
+              initial={{ scale: 0, rotate: -90 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 100 }}
+              transition={{ duration: 0.5, delay: 0.1, type: "spring", stiffness: 120 }}
             >
-              <span className="block relative">
-                <span className="text-destructive block">3</span>
-                <svg
-                  className="absolute inset-0 w-full h-full pointer-events-none"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <rect x="0" y="0" width="100" height="40" fill="currentColor" className="text-destructive" />
-                  <rect x="0" y="40" width="100" height="30" fill="currentColor" className="text-yellow-400" />
-                  <rect x="0" y="70" width="100" height="30" fill="currentColor" className="text-ghana-green" />
-                </svg>
-              </span>
-            </motion.span>
-            <span className="text-yellow-400">N</span>
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                {/* Red section */}
+                <div className="absolute inset-0 top-0 h-1/3 bg-red-600 flex items-center justify-center" />
+                {/* Yellow section with star */}
+                <div className="absolute inset-0 top-1/3 h-1/3 bg-yellow-400 flex items-center justify-center">
+                  <span className="text-black font-black text-6xl">★</span>
+                </div>
+                {/* Green section */}
+                <div className="absolute inset-0 top-2/3 h-1/3 bg-green-600" />
+                {/* 3 text overlay */}
+                <span className="relative z-10 text-white font-black text-7xl" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.5)' }}>
+                  3
+                </span>
+              </div>
+            </motion.div>
+
+            {/* N in yellow */}
+            <span className="text-8xl font-black text-yellow-400 leading-none" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.02em' }}>
+              N
+            </span>
           </motion.div>
 
-          {/* Ghana flag accent line */}
-          <motion.div
-            className="absolute -bottom-4 left-0 right-0 h-1.5 rounded-full overflow-hidden"
-            initial={{ scaleX: 0, originX: 0 }}
-            animate={{ scaleX: 1, originX: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+          {/* Ghana flag curved line */}
+          <motion.svg
+            className="absolute -bottom-6 left-0 right-0 w-full"
+            height="6"
+            viewBox="0 0 400 6"
+            preserveAspectRatio="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <div className="flex h-full">
-              <div className="flex-1 bg-destructive" />
-              <div className="flex-1 bg-yellow-400" />
-              <div className="flex-1 bg-ghana-green" />
-            </div>
-          </motion.div>
+            <defs>
+              <linearGradient id="flagGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#DC143C" />
+                <stop offset="30%" stopColor="#FCD34D" />
+                <stop offset="70%" stopColor="#16A34A" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M 0 3 Q 200 0 400 3"
+              stroke="url(#flagGradient)"
+              strokeWidth="4"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </motion.svg>
         </div>
 
         {/* RIDER badge */}
         <motion.div
-          className="mt-8 flex items-center gap-3 border-2 border-yellow-400 rounded-full px-6 py-2"
+          className="mt-6 flex items-center gap-2 border-2 border-yellow-400 rounded-full px-8 py-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-          </svg>
-          <span className="text-2xl font-black text-yellow-400 tracking-wider">RIDER</span>
+          <User className="w-6 h-6 text-yellow-400" />
+          <span className="text-xl font-black text-yellow-400 tracking-wide" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            RIDER
+          </span>
         </motion.div>
       </motion.div>
 
-      {/* Loading indicator */}
+      {/* Loading dots */}
       <motion.div
-        className="absolute bottom-16 flex gap-2"
+        className="absolute bottom-12 flex gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
+        transition={{ delay: 1.0 }}
       >
         <motion.div
-          className="w-2 h-2 rounded-full bg-primary"
+          className="w-2 h-2 rounded-full bg-yellow-400"
           animate={{ scale: [1, 1.5, 1] }}
-          transition={{ duration: 0.8, repeat: Infinity }}
+          transition={{ duration: 1, repeat: Infinity }}
         />
         <motion.div
-          className="w-2 h-2 rounded-full bg-primary"
+          className="w-2 h-2 rounded-full bg-yellow-400"
           animate={{ scale: [1, 1.5, 1] }}
-          transition={{ duration: 0.8, repeat: Infinity, delay: 0.2 }}
+          transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
         />
         <motion.div
-          className="w-2 h-2 rounded-full bg-primary"
+          className="w-2 h-2 rounded-full bg-yellow-400"
           animate={{ scale: [1, 1.5, 1] }}
-          transition={{ duration: 0.8, repeat: Infinity, delay: 0.4 }}
+          transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
         />
       </motion.div>
     </div>
