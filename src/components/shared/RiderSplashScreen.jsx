@@ -1,17 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 
 export default function RiderSplashScreen({ onComplete }) {
   const [show, setShow] = useState(true);
 
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => { onCompleteRef.current = onComplete; });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setShow(false);
-      if (onComplete) onComplete();
+      if (onCompleteRef.current) onCompleteRef.current();
     }, 3000);
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, []);
 
   if (!show) return null;
 
