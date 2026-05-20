@@ -215,12 +215,9 @@ export default function RiderHome() {
       
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-end">
-        <div className="flex items-center gap-2">
-          <SOSButton role="rider" rideId={activeRide?.id || null} location={location} />
-          <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center">
-            <Bell className="w-5 h-5 text-foreground" />
-          </button>
-        </div>
+        <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center">
+          <Bell className="w-5 h-5 text-foreground" />
+        </button>
       </div>
 
       {/* Map - Full Screen */}

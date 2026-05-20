@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2 } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import RatingModal from "@/components/shared/RatingModal";
 import TipModal from "@/components/rider/TipModal";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import { showNotification } from "@/lib/notificationService";
+import SOSButton from "@/components/shared/SOSButton";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
@@ -36,9 +37,16 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [currentUser, setCurrentUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+        () => setUserLocation([5.6037, -0.1870]) // fallback to Accra
+      );
+    }
   }, []);
 
   // Unread message counter for rider
@@ -275,7 +283,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
         {(status === "matched" || status === "driver_arriving" || status === "in_progress") && (
           <div>
             {/* Live ETA Banner - Uber Style */}
-            <div className="bg-primary/10 border border-primary/30 rounded-2xl p-4 mb-4">
+            <div className="relative bg-primary/10 border border-primary/30 rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
@@ -294,6 +302,10 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                     <p className="text-xs text-muted-foreground">min</p>
                   </div>
                 )}
+              </div>
+              {/* SOS Button - Top Right */}
+              <div className="absolute top-2 right-2">
+                <SOSButton role="rider" rideId={currentRide?.id} location={userLocation} />
               </div>
             </div>
 
