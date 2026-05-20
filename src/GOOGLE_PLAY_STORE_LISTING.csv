@@ -1,0 +1,50 @@
+Field,Value
+App Name,HY3N - Rider App
+Package Name,com.hy3n.rider
+Version,1.0.0
+Version Code,1
+Short Description,"Book affordable, safe rides in Ghana"
+Full Description,"HY3N Rider - Your ride, your way. Book affordable, safe rides across Ghana with real-time driver tracking, split fares, and premium transportation.
+
+Features:
+• Real-time driver tracking
+• Split fares with friends
+• Multiple payment options (Mobile Money, Cash, Card)
+• Scheduled rides
+• SOS emergency button
+• Loyalty rewards program
+• 24/7 support
+
+Safe, reliable, and affordable transportation at your fingertips."
+Primary Category,Maps & Navigation
+Secondary Category,Travel & Local
+Content Rating,Everyone
+Price,Free
+Contains Ads,No
+Privacy Policy URL,https://your-domain.com/privacy
+Support Email,[Your support email]
+Website URL,[Your website URL]
+Phone Number,[Optional]
+App Icon URL,https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/6a5713202_ChatGPTImageMay19202602_18_57PM.png
+Feature Graphic URL,https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/099a8d5c4_ChatGPTImageMay19202602_56_28PM.png
+Screenshot 1 URL,https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/f05c9bdda_Screenshot2026-05-19at14-37-40HY3NBase44.png
+Screenshot 2 URL,https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/84d010c97_Screenshot2026-05-19at14-39-24HY3NBase44.png
+Screenshot 3 URL,https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/762d04f3a_Screenshot2026-05-19at14-40-02HY3NBase44.png
+Release Notes v1.0.0,"Welcome to HY3N Rider — Your ride, your way.
+
+What's new in this release:
+• Book on-demand and scheduled rides across Ghana
+• Real-time GPS driver tracking
+• Multiple payment options: Mobile Money, Cash, Card & Wallet
+• Split fares with friends
+• SOS emergency button for your safety
+• In-app driver chat
+• Loyalty rewards program
+• Ride history and receipts
+• Driver ratings and feedback
+
+Thank you for choosing HY3N!"
+Distribution Countries,Ghana (expand as needed)
+TWA Package Manager,Bubblewrap or PWABuilder
+TWA Manifest URL,https://your-domain.com/manifest.json
+Last Updated,2026-05-20

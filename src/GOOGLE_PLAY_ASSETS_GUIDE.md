@@ -112,8 +112,29 @@
 1. Go to "Production" under "Testing and releases"
 2. Click "Create new release"
 3. Upload your Android App Bundle (AAB) or APK
-4. Fill in release notes
+4. Fill in release notes (see below)
 5. Review and publish
+
+### Release Notes (Copy & Paste)
+
+**Version 1.0.0 — Initial Release**
+
+```
+🚗 Welcome to HY3N Rider — Your ride, your way.
+
+What's new in this release:
+• Book on-demand and scheduled rides across Ghana
+• Real-time GPS driver tracking
+• Multiple payment options: Mobile Money, Cash, Card & Wallet
+• Split fares with friends
+• SOS emergency button for your safety
+• In-app driver chat
+• Loyalty rewards program
+• Ride history and receipts
+• Driver ratings and feedback
+
+Thank you for choosing HY3N!
+```
 
 ---
 
