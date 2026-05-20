@@ -96,10 +96,15 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = () => {
-  // Mark session as persistent before redirect
-  localStorage.setItem("rememberMe", "true");
-  base44.auth.loginWithProvider("google", "/");
+  const handleGoogle = async () => {
+    try {
+      // Mark session as persistent before redirect
+      localStorage.setItem("rememberMe", "true");
+      await base44.auth.loginWithProvider("google", "/");
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Google login failed. Please try again.");
+    }
   };
 
   const handleSendPhoneOtp = async () => {
