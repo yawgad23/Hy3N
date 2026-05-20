@@ -5,7 +5,7 @@ import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import Logo from "@/components/shared/Logo";
+
 import BottomNav from "@/components/shared/BottomNav";
 import OfflineIndicator from "@/components/shared/OfflineIndicator";
 import PWAInstallPrompt from "@/components/shared/PWAInstallPrompt";
@@ -179,7 +179,7 @@ export default function RiderHome() {
   if (isCheckingAuth) {
     return (
       <>
-        {showSplash && <RiderSplashScreen onComplete={() => {}} />}
+        <RiderSplashScreen onComplete={() => setIsCheckingAuth(false)} />
         <div className="h-screen-safe bg-background flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
         </div>
@@ -190,9 +190,8 @@ export default function RiderHome() {
   if (!user) {
     return (
       <>
-        {showSplash && <RiderSplashScreen onComplete={() => {}} />}
+        <RiderSplashScreen onComplete={() => setIsCheckingAuth(false)} />
         <div className="h-screen-safe bg-background flex flex-col items-center justify-center px-6 text-center">
-          <Logo size="lg" className="mb-6" />
           <h1 className="font-heading font-bold text-2xl mb-2">Welcome to HY3N</h1>
           <p className="text-muted-foreground mb-6">Your ride, your way</p>
           <button
@@ -208,7 +207,6 @@ export default function RiderHome() {
 
   return (
     <div className="h-screen-safe bg-background relative">
-      {showSplash && <RiderSplashScreen onComplete={() => {}} />}
       {/* Connection Status Banner */}
       <ConnectionStatus />
       
@@ -216,8 +214,7 @@ export default function RiderHome() {
       <OfflineIndicator />
       
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-between">
-        <Logo size="sm" />
+      <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-end">
         <div className="flex items-center gap-2">
           <SOSButton role="rider" rideId={activeRide?.id || null} location={location} />
           <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center">
