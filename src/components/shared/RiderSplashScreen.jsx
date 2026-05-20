@@ -31,24 +31,15 @@ export default function RiderSplashScreen({ onComplete }) {
           HY
         </span>
 
-        {/* 3 with Ghana flag colors */}
-        <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
-          {/* Red section (top third) */}
-          <div className="absolute inset-0 top-0 h-[33%] bg-red-600" />
-          {/* Yellow section with black star (middle third) */}
-          <div className="absolute inset-0 top-[33%] h-[34%] bg-yellow-400 flex items-center justify-center">
-            <span className="text-black text-5xl font-black">★</span>
-          </div>
-          {/* Green section (bottom third) */}
-          <div className="absolute inset-0 top-[67%] h-[33%] bg-green-600" />
-          {/* 3 text overlay */}
-          <span className="relative z-10 text-white font-black text-8xl md:text-9xl drop-shadow-2xl">
-            3
-          </span>
-        </div>
+        {/* 3 in red (Ghana flag color) */}
+        <span className="text-8xl md:text-9xl font-black text-red-600 leading-none relative" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em' }}>
+          3
+          {/* Black star above the 3 */}
+          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-4xl text-black">★</span>
+        </span>
 
-        {/* N in yellow */}
-        <span className="text-8xl md:text-9xl font-black text-yellow-400 leading-none" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em' }}>
+        {/* N in white */}
+        <span className="text-8xl md:text-9xl font-black text-white leading-none" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em' }}>
           N
         </span>
       </motion.div>
