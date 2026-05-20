@@ -30,9 +30,9 @@ export default function RiderSplashScreen({ onComplete }) {
         transition={{ duration: 1, ease: "easeOut" }}
       >
         {/* Main logo */}
-        <svg viewBox="0 0 200 80" className="w-80 h-auto drop-shadow-2xl">
+        <svg viewBox="0 0 200 80" className="w-72 h-auto drop-shadow-2xl">
           <defs>
-            {/* Ghana flag gradient for the 3 */}
+            {/* Ghana flag gradient */}
             <linearGradient id="ghanaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#CE1126" />
               <stop offset="33%" stopColor="#CE1126" />
@@ -40,12 +40,6 @@ export default function RiderSplashScreen({ onComplete }) {
               <stop offset="66%" stopColor="#FCD116" />
               <stop offset="66%" stopColor="#006B3F" />
               <stop offset="100%" stopColor="#006B3F" />
-            </linearGradient>
-            {/* Gold gradient for shine */}
-            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FCD116" />
-              <stop offset="50%" stopColor="#FFD700" />
-              <stop offset="100%" stopColor="#D4AF37" />
             </linearGradient>
           </defs>
           
@@ -60,18 +54,18 @@ export default function RiderSplashScreen({ onComplete }) {
           </text>
         </svg>
 
-        {/* Elegant curved underline with Ghana colors */}
+        {/* Elegant curved underline with gold */}
         <motion.svg 
-          viewBox="0 0 180 30" 
-          className="w-64 h-12 mt-2"
+          viewBox="0 0 160 20" 
+          className="w-56 h-10 mt-1"
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ scaleX: 1, opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.8 }}
         >
           <path 
-            d="M 10,15 Q 50,8 90,15 Q 130,22 170,15" 
-            stroke="url(#goldGradient)" 
-            strokeWidth="2.5" 
+            d="M 10,10 Q 45,5 80,10 Q 115,15 150,10" 
+            stroke="#D4AF37" 
+            strokeWidth="2" 
             fill="none" 
             strokeLinecap="round"
             className="drop-shadow-lg"
@@ -80,7 +74,7 @@ export default function RiderSplashScreen({ onComplete }) {
 
         {/* Tagline */}
         <motion.p
-          className="text-gray-400 text-sm mt-4 font-light tracking-widest uppercase"
+          className="text-gray-400 text-xs mt-3 font-light tracking-[0.2em] uppercase"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
