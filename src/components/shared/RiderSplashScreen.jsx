@@ -31,12 +31,21 @@ export default function RiderSplashScreen({ onComplete }) {
           HY
         </span>
 
-        {/* 3 in red (Ghana flag color) */}
-        <span className="text-8xl md:text-9xl font-black text-red-600 leading-none relative" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em' }}>
-          3
-          {/* Black star above the 3 */}
-          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-4xl text-black">★</span>
-        </span>
+        {/* 3 with Ghana flag colors (red, yellow, green stripes) */}
+        <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
+          {/* Red stripe (top) */}
+          <div className="absolute inset-0 top-0 h-[33%] bg-[#CE1126]" />
+          {/* Yellow stripe with black star (middle) */}
+          <div className="absolute inset-0 top-[33%] h-[34%] bg-[#FCD116] flex items-center justify-center">
+            <span className="absolute -top-8 text-4xl text-black">★</span>
+          </div>
+          {/* Green stripe (bottom) */}
+          <div className="absolute inset-0 top-[67%] h-[33%] bg-[#006B3F]" />
+          {/* 3 text overlay */}
+          <span className="relative z-10 text-white font-black text-8xl md:text-9xl drop-shadow-2xl">
+            3
+          </span>
+        </div>
 
         {/* N in white */}
         <span className="text-8xl md:text-9xl font-black text-white leading-none" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em' }}>
