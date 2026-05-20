@@ -49,24 +49,14 @@ export default function RiderSplashScreen({ onComplete }) {
             </linearGradient>
           </defs>
           
-          {/* HY in crisp white */}
-          <text x="0" y="58" fontFamily="Outfit, sans-serif" fontSize="52" fontWeight="900" fill="#FFFFFF" letterSpacing="-1.5">
-            HY
+          {/* HY3N with Ghana flag colors */}
+          <text x="0" y="58" fontFamily="Outfit, sans-serif" fontSize="52" fontWeight="900" fill="url(#ghanaGradient)" letterSpacing="-1">
+            HY3N
           </text>
           
-          {/* 3 with horizontal Ghana flag stripes */}
-          <text x="68" y="58" fontFamily="Outfit, sans-serif" fontSize="52" fontWeight="900" fill="url(#ghanaGradient)" letterSpacing="-1">
-            3
-          </text>
-          
-          {/* Black star centered above the 3 */}
-          <text x="92" y="22" fontSize="18" fill="#000000" fontWeight="bold">
+          {/* Black star centered above */}
+          <text x="85" y="22" fontSize="20" fill="#000000" fontWeight="bold">
             ★
-          </text>
-          
-          {/* N in premium gold */}
-          <text x="105" y="58" fontFamily="Outfit, sans-serif" fontSize="52" fontWeight="900" fill="url(#goldGradient)" letterSpacing="-1">
-            N
           </text>
         </svg>
 
