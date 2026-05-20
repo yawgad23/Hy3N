@@ -87,7 +87,10 @@ const AuthenticatedApp = () => {
 
 function App() {
   registerServiceWorker();
-  const [showSplash, setShowSplash] = React.useState(true);
+  const [showSplash, setShowSplash] = React.useState(() => {
+    // Only show splash on first launch (not if user has visited before)
+    return !localStorage.getItem('hasVisitedBefore');
+  });
   const [isAuth, setIsAuth] = React.useState(null);
 
   React.useEffect(() => {
@@ -105,7 +108,10 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          {showSplash && isAuth && <SplashScreen onComplete={() => setShowSplash(false)} />}
+          {showSplash && isAuth && <SplashScreen onComplete={() => {
+            localStorage.setItem('hasVisitedBefore', 'true');
+            setShowSplash(false);
+          }} />}
           <AppEffects />
           <AuthenticatedApp />
         </Router>
