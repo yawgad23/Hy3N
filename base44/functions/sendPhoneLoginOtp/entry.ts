@@ -19,14 +19,47 @@ Deno.serve(async (req) => {
       created_date: new Date().toISOString()
     });
 
-    // MOCK MODE: Log OTP to console instead of sending SMS
-    console.log("🔐 MOCK OTP for", phone, ":", otpCode);
-    console.log("⚠️ In production, this would be sent via Twilio SMS");
+    // Send SMS via Twilio (production)
+    const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+    const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+    const fromPhone = Deno.env.get("TWILIO_FROM_PHONE");
+
+    if (!accountSid || !authToken || !fromPhone) {
+      console.error("Twilio credentials not configured");
+      return Response.json({ 
+        success: false,
+        error: "SMS service not configured"
+      }, { status: 500 });
+    }
+
+    const message = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": "Basic " + btoa(`${accountSid}:${authToken}`),
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+          From: fromPhone,
+          To: phone,
+          Body: `Your HY3N verification code is: ${otpCode}`
+        })
+      }
+    );
+
+    if (!message.ok) {
+      const error = await message.json();
+      console.error("Twilio error:", error);
+      return Response.json({ 
+        success: false,
+        error: "Failed to send SMS"
+      }, { status: 500 });
+    }
 
     return Response.json({ 
       success: true,
-      mock: true,
-      message: "OTP sent (check backend logs for code in test mode)"
+      message: "OTP sent successfully"
     });
   } catch (error) {
     console.error("Send OTP error:", error);

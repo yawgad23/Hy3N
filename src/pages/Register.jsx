@@ -127,17 +127,11 @@ export default function Register() {
       setShowOtp(true);
       setAuthMethod("phone");
       
-      // Show mock OTP in test mode
-      if (result.data?.mock) {
-        // Generate a visible mock OTP for testing
-        const testOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        setMockOtp(testOtp);
-        toast({
-          title: "Test Mode",
-          description: `Your OTP: ${testOtp}`,
-          duration: 10000,
-        });
-      }
+      // Production mode - OTP sent via SMS
+      toast({
+        title: "Code sent",
+        description: "Check your phone for the verification code.",
+      });
     } catch (err) {
       setError(err.message || "Failed to send code");
     } finally {
@@ -243,11 +237,7 @@ export default function Register() {
         title="Verify your phone"
         subtitle={`We sent a code to ${sentPhone}`}
       >
-        {mockOtp && (
-          <div className="mb-4 p-4 rounded-lg bg-primary/10 border border-primary text-primary text-sm font-medium">
-            <strong>TEST MODE - Your OTP:</strong> {mockOtp}
-          </div>
-        )}
+
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
