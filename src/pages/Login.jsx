@@ -23,7 +23,6 @@ export default function Login() {
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [sentPhone, setSentPhone] = useState("");
-  const [mockOtp, setMockOtp] = useState("");
 
   // Check if biometric auth is available and if user has saved credentials
   useEffect(() => {

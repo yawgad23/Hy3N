@@ -23,7 +23,6 @@ export default function Register() {
   const [refereeId, setRefereeId] = useState(null);
   const [authMethod, setAuthMethod] = useState("email"); // "email" or "phone"
   const [sentPhone, setSentPhone] = useState("");
-  const [mockOtp, setMockOtp] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
