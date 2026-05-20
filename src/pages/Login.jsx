@@ -4,18 +4,25 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2, Fingerprint } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, Fingerprint, Phone, Smartphone } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [savedEmail, setSavedEmail] = useState("");
+  const [showPhoneLogin, setShowPhoneLogin] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [sentPhone, setSentPhone] = useState("");
 
   // Check if biometric auth is available and if user has saved credentials
   useEffect(() => {
@@ -95,6 +102,175 @@ export default function Login() {
   base44.auth.loginWithProvider("google", "/");
   };
 
+  const handleSendPhoneOtp = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      // Format phone number (ensure it starts with +)
+      const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
+      await base44.functions.invoke("sendPhoneLoginOtp", { phone: formattedPhone });
+      setSentPhone(formattedPhone);
+      setShowOtp(true);
+    } catch (err) {
+      setError(err.message || "Failed to send code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const result = await base44.functions.invoke("verifyPhoneLoginOtp", {
+        phone: sentPhone,
+        otpCode
+      });
+      if (result.data?.success) {
+        // Login with the temporary password or token
+        await base44.auth.loginViaEmailPassword(result.data.email, result.data.tempPassword);
+        localStorage.setItem("rememberMe", "true");
+        window.location.href = "/";
+      } else {
+        setError("Invalid code");
+      }
+    } catch (err) {
+      setError(err.message || "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendPhoneOtp = async () => {
+    setError("");
+    try {
+      await base44.functions.invoke("sendPhoneLoginOtp", { phone: sentPhone });
+      toast({
+        title: "Code sent",
+        description: "Check your phone for the new code.",
+      });
+    } catch (err) {
+      setError(err.message || "Failed to resend code");
+    }
+  };
+
+  if (showOtp) {
+    return (
+      <AuthLayout
+        icon={Smartphone}
+        title="Verify your phone"
+        subtitle={`We sent a code to ${sentPhone}`}
+      >
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+        <div className="flex justify-center mb-6">
+          <InputOTP
+            maxLength={6}
+            value={otpCode}
+            onChange={setOtpCode}
+            autoFocus
+            autoComplete="one-time-code"
+          >
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+        </div>
+        <Button
+          className="w-full h-12 font-medium"
+          onClick={handleVerifyPhoneOtp}
+          disabled={loading || otpCode.length < 6}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Verifying...
+            </>
+          ) : (
+            "Verify"
+          )}
+        </Button>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Didn't receive the code?{" "}
+          <button onClick={handleResendPhoneOtp} className="text-primary font-medium hover:underline">
+            Resend
+          </button>
+        </p>
+        <button
+          onClick={() => { setShowOtp(false); setShowPhoneLogin(false); }}
+          className="w-full text-sm text-muted-foreground mt-4 hover:text-foreground"
+        >
+          ← Back to login
+        </button>
+      </AuthLayout>
+    );
+  }
+
+  if (showPhoneLogin) {
+    return (
+      <AuthLayout
+        icon={Phone}
+        title="Sign in with phone"
+        subtitle="Enter your phone number"
+      >
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              <Input
+                id="phone"
+                type="tel"
+                autoFocus
+                placeholder="+233 24 123 4567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\s/g, ''))}
+                className="pl-10 h-12"
+                required
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              We'll send you a 6-digit verification code
+            </p>
+          </div>
+          <Button
+            className="w-full h-12 font-medium"
+            onClick={handleSendPhoneOtp}
+            disabled={loading || phone.length < 10}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sending code...
+              </>
+            ) : (
+              "Send Code"
+            )}
+          </Button>
+          <button
+            onClick={() => setShowPhoneLogin(false)}
+            className="w-full text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← Back to email login
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout
       icon={LogIn}
@@ -118,6 +294,15 @@ export default function Login() {
         Continue with Google
       </Button>
 
+      <Button
+        variant="outline"
+        className="w-full h-12 text-sm font-medium mb-4"
+        onClick={() => setShowPhoneLogin(true)}
+      >
+        <Phone className="w-5 h-5 mr-2 text-primary" />
+        Continue with Phone
+      </Button>
+
       {biometricAvailable && savedEmail && (
         <Button
           variant="outline"
@@ -129,15 +314,6 @@ export default function Login() {
           Use Biometric Login
         </Button>
       )}
-
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
-        </div>
-      </div>
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">

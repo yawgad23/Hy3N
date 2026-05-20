@@ -1,0 +1,44 @@
+{
+  "name": "PhoneOtp",
+  "type": "object",
+  "properties": {
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "otp_code": {
+      "type": "string",
+      "description": "6-digit OTP code"
+    },
+    "created_date": {
+      "type": "string",
+      "description": "When OTP was created"
+    }
+  },
+  "required": [
+    "phone",
+    "otp_code"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
