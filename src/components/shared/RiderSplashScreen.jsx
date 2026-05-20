@@ -27,7 +27,7 @@ export default function RiderSplashScreen({ onComplete }) {
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         {/* Main logo row */}
-        <svg viewBox="0 0 280 100" className="w-72 h-auto" style={{ maxWidth: '90vw' }}>
+        <svg viewBox="0 0 240 100" className="w-72 h-auto" style={{ maxWidth: '90vw' }}>
           <defs>
             <linearGradient id="threeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#CE1126" />
@@ -43,15 +43,15 @@ export default function RiderSplashScreen({ onComplete }) {
             HY
           </text>
           {/* 3 with Ghana flag gradient */}
-          <text x="100" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="url(#threeGradient)" letterSpacing="-2">
+          <text x="90" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="url(#threeGradient)" letterSpacing="-2">
             3
           </text>
           {/* Star on the 3 */}
-          <text x="130" y="25" fontFamily="Arial" fontSize="24" fill="#000000">
+          <text x="120" y="25" fontFamily="Arial" fontSize="24" fill="#000000">
             ★
           </text>
           {/* N in gold */}
-          <text x="165" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="#FCD116" letterSpacing="-2">
+          <text x="145" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="#FCD116" letterSpacing="-2">
             N
           </text>
         </svg>
