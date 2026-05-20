@@ -40,6 +40,17 @@ export default function RiderHome() {
   const [showSplash, setShowSplash] = useState(() => !localStorage.getItem('hasVisitedBefore'));
   const { subscribeToPush } = usePushNotifications();
 
+  // Hide splash timer (runs once on mount)
+  useEffect(() => {
+    if (showSplash) {
+      const timer = setTimeout(() => {
+        localStorage.setItem('hasVisitedBefore', 'true');
+        setShowSplash(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash]);
+
   // All hooks must be called before any conditional returns
   useEffect(() => {
     const init = async () => {
@@ -68,13 +79,6 @@ export default function RiderHome() {
       }
     };
     init();
-    // Hide splash after auth check completes (only on first launch)
-    if (showSplash) {
-      setTimeout(() => {
-        localStorage.setItem('hasVisitedBefore', 'true');
-        setShowSplash(false);
-      }, 2500);
-    }
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
       setDestination({ name: address, lat, lng });
