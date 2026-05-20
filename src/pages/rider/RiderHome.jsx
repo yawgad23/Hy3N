@@ -20,7 +20,6 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Onboarding from "@/components/shared/Onboarding";
 import ConnectionStatus from "@/components/shared/ConnectionStatus";
 import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
-import PromotionsBanner from "@/components/rider/PromotionsBanner";
 
 export default function RiderHome() {
   // All hooks must be called at the top level, before any conditional returns
@@ -242,16 +241,9 @@ export default function RiderHome() {
         />
       </div>
 
-      {/* Promotions Banner (when no active ride) */}
-      {!activeRide && (
-        <div className="absolute top-28 left-4 right-4 z-10">
-          <PromotionsBanner />
-        </div>
-      )}
-
       {/* Nearby Cars Indicator (when no active ride) */}
       {!activeRide && nearbyDrivers.length > 0 && (
-        <div className="absolute top-40 left-4 z-10 bg-card/90 backdrop-blur-md border border-border rounded-xl px-3 py-2 shadow-lg">
+        <div className="absolute top-28 left-4 z-10 bg-card/90 backdrop-blur-md border border-border rounded-xl px-3 py-2 shadow-lg">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             <p className="text-xs font-semibold text-foreground">{nearbyDrivers.length} cars nearby</p>
