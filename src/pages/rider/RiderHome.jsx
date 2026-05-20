@@ -351,8 +351,6 @@ export default function RiderHome() {
       )}
 
       <BottomNav role="rider" />
-      <PWAInstallPrompt />
-      <InstallGuide />
     </div>
   );
 }
