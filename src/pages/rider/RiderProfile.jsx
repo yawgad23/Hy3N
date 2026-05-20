@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint, Moon, Sun } from "lucide-react";
+import { useTheme } from 'next-themes';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ export default function RiderProfile() {
   const [showReferModal, setShowReferModal] = useState(false);
   const [showLoyalty, setShowLoyalty] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     async function load() {
@@ -230,6 +232,14 @@ export default function RiderProfile() {
               ) : (
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               )}
+            </button>
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5 text-primary" /> : <Moon className="w-5 h-5 text-primary" />}
+              <span className="flex-1 text-left text-sm font-medium">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
               onClick={() => setShowReferModal(true)}
