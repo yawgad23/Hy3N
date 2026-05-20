@@ -257,7 +257,10 @@ export default function Register() {
           <InputOTP
             maxLength={6}
             value={otpCode}
-            onChange={setOtpCode}
+            onChange={(value) => {
+              console.log("OTP entered:", value);
+              setOtpCode(value);
+            }}
             autoFocus
             autoComplete="one-time-code"
           >
@@ -274,7 +277,7 @@ export default function Register() {
         <Button
           className="w-full h-12 font-medium"
           onClick={handleVerifyPhoneOtp}
-          disabled={loading || otpCode.length < 6}
+          disabled={loading}
         >
           {loading ? (
             <>
