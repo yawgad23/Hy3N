@@ -27,39 +27,42 @@ export default function RiderSplashScreen({ onComplete }) {
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         {/* Main logo row */}
-        <div className="flex items-center justify-center gap-0">
+        <svg viewBox="0 0 280 100" className="w-72 h-auto" style={{ maxWidth: '90vw' }}>
+          <defs>
+            <linearGradient id="threeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#CE1126" />
+              <stop offset="33%" stopColor="#CE1126" />
+              <stop offset="33%" stopColor="#FCD116" />
+              <stop offset="66%" stopColor="#FCD116" />
+              <stop offset="66%" stopColor="#006B3F" />
+              <stop offset="100%" stopColor="#006B3F" />
+            </linearGradient>
+          </defs>
           {/* HY in white */}
-          <span className="text-8xl md:text-9xl font-black text-white leading-none" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em' }}>
+          <text x="0" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="#FFFFFF" letterSpacing="-2">
             HY
-          </span>
-
-          {/* 3 with Ghana flag colors (red, yellow, green stripes) */}
-          <div className="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
-            {/* Red stripe (top) */}
-            <div className="absolute inset-0 top-0 h-[33%] bg-[#CE1126]" />
-            {/* Yellow stripe with black star (middle) */}
-            <div className="absolute inset-0 top-[33%] h-[34%] bg-[#FCD116] flex items-center justify-center">
-              <span className="absolute -top-8 text-4xl text-black">★</span>
-            </div>
-            {/* Green stripe (bottom) */}
-            <div className="absolute inset-0 top-[67%] h-[33%] bg-[#006B3F]" />
-            {/* 3 text overlay */}
-            <span className="relative z-10 text-white font-black text-8xl md:text-9xl drop-shadow-2xl">
-              3
-            </span>
-          </div>
-
+          </text>
+          {/* 3 with Ghana flag gradient */}
+          <text x="100" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="url(#threeGradient)" letterSpacing="-2">
+            3
+          </text>
+          {/* Star on the 3 */}
+          <text x="130" y="25" fontFamily="Arial" fontSize="24" fill="#000000">
+            ★
+          </text>
           {/* N in gold */}
-          <span className="text-8xl md:text-9xl font-black" style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: '-0.03em', color: '#FCD116' }}>
+          <text x="165" y="65" fontFamily="Outfit, sans-serif" fontSize="72" fontWeight="900" fill="#FCD116" letterSpacing="-2">
             N
-          </span>
-        </div>
+          </text>
+        </svg>
 
-        {/* Decorative Ghana-colored lines */}
-        <div className="mt-2 flex gap-1">
-          <div className="h-1 w-12 bg-[#CE1126] rounded-full"></div>
-          <div className="h-1 w-12 bg-[#FCD116] rounded-full"></div>
-          <div className="h-1 w-12 bg-[#006B3F] rounded-full"></div>
+        {/* Decorative curved Ghana-colored lines */}
+        <div className="mt-4 flex gap-0 w-48 h-2">
+          <svg viewBox="0 0 200 10" className="w-full" preserveAspectRatio="none">
+            <path d="M 0,5 Q 50,2 100,5 Q 150,8 200,5" stroke="#CE1126" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="M 0,7 Q 50,4 100,7 Q 150,10 200,7" stroke="#FCD116" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="M 0,9 Q 50,6 100,9 Q 150,12 200,9" stroke="#006B3F" strokeWidth="3" fill="none" strokeLinecap="round" />
+          </svg>
         </div>
       </motion.div>
     </div>
