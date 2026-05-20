@@ -23,6 +23,7 @@ export default function Register() {
   const [refereeId, setRefereeId] = useState(null);
   const [authMethod, setAuthMethod] = useState("email"); // "email" or "phone"
   const [sentPhone, setSentPhone] = useState("");
+  const [mockOtp, setMockOtp] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,9 +129,13 @@ export default function Register() {
       
       // Show mock OTP in test mode
       if (result.data?.mock) {
+        // Generate a visible mock OTP for testing
+        const testOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        setMockOtp(testOtp);
         toast({
           title: "Test Mode",
-          description: "Check browser console (F12) for OTP code",
+          description: `Your OTP: ${testOtp}`,
+          duration: 10000,
         });
       }
     } catch (err) {
@@ -238,6 +243,11 @@ export default function Register() {
         title="Verify your phone"
         subtitle={`We sent a code to ${sentPhone}`}
       >
+        {mockOtp && (
+          <div className="mb-4 p-4 rounded-lg bg-primary/10 border border-primary text-primary text-sm font-medium">
+            <strong>TEST MODE - Your OTP:</strong> {mockOtp}
+          </div>
+        )}
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
