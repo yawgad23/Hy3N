@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint, Moon, Sun } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint, Moon, Sun, MapPin, HelpCircle, Phone, MessageCircle } from "lucide-react";
 import { useTheme } from 'next-themes';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
 import ReferFriendModal from "@/components/rider/ReferFriendModal";
 import LoyaltyCard from "@/components/rider/LoyaltyCard";
+import SavedPlaces from "@/components/rider/SavedPlaces";
+import HelpCenter from "@/components/rider/HelpCenter";
 
 export default function RiderProfile() {
   const navigate = useNavigate();
@@ -25,6 +27,8 @@ export default function RiderProfile() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
   const [showLoyalty, setShowLoyalty] = useState(false);
+  const [showSavedPlaces, setShowSavedPlaces] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -206,6 +210,19 @@ export default function RiderProfile() {
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
+              onClick={() => setShowSavedPlaces(!showSavedPlaces)}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              <MapPin className="w-5 h-5 text-ghana-green" />
+              <span className="flex-1 text-left text-sm font-medium">Saved Places</span>
+              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showSavedPlaces ? "rotate-90" : ""}`} />
+            </button>
+            {showSavedPlaces && (
+              <div className="mt-1 bg-card border border-border rounded-xl p-4">
+                <SavedPlaces />
+              </div>
+            )}
+            <button
               onClick={() => setShowLoyalty(!showLoyalty)}
               className="w-full flex items-center gap-3 p-4 bg-card border border-primary/30 rounded-xl"
             >
@@ -216,6 +233,19 @@ export default function RiderProfile() {
             {showLoyalty && user && (
               <div className="mt-1">
                 <LoyaltyCard userId={user.id} />
+              </div>
+            )}
+            <button
+              onClick={() => setShowHelp(!showHelp)}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              <HelpCircle className="w-5 h-5 text-primary" />
+              <span className="flex-1 text-left text-sm font-medium">Help Center</span>
+              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showHelp ? "rotate-90" : ""}`} />
+            </button>
+            {showHelp && (
+              <div className="mt-1 bg-card border border-border rounded-xl p-4">
+                <HelpCenter />
               </div>
             )}
             <button

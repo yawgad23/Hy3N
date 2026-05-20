@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { MapPin, RefreshCw } from "lucide-react";
+import { MapPin, RefreshCw, CalendarClock, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";
@@ -14,6 +14,7 @@ const PULL_THRESHOLD = 70;
 
 export default function RiderHistory() {
   const [rides, setRides] = useState([]);
+  const [activeTab, setActiveTab] = useState("past");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
@@ -76,6 +77,16 @@ export default function RiderHistory() {
     setPullY(0);
   };
 
+  const upcomingRides = rides.filter(ride => 
+    ["scheduled", "requested", "matched", "driver_arriving", "in_progress"].includes(ride.status)
+  );
+  
+  const pastRides = rides.filter(ride => 
+    ["completed", "cancelled"].includes(ride.status)
+  );
+
+  const displayRides = activeTab === "upcoming" ? upcomingRides : pastRides;
+
   return (
     <div
       ref={scrollRef}
@@ -94,25 +105,55 @@ export default function RiderHistory() {
       <div className="p-4 flex items-center gap-3 border-b border-border" style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         <Logo size="sm" />
         <div>
-          <h1 className="font-heading font-bold text-xl">Ride History</h1>
-          <p className="text-xs text-muted-foreground">{rides.length} trips</p>
+          <h1 className="font-heading font-bold text-xl">Activity</h1>
+          <p className="text-xs text-muted-foreground">{upcomingRides.length} upcoming · {pastRides.length} past</p>
         </div>
       </div>
 
       <ConnectionStatus />
+
+      {/* Tabs */}
+      <div className="flex border-b border-border sticky top-0 bg-background z-10">
+        <button
+          onClick={() => setActiveTab("upcoming")}
+          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+            activeTab === "upcoming" 
+              ? "text-primary border-b-2 border-primary" 
+              : "text-muted-foreground"
+          }`}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <CalendarClock className="w-4 h-4" />
+            Upcoming
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab("past")}
+          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+            activeTab === "past" 
+              ? "text-primary border-b-2 border-primary" 
+              : "text-muted-foreground"
+          }`}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Clock className="w-4 h-4" />
+            Past
+          </div>
+        </button>
+      </div>
 
       <div className="p-4 space-y-3">
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : rides.length === 0 ? (
+        ) : displayRides.length === 0 ? (
           <EmptyState
-            type="rides"
-            onAction={() => navigate("/")}
+            type={activeTab === "upcoming" ? "scheduled" : "rides"}
+            onAction={() => navigate(activeTab === "upcoming" ? "/scheduled" : "/")}
           />
         ) : (
-          rides.map((ride) => (
+          displayRides.map((ride) => (
             <TripHistoryCard
               key={ride.id}
               ride={ride}

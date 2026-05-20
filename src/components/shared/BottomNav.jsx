@@ -3,9 +3,9 @@ import { Home, Clock, User, Wallet, CalendarClock } from "lucide-react";
 
 const riderTabs = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/scheduled", icon: CalendarClock, label: "Scheduled" },
-  { path: "/history", icon: Clock, label: "History" },
-  { path: "/profile", icon: User, label: "Profile" },
+  { path: "/history", icon: Clock, label: "Activity" },
+  { path: "/wallet", icon: Wallet, label: "Wallet" },
+  { path: "/profile", icon: User, label: "Account" },
 ];
 
 const driverTabs = [

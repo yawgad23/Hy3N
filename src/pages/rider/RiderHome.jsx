@@ -20,6 +20,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Onboarding from "@/components/shared/Onboarding";
 import ConnectionStatus from "@/components/shared/ConnectionStatus";
 import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
+import PromotionsBanner from "@/components/rider/PromotionsBanner";
 
 export default function RiderHome() {
   // All hooks must be called at the top level, before any conditional returns
@@ -214,9 +215,16 @@ export default function RiderHome() {
       <OfflineIndicator />
       
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-end">
-        <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center">
+      <div className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-xs font-bold text-primary">H</span>
+          </div>
+          <span className="font-heading font-bold text-sm">HY3N</span>
+        </div>
+        <button className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center relative">
           <Bell className="w-5 h-5 text-foreground" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full" />
         </button>
       </div>
 
@@ -234,9 +242,16 @@ export default function RiderHome() {
         />
       </div>
 
+      {/* Promotions Banner (when no active ride) */}
+      {!activeRide && (
+        <div className="absolute top-28 left-4 right-4 z-10">
+          <PromotionsBanner />
+        </div>
+      )}
+
       {/* Nearby Cars Indicator (when no active ride) */}
       {!activeRide && nearbyDrivers.length > 0 && (
-        <div className="absolute top-24 left-4 z-10 bg-card/90 backdrop-blur-md border border-border rounded-xl px-3 py-2 shadow-lg">
+        <div className="absolute top-40 left-4 z-10 bg-card/90 backdrop-blur-md border border-border rounded-xl px-3 py-2 shadow-lg">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             <p className="text-xs font-semibold text-foreground">{nearbyDrivers.length} cars nearby</p>

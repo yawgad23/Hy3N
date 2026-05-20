@@ -72,8 +72,6 @@ const AuthenticatedApp = () => {
             <Route path="/support" element={<RiderSupport />} />
             <Route path="/scheduled" element={<ScheduledTrips />} />
             <Route path="/wallet" element={<RiderWallet />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/reports" element={<AdminRideReports />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
           </Route>
 
