@@ -23,6 +23,7 @@ export default function Login() {
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [sentPhone, setSentPhone] = useState("");
+  const [mockOtp, setMockOtp] = useState("");
 
   // Check if biometric auth is available and if user has saved credentials
   useEffect(() => {
@@ -114,9 +115,12 @@ export default function Login() {
       
       // Show mock OTP in test mode
       if (result.data?.mock) {
+        const testOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        setMockOtp(testOtp);
         toast({
           title: "Test Mode",
-          description: "Check browser console (F12) for OTP code",
+          description: `Your OTP: ${testOtp}`,
+          duration: 10000,
         });
       }
     } catch (err) {
@@ -169,6 +173,11 @@ export default function Login() {
         title="Verify your phone"
         subtitle={`We sent a code to ${sentPhone}`}
       >
+        {mockOtp && (
+          <div className="mb-4 p-4 rounded-lg bg-primary/10 border border-primary text-primary text-sm font-medium">
+            <strong>TEST MODE - Your OTP:</strong> {mockOtp}
+          </div>
+        )}
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
@@ -178,7 +187,10 @@ export default function Login() {
           <InputOTP
             maxLength={6}
             value={otpCode}
-            onChange={setOtpCode}
+            onChange={(value) => {
+              console.log("OTP entered:", value);
+              setOtpCode(value);
+            }}
             autoFocus
             autoComplete="one-time-code"
           >
@@ -195,7 +207,7 @@ export default function Login() {
         <Button
           className="w-full h-12 font-medium"
           onClick={handleVerifyPhoneOtp}
-          disabled={loading || otpCode.length < 6}
+          disabled={loading}
         >
           {loading ? (
             <>
