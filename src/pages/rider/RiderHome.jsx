@@ -17,7 +17,6 @@ import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
 import SOSButton from "@/components/shared/SOSButton";
 import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
 import Onboarding from "@/components/shared/Onboarding";
 import ConnectionStatus from "@/components/shared/ConnectionStatus";
 
@@ -37,7 +36,6 @@ export default function RiderHome() {
   const [splitFare, setSplitFare] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [showSplash, setShowSplash] = useState(true);
   const { subscribeToPush } = usePushNotifications();
 
   // All hooks must be called before any conditional returns
@@ -191,8 +189,6 @@ export default function RiderHome() {
 
   return (
     <div className="h-screen-safe bg-background relative">
-      {showSplash && <RiderSplashScreen onComplete={() => setShowSplash(false)} />}
-      
       {/* Connection Status Banner */}
       <ConnectionStatus />
       
