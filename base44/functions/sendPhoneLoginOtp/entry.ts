@@ -25,17 +25,27 @@ Deno.serve(async (req) => {
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const fromPhone = Deno.env.get("TWILIO_FROM_PHONE");
     
+    console.log("Twilio config:", { accountSid: accountSid ? "SET" : "MISSING", authToken: authToken ? "SET" : "MISSING", fromPhone: fromPhone || "MISSING" });
+    
+    if (!accountSid || !authToken || !fromPhone) {
+      throw new Error("Twilio credentials not configured");
+    }
+    
     const client = twilio(accountSid, authToken);
     
-    await client.messages.create({
+    console.log("Sending SMS to:", phone, "from:", fromPhone);
+    
+    const message = await client.messages.create({
       body: `Your HY3N verification code is: ${otpCode}. Valid for 5 minutes.`,
       from: fromPhone,
       to: phone
     });
+    
+    console.log("Twilio message sent:", message.sid);
 
     return Response.json({ success: true });
   } catch (error) {
-    console.error("Send OTP error:", error);
+    console.error("Send OTP error:", error.message, error.stack);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
