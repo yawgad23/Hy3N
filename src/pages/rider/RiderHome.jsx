@@ -19,6 +19,7 @@ import { requestNotificationPermission, showNotification } from "@/lib/notificat
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Onboarding from "@/components/shared/Onboarding";
 import ConnectionStatus from "@/components/shared/ConnectionStatus";
+import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
 
 export default function RiderHome() {
   // All hooks must be called at the top level, before any conditional returns
@@ -36,6 +37,7 @@ export default function RiderHome() {
   const [splitFare, setSplitFare] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => !localStorage.getItem('hasVisitedBefore'));
   const { subscribeToPush } = usePushNotifications();
 
   // All hooks must be called before any conditional returns
@@ -66,6 +68,13 @@ export default function RiderHome() {
       }
     };
     init();
+    // Hide splash after auth check completes (only on first launch)
+    if (showSplash) {
+      setTimeout(() => {
+        localStorage.setItem('hasVisitedBefore', 'true');
+        setShowSplash(false);
+      }, 2500);
+    }
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
       setDestination({ name: address, lat, lng });
@@ -189,6 +198,7 @@ export default function RiderHome() {
 
   return (
     <div className="h-screen-safe bg-background relative">
+      {showSplash && <RiderSplashScreen onComplete={() => {}} />}
       {/* Connection Status Banner */}
       <ConnectionStatus />
       

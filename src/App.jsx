@@ -15,7 +15,6 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
-import SplashScreen from '@/components/shared/SplashScreen';
 import { base44 } from '@/api/base44Client';
 
 import RiderHome from '@/pages/rider/RiderHome';
@@ -87,31 +86,12 @@ const AuthenticatedApp = () => {
 
 function App() {
   registerServiceWorker();
-  const [showSplash, setShowSplash] = React.useState(() => {
-    // Only show splash on first launch (not if user has visited before)
-    return !localStorage.getItem('hasVisitedBefore');
-  });
-  const [isAuth, setIsAuth] = React.useState(null);
-
-  React.useEffect(() => {
-    (async () => {
-      const auth = await base44.auth.isAuthenticated();
-      setIsAuth(auth);
-      if (!auth) {
-        setShowSplash(false);
-      }
-    })();
-  }, []);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          {showSplash && isAuth && <SplashScreen onComplete={() => {
-            localStorage.setItem('hasVisitedBefore', 'true');
-            setShowSplash(false);
-          }} />}
           <AppEffects />
           <AuthenticatedApp />
         </Router>
