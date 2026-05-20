@@ -7,8 +7,8 @@ const defaultPromotions = [
   {
     id: "promo1",
     title: "First Ride Discount",
-    description: "Get 50% off your first ride with HY3N",
-    code: "WELCOME50",
+    description: "Get 10% off your first ride with HY3N",
+    code: "WELCOME10",
     icon: Gift,
     color: "from-ghana-green to-green-600"
   },
