@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign } from "lucide-react";
+import { Phone, MessageSquare, MapPin, Star, X, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -357,11 +357,25 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
               </button>
             )}
 
+            {/* Share Trip Button */}
+            <button
+              onClick={() => {
+                const msg = `I'm in a HY3N ride! 🚗\nPickup: ${currentRide.pickup_address}\nDestination: ${currentRide.destination_address}${eta ? `\nETA: ${eta} min` : ''}\nDriver: ${currentRide.driver_name || 'Assigned'}\n\nTrack me via HY3N.`;
+                if (navigator.share) {
+                  navigator.share({ title: 'My HY3N Trip', text: msg });
+                } else {
+                  navigator.clipboard.writeText(msg);
+                  toast.success('Trip details copied to clipboard!');
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 mb-4 p-3 rounded-xl bg-secondary text-foreground font-semibold text-sm hover:bg-secondary/80 transition-colors border border-border"
+            >
+              <Share2 className="w-4 h-4" />
+              Share Trip with Contacts
+            </button>
+
             {/* Action Buttons */}
             <div className="flex gap-3 mb-4">
-              <Button variant="outline" className="flex-1 h-12 border-border bg-secondary hover:bg-secondary/80">
-                <Phone className="w-4 h-4 mr-2" /> Call
-              </Button>
               <Button variant="outline" className="flex-1 h-12 border-border bg-secondary hover:bg-secondary/80 relative" onClick={openChat}>
                 <MessageSquare className="w-4 h-4 mr-2" /> Message
                 {unreadCount > 0 && (
