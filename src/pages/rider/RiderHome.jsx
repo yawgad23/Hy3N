@@ -178,25 +178,31 @@ export default function RiderHome() {
 
   if (isCheckingAuth) {
     return (
-      <div className="h-screen-safe bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-      </div>
+      <>
+        {showSplash && <RiderSplashScreen onComplete={() => {}} />}
+        <div className="h-screen-safe bg-background flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        </div>
+      </>
     );
   }
 
   if (!user) {
     return (
-      <div className="h-screen-safe bg-background flex flex-col items-center justify-center px-6 text-center">
-        <Logo size="lg" className="mb-6" />
-        <h1 className="font-heading font-bold text-2xl mb-2">Welcome to HY3N</h1>
-        <p className="text-muted-foreground mb-6">Your ride, your way</p>
-        <button
-          onClick={() => navigate("/login")}
-          className="w-full max-w-xs bg-primary text-primary-foreground font-heading font-semibold py-3 rounded-xl"
-        >
-          Sign In to Book a Ride
-        </button>
-      </div>
+      <>
+        {showSplash && <RiderSplashScreen onComplete={() => {}} />}
+        <div className="h-screen-safe bg-background flex flex-col items-center justify-center px-6 text-center">
+          <Logo size="lg" className="mb-6" />
+          <h1 className="font-heading font-bold text-2xl mb-2">Welcome to HY3N</h1>
+          <p className="text-muted-foreground mb-6">Your ride, your way</p>
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full max-w-xs bg-primary text-primary-foreground font-heading font-semibold py-3 rounded-xl"
+          >
+            Sign In to Book a Ride
+          </button>
+        </div>
+      </>
     );
   }
 
