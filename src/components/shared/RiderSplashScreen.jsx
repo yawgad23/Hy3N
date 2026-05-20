@@ -65,7 +65,7 @@ export default function RiderSplashScreen({ onComplete }) {
           </text>
           
           {/* N in premium gold */}
-          <text x="112" y="58" fontFamily="Outfit, sans-serif" fontSize="52" fontWeight="900" fill="url(#goldGradient)" letterSpacing="-1">
+          <text x="105" y="58" fontFamily="Outfit, sans-serif" fontSize="52" fontWeight="900" fill="url(#goldGradient)" letterSpacing="-1">
             N
           </text>
         </svg>
