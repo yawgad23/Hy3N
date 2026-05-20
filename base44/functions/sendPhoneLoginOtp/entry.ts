@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import twilio from 'npm:twilio';
 
 Deno.serve(async (req) => {
   try {
@@ -20,32 +19,17 @@ Deno.serve(async (req) => {
       created_date: new Date().toISOString()
     });
 
-    // Send SMS via Twilio
-    const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-    const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    const fromPhone = Deno.env.get("TWILIO_FROM_PHONE");
-    
-    console.log("Twilio config:", { accountSid: accountSid ? "SET" : "MISSING", authToken: authToken ? "SET" : "MISSING", fromPhone: fromPhone || "MISSING" });
-    
-    if (!accountSid || !authToken || !fromPhone) {
-      throw new Error("Twilio credentials not configured");
-    }
-    
-    const client = twilio(accountSid, authToken);
-    
-    console.log("Sending SMS to:", phone, "from:", fromPhone);
-    
-    const message = await client.messages.create({
-      body: `Your HY3N verification code is: ${otpCode}. Valid for 5 minutes.`,
-      from: fromPhone,
-      to: phone
-    });
-    
-    console.log("Twilio message sent:", message.sid);
+    // MOCK MODE: Log OTP to console instead of sending SMS
+    console.log("🔐 MOCK OTP for", phone, ":", otpCode);
+    console.log("⚠️ In production, this would be sent via Twilio SMS");
 
-    return Response.json({ success: true });
+    return Response.json({ 
+      success: true,
+      mock: true,
+      message: "OTP sent (check backend logs for code in test mode)"
+    });
   } catch (error) {
-    console.error("Send OTP error:", error.message, error.stack);
+    console.error("Send OTP error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

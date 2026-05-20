@@ -121,10 +121,18 @@ export default function Register() {
     setLoading(true);
     try {
       const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-      await base44.functions.invoke("sendPhoneLoginOtp", { phone: formattedPhone });
+      const result = await base44.functions.invoke("sendPhoneLoginOtp", { phone: formattedPhone });
       setSentPhone(formattedPhone);
       setShowOtp(true);
       setAuthMethod("phone");
+      
+      // Show mock OTP in test mode
+      if (result.data?.mock) {
+        toast({
+          title: "Test Mode",
+          description: "Check browser console (F12) for OTP code",
+        });
+      }
     } catch (err) {
       setError(err.message || "Failed to send code");
     } finally {
