@@ -32,20 +32,20 @@ export default function ScheduledTrips() {
 
   const loadTrips = async (userId) => {
     setLoading(true);
-    const all = await base44.entities.Ride.filter({ rider_id: userId, ride_type: "scheduled" }, "-scheduled_for");
+    const all = await base44.entities.ScheduledRide.filter({ rider_id: userId }, "-scheduled_for");
     setTrips(all);
     setLoading(false);
   };
 
   const handleCancel = async (trip) => {
     setCancellingId(trip.id);
-    await base44.entities.Ride.update(trip.id, { status: "cancelled" });
+    await base44.entities.ScheduledRide.update(trip.id, { status: "cancelled" });
     setTrips((prev) => prev.map((t) => t.id === trip.id ? { ...t, status: "cancelled" } : t));
     setCancellingId(null);
   };
 
-  const upcoming = trips.filter((t) => t.status === "scheduled" && t.scheduled_for && !isPast(parseISO(t.scheduled_for)));
-  const past = trips.filter((t) => t.status !== "scheduled" || (t.scheduled_for && isPast(parseISO(t.scheduled_for))));
+  const upcoming = trips.filter((t) => t.status === "pending" && t.scheduled_for && !isPast(parseISO(t.scheduled_for)));
+  const past = trips.filter((t) => t.status !== "pending" || (t.scheduled_for && isPast(parseISO(t.scheduled_for))));
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -108,7 +108,8 @@ export default function ScheduledTrips() {
 
 function TripCard({ trip, onCancel, cancellingId }) {
   const isCancelled = trip.status === "cancelled";
-  const isExpired = trip.scheduled_for && isPast(parseISO(trip.scheduled_for)) && trip.status === "scheduled";
+  const isTriggered = trip.status === "triggered";
+  const isExpired = trip.scheduled_for && isPast(parseISO(trip.scheduled_for)) && trip.status === "pending";
 
   return (
     <div className={`bg-card border rounded-2xl p-4 ${isCancelled ? "border-border opacity-60" : "border-border"}`}>
@@ -125,7 +126,7 @@ function TripCard({ trip, onCancel, cancellingId }) {
             <p className="text-xs text-muted-foreground">{CATEGORY_LABELS[trip.category] || trip.category}</p>
           </div>
         </div>
-        <StatusBadge status={isCancelled ? "cancelled" : isExpired ? "expired" : "upcoming"} />
+        <StatusBadge status={isCancelled ? "cancelled" : isTriggered ? "triggered" : isExpired ? "expired" : "upcoming"} />
       </div>
 
       {/* Route */}
@@ -149,7 +150,7 @@ function TripCard({ trip, onCancel, cancellingId }) {
       </div>
 
       {/* Cancel button */}
-      {onCancel && !isCancelled && !isExpired && (
+      {onCancel && !isCancelled && !isTriggered && !isExpired && (
         <Button
           variant="ghost"
           size="sm"
@@ -169,7 +170,8 @@ function StatusBadge({ status }) {
   const map = {
     upcoming: { label: "Upcoming", classes: "bg-ghana-green/15 text-ghana-green" },
     cancelled: { label: "Cancelled", classes: "bg-destructive/15 text-destructive" },
-    expired: { label: "Expired", classes: "bg-muted text-muted-foreground" }
+    expired: { label: "Expired", classes: "bg-muted text-muted-foreground" },
+    triggered: { label: "Ride Requested", classes: "bg-primary/15 text-primary" }
   };
   const { label, classes } = map[status] || map.upcoming;
   return (

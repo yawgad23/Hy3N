@@ -1,0 +1,125 @@
+{
+  "name": "ScheduledRide",
+  "type": "object",
+  "properties": {
+    "rider_id": {
+      "type": "string"
+    },
+    "rider_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "comfort",
+        "kantanka",
+        "executive",
+        "express_delivery"
+      ]
+    },
+    "pickup_address": {
+      "type": "string"
+    },
+    "pickup_lat": {
+      "type": "number"
+    },
+    "pickup_lng": {
+      "type": "number"
+    },
+    "destination_address": {
+      "type": "string"
+    },
+    "destination_lat": {
+      "type": "number"
+    },
+    "destination_lng": {
+      "type": "number"
+    },
+    "fare_estimate": {
+      "type": "number"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "mobile_money",
+        "cash",
+        "card",
+        "wallet"
+      ],
+      "default": "mobile_money"
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "surge_multiplier": {
+      "type": "number",
+      "default": 1.0
+    },
+    "scheduled_for": {
+      "type": "string",
+      "description": "ISO datetime for scheduled pickup"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "triggered",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "triggered_ride_id": {
+      "type": "string",
+      "description": "ID of the Ride entity created when this scheduled ride was triggered"
+    }
+  },
+  "required": [
+    "rider_id",
+    "category",
+    "pickup_address",
+    "destination_address",
+    "scheduled_for"
+  ],
+  "rls": {
+    "create": {
+      "data.rider_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.rider_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.rider_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.rider_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -136,7 +136,7 @@ export default function RiderHome() {
 
   const handleBookRide = async (bookingData) => {
     const isScheduled = bookingData.ride_type === "scheduled";
-    const rideData = {
+    const baseData = {
       rider_id: user?.id || "anonymous",
       rider_name: user?.full_name || "Rider",
       category: bookingData.category,
@@ -149,30 +149,30 @@ export default function RiderHome() {
       fare_estimate: bookingData.fare_estimate,
       payment_method: bookingData.payment_method,
       distance_km: bookingData.distance_km,
-      ride_type: bookingData.ride_type || "on_demand",
-      scheduled_for: bookingData.scheduled_for || null,
-      status: isScheduled ? "scheduled" : "requested"
+      surge_multiplier: bookingData.surge_multiplier || 1.0,
     };
 
-    // Optimistic update — immediately show the ride in UI
-    const optimisticRide = { ...rideData, id: `optimistic-${Date.now()}` };
+    // Optimistic update
+    const optimistic = { ...baseData, id: `optimistic-${Date.now()}` };
     if (bookingData.split_fare) setSplitFare(bookingData.split_fare);
     setDestination(null);
-    if (!isScheduled) {
-      setActiveRide(optimisticRide);
-    } else {
-      setScheduledConfirm(optimisticRide);
-    }
 
-    // Persist in background — replace optimistic with real record
-    const ride = await base44.entities.Ride.create({
-      ...rideData,
-      surge_multiplier: bookingData.surge_multiplier || 1.0
-    });
-    if (!isScheduled) {
-      setActiveRide(ride);
+    if (isScheduled) {
+      // Save to ScheduledRide entity — backend will trigger it at the right time
+      const scheduled = await base44.entities.ScheduledRide.create({
+        ...baseData,
+        scheduled_for: bookingData.scheduled_for,
+        status: "pending"
+      });
+      setScheduledConfirm({ ...scheduled, destination_address: bookingData.destination.name });
     } else {
-      setScheduledConfirm(ride);
+      setActiveRide(optimistic);
+      const ride = await base44.entities.Ride.create({
+        ...baseData,
+        ride_type: "on_demand",
+        status: "requested"
+      });
+      setActiveRide(ride);
     }
   };
 
