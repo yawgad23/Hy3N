@@ -37,19 +37,19 @@ export default function RiderHome() {
   const [splitFare, setSplitFare] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [showSplash, setShowSplash] = useState(() => !localStorage.getItem('hasVisitedBefore'));
+  const [showSplash, setShowSplash] = useState(() => !localStorage.getItem('splashShown'));
   const { subscribeToPush } = usePushNotifications();
 
   // Hide splash timer (runs once on mount)
   useEffect(() => {
     if (showSplash) {
       const timer = setTimeout(() => {
-        localStorage.setItem('hasVisitedBefore', 'true');
+        localStorage.setItem('splashShown', 'true');
         setShowSplash(false);
-      }, 3000);
+      }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [showSplash]);
+  }, []);
 
   // All hooks must be called before any conditional returns
   useEffect(() => {
@@ -176,32 +176,24 @@ export default function RiderHome() {
     }
   };
 
-  if (isCheckingAuth) {
+  if (showSplash || isCheckingAuth) {
     return (
-      <>
-        <RiderSplashScreen onComplete={() => setIsCheckingAuth(false)} />
-        <div className="h-screen-safe bg-background flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-        </div>
-      </>
+      <RiderSplashScreen onComplete={() => {}} />
     );
   }
 
   if (!user) {
     return (
-      <>
-        <RiderSplashScreen onComplete={() => setIsCheckingAuth(false)} />
-        <div className="h-screen-safe bg-background flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="font-heading font-bold text-2xl mb-2">Welcome to HY3N</h1>
-          <p className="text-muted-foreground mb-6">Your ride, your way</p>
-          <button
-            onClick={() => navigate("/login")}
-            className="w-full max-w-xs bg-primary text-primary-foreground font-heading font-semibold py-3 rounded-xl"
-          >
-            Sign In to Book a Ride
-          </button>
-        </div>
-      </>
+      <div className="h-screen-safe bg-background flex flex-col items-center justify-center px-6 text-center">
+        <h1 className="font-heading font-bold text-2xl mb-2">Welcome to HY3N</h1>
+        <p className="text-muted-foreground mb-6">Your ride, your way</p>
+        <button
+          onClick={() => navigate("/login")}
+          className="w-full max-w-xs bg-primary text-primary-foreground font-heading font-semibold py-3 rounded-xl"
+        >
+          Sign In to Book a Ride
+        </button>
+      </div>
     );
   }
 
