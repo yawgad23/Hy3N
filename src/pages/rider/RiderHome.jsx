@@ -36,20 +36,14 @@ export default function RiderHome() {
   const [scheduledConfirm, setScheduledConfirm] = useState(null);
   const [splitFare, setSplitFare] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [loading, setLoading] = useState(true);
   const { subscribeToPush } = usePushNotifications();
 
 
 
-  // All hooks must be called before any conditional returns
   useEffect(() => {
     const init = async () => {
       try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) {
-          setIsCheckingAuth(false);
-          return;
-        }
         const me = await base44.auth.me();
         setUser(me);
         if (navigator.geolocation) {
@@ -59,13 +53,11 @@ export default function RiderHome() {
           );
         }
         const granted = await requestNotificationPermission();
-        if (granted && me?.id) {
-          subscribeToPush(me.id);
-        }
+        if (granted && me?.id) subscribeToPush(me.id);
       } catch (err) {
         console.error("Init error:", err);
       } finally {
-        setIsCheckingAuth(false);
+        setLoading(false);
       }
     };
     init();
@@ -166,9 +158,9 @@ export default function RiderHome() {
     }
   };
 
-  if (isCheckingAuth) {
+  if (loading) {
     return (
-      <div className="h-screen-safe bg-background flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     );
@@ -176,7 +168,7 @@ export default function RiderHome() {
 
   if (!user) {
     return (
-      <div className="h-screen-safe bg-background flex flex-col items-center justify-center px-6 text-center">
+      <div className="h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
         <h1 className="font-heading font-bold text-2xl mb-2">Welcome to HY3N</h1>
         <p className="text-muted-foreground mb-6">Your ride, your way</p>
         <button
@@ -190,7 +182,7 @@ export default function RiderHome() {
   }
 
   return (
-    <div className="h-screen-safe bg-background relative">
+    <div className="h-screen bg-background relative overflow-hidden">
       {/* Connection Status Banner */}
       <ConnectionStatus />
       
@@ -237,7 +229,7 @@ export default function RiderHome() {
 
       {/* Where To? Search Bar - Uber/Bolt Style */}
       {!destination && !activeRide && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 pb-safe">
+        <div className="absolute bottom-0 left-0 right-0 z-20" style={{paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)'}}>
           <div className="bg-card border-t border-border rounded-t-3xl p-4 shadow-2xl">
             <button
               onClick={() => setSearchOpen(true)}
