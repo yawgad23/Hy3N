@@ -40,16 +40,7 @@ export default function RiderHome() {
   const [showSplash, setShowSplash] = useState(() => !localStorage.getItem('splashShown'));
   const { subscribeToPush } = usePushNotifications();
 
-  // Hide splash timer (runs once on mount)
-  useEffect(() => {
-    if (showSplash) {
-      const timer = setTimeout(() => {
-        localStorage.setItem('splashShown', 'true');
-        setShowSplash(false);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Splash is hidden via its own onComplete callback
 
   // All hooks must be called before any conditional returns
   useEffect(() => {
@@ -176,9 +167,20 @@ export default function RiderHome() {
     }
   };
 
-  if (showSplash || isCheckingAuth) {
+  if (showSplash) {
     return (
-      <RiderSplashScreen onComplete={() => {}} />
+      <RiderSplashScreen onComplete={() => {
+        localStorage.setItem('splashShown', 'true');
+        setShowSplash(false);
+      }} />
+    );
+  }
+
+  if (isCheckingAuth) {
+    return (
+      <div className="h-screen-safe bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
     );
   }
 
