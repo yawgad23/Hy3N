@@ -19,7 +19,7 @@ import { requestNotificationPermission, showNotification } from "@/lib/notificat
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Onboarding from "@/components/shared/Onboarding";
 import ConnectionStatus from "@/components/shared/ConnectionStatus";
-import RiderSplashScreen from "@/components/shared/RiderSplashScreen";
+
 
 export default function RiderHome() {
   // All hooks must be called at the top level, before any conditional returns
@@ -37,10 +37,9 @@ export default function RiderHome() {
   const [splitFare, setSplitFare] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [showSplash, setShowSplash] = useState(() => !localStorage.getItem('splashShown'));
   const { subscribeToPush } = usePushNotifications();
 
-  // Splash is hidden via its own onComplete callback
+
 
   // All hooks must be called before any conditional returns
   useEffect(() => {
@@ -166,15 +165,6 @@ export default function RiderHome() {
       setActiveRide(ride);
     }
   };
-
-  if (showSplash) {
-    return (
-      <RiderSplashScreen onComplete={() => {
-        localStorage.setItem('splashShown', 'true');
-        setShowSplash(false);
-      }} />
-    );
-  }
 
   if (isCheckingAuth) {
     return (
