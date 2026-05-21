@@ -16,6 +16,13 @@ function calcTier(lifetimePoints) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Allow automation system calls (no user token) but block unauthorized users
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { event, data } = await req.json();
 
     if (event.type !== "update" || data.status !== "completed") {
