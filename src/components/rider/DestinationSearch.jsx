@@ -136,7 +136,7 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
         l.name.toLowerCase().includes(query.toLowerCase()) ||
         l.address.toLowerCase().includes(query.toLowerCase())
       )
-    : suggestions.length > 0 ? [] : (query ? POPULAR_LOCATIONS : []);
+    : suggestions.length > 0 ? [] : POPULAR_LOCATIONS;
 
   return (
     <AnimatePresence>
