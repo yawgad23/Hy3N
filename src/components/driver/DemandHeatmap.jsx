@@ -1,22 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
 let googleMapsLoaded = false;
 let loadPromise = null;
 
-function loadGoogleMaps() {
+async function loadGoogleMaps() {
   if (googleMapsLoaded) return Promise.resolve();
   if (loadPromise) return loadPromise;
-  loadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry`;
-    script.async = true;
-    script.onload = () => { googleMapsLoaded = true; resolve(); };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
+  loadPromise = (async () => {
+    let apiKey = "";
+    try {
+      const res = await base44.functions.invoke("getGoogleMapsKey", {});
+      apiKey = res.data?.key || "";
+    } catch (_) {
+      // Fallback: load without key (tiles will be watermarked but functional)
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
+      script.async = true;
+      script.onload = () => { googleMapsLoaded = true; resolve(); };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  })();
   return loadPromise;
 }
 
