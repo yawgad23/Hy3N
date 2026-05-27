@@ -259,7 +259,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
     </AnimatePresence>
 
     <motion.div
-      className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-40"
+      className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-50 pb-safe"
       initial={{ y: "100%" }}
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
