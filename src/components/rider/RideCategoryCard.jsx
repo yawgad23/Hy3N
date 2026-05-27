@@ -1,11 +1,12 @@
-import { Car, Bus, Crown, Star, Package } from "lucide-react";
+import { Car, Bus, Crown, Star, Package, Bike } from "lucide-react";
 
 const iconMap = {
   Car: Car,
   Bus: Bus,
   Crown: Crown,
   Star: Star,
-  Package: Package
+  Package: Package,
+  Bike: Bike
 };
 
 export default function RideCategoryCard({ category, selected, onSelect, distance, surgeMultiplier = 1.0 }) {

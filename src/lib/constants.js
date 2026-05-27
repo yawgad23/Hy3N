@@ -12,6 +12,15 @@ export const RIDE_CATEGORIES = [
     seats: 4
   },
   {
+    id: "okada",
+    name: "HY3N Okada",
+    description: "Fast bike rides to beat traffic",
+    icon: "Bike",
+    basePrice: 5,
+    pricePerKm: 1.5,
+    seats: 1
+  },
+  {
     id: "comfort",
     name: "HY3N Comfort",
     description: "Comfortable rides with extra amenities",
