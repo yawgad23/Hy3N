@@ -1,6 +1,6 @@
 import { DragDropContext } from "@hello-pangea/dnd";
 import { motion } from "framer-motion";
-import { LayoutGrid, List, Plus, Search, X, BarChart3 } from "lucide-react";
+import { LayoutGrid, Plus, Search, X, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

@@ -3,19 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Calendar, TrendingUp, DollarSign, Car, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,

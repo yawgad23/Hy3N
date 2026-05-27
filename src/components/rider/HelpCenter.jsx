@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HelpCircle, Phone, MessageCircle, FileText, ChevronRight, Shield, CreditCard, MapPin } from "lucide-react";
+import { HelpCircle, Phone, MessageCircle, FileText, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Accordion,

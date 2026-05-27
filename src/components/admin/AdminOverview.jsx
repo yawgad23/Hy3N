@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Car, DollarSign, Users, AlertTriangle, TrendingUp, RefreshCw, ChevronRight } from "lucide-react";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Car, DollarSign, AlertTriangle, TrendingUp, RefreshCw } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { subDays, startOfDay, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 

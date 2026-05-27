@@ -1,4 +1,4 @@
-export default function Logo({ size = "md", className = "", variant = "rider" }) {
+export default function Logo({ size = "md", className = "" }) {
   const sizes = {
     sm: "h-10",
     md: "h-16",
@@ -9,7 +9,7 @@ export default function Logo({ size = "md", className = "", variant = "rider" })
   const height = sizes[size];
 
   return (
-    <div className={`${height} w-auto ${className}`} viewBox="0 0 200 80">
+    <div className={`${height} w-auto ${className}`}>
       <svg viewBox="0 0 200 80" className="w-full h-full">
         <defs>
           <linearGradient id="ghanaGradient" x1="0%" y1="0%" x2="0%" y2="100%">

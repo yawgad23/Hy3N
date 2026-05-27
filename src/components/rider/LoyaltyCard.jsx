@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Star, Trophy, Gift, ChevronRight, Zap, Crown, Shield, Award } from "lucide-react";
+import { Star, Trophy, Gift, Zap, Crown, Shield, Award } from "lucide-react";
 import { motion } from "framer-motion";
 
 const TIERS = {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { MapPin, RefreshCw, CalendarClock, Clock } from "lucide-react";
+import { RefreshCw, CalendarClock, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/shared/BottomNav";
 import Logo from "@/components/shared/Logo";

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, MapPin, Navigation, Star, Calendar, Clock, DollarSign, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";

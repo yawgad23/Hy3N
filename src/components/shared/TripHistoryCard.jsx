@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Star, Calendar, Clock, DollarSign, Navigation, User, Phone, MessageSquare } from "lucide-react";
+import { MapPin, Star, Calendar, Clock, Navigation, User, Phone, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

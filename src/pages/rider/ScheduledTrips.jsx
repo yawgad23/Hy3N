@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, CalendarClock, MapPin, Clock, Trash2, AlertCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNav from "@/components/shared/BottomNav";
 import { format, isPast, parseISO } from "date-fns";

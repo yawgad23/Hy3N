@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { RefreshCw, Search, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
 
 const STATUS_ICONS = {
   approved: <CheckCircle className="w-4 h-4 text-green-500" />,

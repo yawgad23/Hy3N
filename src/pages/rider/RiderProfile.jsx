@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint, Moon, Sun, MapPin, HelpCircle, Phone, MessageCircle } from "lucide-react";
+import { User, CreditCard, LogOut, ChevronRight, Shield, Trash2, Star, Wallet, Users, Trophy, Fingerprint, Moon, Sun, MapPin, HelpCircle } from "lucide-react";
 import { useTheme } from 'next-themes';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";

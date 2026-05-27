@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
 import { X, Gift, Percent } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 import Logo from "@/components/shared/Logo";
 import BottomNav from "@/components/shared/BottomNav";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";

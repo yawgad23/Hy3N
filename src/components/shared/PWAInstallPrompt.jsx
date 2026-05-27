@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Download, Smartphone } from "lucide-react";
+import { X, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PWAInstallPrompt() {

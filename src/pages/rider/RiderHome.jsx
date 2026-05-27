@@ -1,20 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Search, MapPin, Bell, CalendarClock, CheckCircle2, Clock } from "lucide-react";
+import { Search, MapPin, Bell, CheckCircle2, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { toast } from "sonner";
 
 import BottomNav from "@/components/shared/BottomNav";
 import OfflineIndicator from "@/components/shared/OfflineIndicator";
-import PWAInstallPrompt from "@/components/shared/PWAInstallPrompt";
-import InstallGuide from "@/components/shared/InstallGuide";
 import DestinationSearch from "@/components/rider/DestinationSearch";
 import RideBookingSheet from "@/components/rider/RideBookingSheet";
 import TripTracker from "@/components/rider/TripTracker";
 import GoogleTrackingMap from "@/components/shared/GoogleTrackingMap";
-import SOSButton from "@/components/shared/SOSButton";
 import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Onboarding from "@/components/shared/Onboarding";

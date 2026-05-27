@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Pencil, Trash2, Calendar, User, Clock } from "lucide-react";
+import { Pencil, Trash2, User, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "./StatusBadge";
 import { cn } from "@/lib/utils";

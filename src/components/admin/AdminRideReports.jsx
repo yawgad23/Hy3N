@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { AlertTriangle, AlertCircle, CheckCircle, XCircle, Clock, Search, Filter } from "lucide-react";
+import { AlertTriangle, AlertCircle, XCircle, Clock, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {

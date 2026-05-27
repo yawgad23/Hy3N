@@ -1,7 +1,6 @@
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 export default function SearchBar({ value, onChange, placeholder = "Search tasks..." }) {
   return (

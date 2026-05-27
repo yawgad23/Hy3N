@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend
+  ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
-import { format, parseISO, subDays, startOfDay } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
 import {
-  Car, TrendingUp, DollarSign, Users, AlertTriangle, Shield,
+  Car, TrendingUp, DollarSign, AlertTriangle, Shield,
   RefreshCw, ChevronRight, MapPin, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

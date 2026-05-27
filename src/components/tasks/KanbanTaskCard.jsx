@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, User, Calendar } from "lucide-react";
+import { Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
