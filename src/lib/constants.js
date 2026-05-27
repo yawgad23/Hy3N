@@ -7,8 +7,10 @@ export const RIDE_CATEGORIES = [
     name: "HY3N Standard",
     description: "Affordable everyday rides",
     icon: "Car",
-    basePrice: 8,
-    pricePerKm: 2.5,
+    basePrice: 3.10,
+    pricePerKm: 1.26,
+    pricePerMin: 0.45,
+    minFare: 8.00,
     seats: 4
   },
   {
@@ -16,8 +18,10 @@ export const RIDE_CATEGORIES = [
     name: "HY3N Okada",
     description: "Fast bike rides to beat traffic",
     icon: "Bike",
-    basePrice: 5,
-    pricePerKm: 1.5,
+    basePrice: 2.00,
+    pricePerKm: 0.80,
+    pricePerMin: 0.25,
+    minFare: 5.00,
     seats: 1
   },
   {
@@ -25,8 +29,10 @@ export const RIDE_CATEGORIES = [
     name: "HY3N Comfort",
     description: "Comfortable rides with extra amenities",
     icon: "Star",
-    basePrice: 15,
-    pricePerKm: 3.5,
+    basePrice: 5.00,
+    pricePerKm: 1.80,
+    pricePerMin: 0.60,
+    minFare: 12.00,
     seats: 4
   },
   {
@@ -34,8 +40,10 @@ export const RIDE_CATEGORIES = [
     name: "Kantanka HY3N",
     description: "Ride made in Ghana",
     icon: "Bus",
-    basePrice: 10,
-    pricePerKm: 3,
+    basePrice: 4.00,
+    pricePerKm: 1.50,
+    pricePerMin: 0.50,
+    minFare: 10.00,
     seats: 4
   },
   {
@@ -43,8 +51,10 @@ export const RIDE_CATEGORIES = [
     name: "HY3N Executive",
     description: "Premium luxury rides",
     icon: "Crown",
-    basePrice: 25,
-    pricePerKm: 5,
+    basePrice: 10.00,
+    pricePerKm: 2.50,
+    pricePerMin: 1.00,
+    minFare: 20.00,
     seats: 4
   },
   {
@@ -52,8 +62,10 @@ export const RIDE_CATEGORIES = [
     name: "HY3N Express Delivery",
     description: "Fast package delivery",
     icon: "Package",
-    basePrice: 12,
-    pricePerKm: 2,
+    basePrice: 4.00,
+    pricePerKm: 1.20,
+    pricePerMin: 0.40,
+    minFare: 8.00,
     seats: 0
   }
 ];

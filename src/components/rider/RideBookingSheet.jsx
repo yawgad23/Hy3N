@@ -84,8 +84,18 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
       .finally(() => setSurgeLoading(false));
   }, [pickupLat, pickupLng]);
 
-  const baseFare = distance ? selectedCategory.basePrice + selectedCategory.pricePerKm * distance : selectedCategory.basePrice;
-  const fare = distance ? parseFloat((baseFare * surge.multiplier).toFixed(2)) : 0;
+  // Uber-like pricing: base + (distance * pricePerKm) + (duration * pricePerMin)
+  const calculateFare = () => {
+    if (!distance || !duration) return 0;
+    const distanceFare = selectedCategory.basePrice + (distance * selectedCategory.pricePerKm);
+    const timeFare = duration * selectedCategory.pricePerMin;
+    const subtotal = distanceFare + timeFare;
+    const withSurge = subtotal * surge.multiplier;
+    const final = Math.max(withSurge, selectedCategory.minFare);
+    return parseFloat(final.toFixed(2));
+  };
+  
+  const fare = calculateFare();
   const yourShare = splitData ? splitData.perPersonFare : fare;
 
   const handleSplitConfirm = (data) => {
@@ -300,24 +310,44 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
 
         {/* Fare Breakdown */}
         <div className="mb-4 space-y-2">
-          <div className="flex items-center justify-between p-3 bg-secondary rounded-xl">
-            <div>
-              <p className="text-xs text-muted-foreground">Base Fare</p>
-              <p className="text-sm font-medium">GH₵{distance ? (selectedCategory.basePrice).toFixed(2) : "0.00"}</p>
-            </div>
-            <div className="text-right">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-3 bg-secondary rounded-xl">
               <p className="text-xs text-muted-foreground">Distance</p>
               <p className="text-sm font-medium">{distance ? distance.toFixed(1) : "-"} km</p>
             </div>
+            <div className="p-3 bg-secondary rounded-xl">
+              <p className="text-xs text-muted-foreground">Duration</p>
+              <p className="text-sm font-medium">~{duration || "-"} min</p>
+            </div>
           </div>
+          
+          {distance && duration && (
+            <div className="space-y-2 p-3 bg-secondary rounded-xl">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Base Fare</span>
+                <span className="font-medium">GH₵{selectedCategory.basePrice.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Distance ({distance.toFixed(1)} km × GH₵{selectedCategory.pricePerKm.toFixed(2)}/km)</span>
+                <span className="font-medium">GH₵{(distance * selectedCategory.pricePerKm).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Time ({duration} min × GH₵{selectedCategory.pricePerMin.toFixed(2)}/min)</span>
+                <span className="font-medium">GH₵{(duration * selectedCategory.pricePerMin).toFixed(2)}</span>
+              </div>
+              <div className="border-t border-border pt-2 mt-2 flex items-center justify-between text-xs font-semibold">
+                <span>Subtotal</span>
+                <span>GH₵{((selectedCategory.basePrice + (distance * selectedCategory.pricePerKm) + (duration * selectedCategory.pricePerMin)) * surge.multiplier).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
           
           {surge.is_surge && (
             <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-destructive" />
-                <p className="text-xs text-destructive font-medium">Surge ({surge.multiplier}x)</p>
+                <p className="text-xs text-destructive font-medium">Surge Pricing ({surge.multiplier}x)</p>
               </div>
-              <p className="text-sm font-bold text-destructive">+GH₵{distance ? (selectedCategory.basePrice * (surge.multiplier - 1)).toFixed(2) : "0.00"}</p>
             </div>
           )}
           
