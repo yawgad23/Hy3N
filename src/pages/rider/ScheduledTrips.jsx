@@ -13,6 +13,7 @@ const CATEGORY_LABELS = {
   xl: "XL",
   executive: "Executive",
   kantanka: "Kantanka",
+  okada: "Okada",
   express_delivery: "Express Delivery"
 };
 
