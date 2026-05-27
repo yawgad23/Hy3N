@@ -94,13 +94,13 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
 
   return (
     <motion.div
-      className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-40 max-h-[85vh] overflow-y-auto"
+      className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto pb-safe"
       initial={{ y: "100%" }}
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
     >
-      <div className="p-5">
+      <div className="p-5 pb-20">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-heading font-bold text-lg">Choose your ride</h3>
           <button onClick={onClose}>
