@@ -308,61 +308,42 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           )}
         </div>
 
-        {/* Fare Breakdown */}
-        <div className="mb-4 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="p-3 bg-secondary rounded-xl">
-              <p className="text-xs text-muted-foreground">Distance</p>
-              <p className="text-sm font-medium">{distance ? distance.toFixed(1) : "-"} km</p>
-            </div>
-            <div className="p-3 bg-secondary rounded-xl">
-              <p className="text-xs text-muted-foreground">Duration</p>
-              <p className="text-sm font-medium">~{duration || "-"} min</p>
-            </div>
-          </div>
-          
-          {distance && duration && (
-            <div className="space-y-2 p-3 bg-secondary rounded-xl">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Base Fare</span>
-                <span className="font-medium">GH₵{selectedCategory.basePrice.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Distance ({distance.toFixed(1)} km × GH₵{selectedCategory.pricePerKm.toFixed(2)}/km)</span>
-                <span className="font-medium">GH₵{(distance * selectedCategory.pricePerKm).toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Time ({duration} min × GH₵{selectedCategory.pricePerMin.toFixed(2)}/min)</span>
-                <span className="font-medium">GH₵{(duration * selectedCategory.pricePerMin).toFixed(2)}</span>
-              </div>
-              <div className="border-t border-border pt-2 mt-2 flex items-center justify-between text-xs font-semibold">
-                <span>Subtotal</span>
-                <span>GH₵{((selectedCategory.basePrice + (distance * selectedCategory.pricePerKm) + (duration * selectedCategory.pricePerMin)) * surge.multiplier).toFixed(2)}</span>
-              </div>
-            </div>
-          )}
-          
+        {/* Total Fare Display */}
+        <div className="mb-4">
           {surge.is_surge && (
-            <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
+            <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/30 rounded-xl mb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-destructive" />
-                <p className="text-xs text-destructive font-medium">Surge Pricing ({surge.multiplier}x)</p>
+                <p className="text-xs text-destructive font-medium">Surge Pricing Active ({surge.multiplier}x)</p>
               </div>
             </div>
           )}
           
-          <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-xl">
+          <div className="flex items-center justify-between p-5 bg-secondary border border-border rounded-2xl">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                {splitData ? "Your Share" : "Total Fare"}
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">
+                {splitData ? "Your Share" : "Estimated Fare"}
               </p>
               {splitData && (
-                <p className="text-xs text-muted-foreground">Total: GH₵{fare.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Total Trip: GH₵{fare.toFixed(2)}</p>
               )}
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-background px-2 py-0.5 rounded-full border border-border">
+                  <Navigation className="w-3 h-3" />
+                  <span>{distance ? distance.toFixed(1) : "-"} km</span>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-background px-2 py-0.5 rounded-full border border-border">
+                  <Clock className="w-3 h-3" />
+                  <span>~{duration || "-"} min</span>
+                </div>
+              </div>
             </div>
-            <span className={`font-heading font-bold text-2xl ${surge.is_surge ? "text-destructive" : "text-primary"}`}>
-              GH₵{yourShare.toFixed ? yourShare.toFixed(2) : "0.00"}
-            </span>
+            <div className="text-right">
+              <span className={`font-heading font-bold text-3xl ${surge.is_surge ? "text-destructive" : "text-primary"}`}>
+                GH₵{yourShare.toFixed ? yourShare.toFixed(2) : "0.00"}
+              </span>
+              <p className="text-[10px] text-muted-foreground mt-1">Includes all taxes & fees</p>
+            </div>
           </div>
         </div>
 
