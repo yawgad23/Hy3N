@@ -17,8 +17,12 @@ async function loadGoogleMaps() {
     let apiKey = "";
     try {
       const res = await base44.functions.invoke("getGoogleMapsKey", {});
-      apiKey = res.data?.key || "";
-    } catch (_) {
+      apiKey = res?.key || res.data?.key || "";
+      if (!apiKey) {
+        console.warn("Google Maps API key not available");
+      }
+    } catch (error) {
+      console.warn("Failed to fetch Google Maps API key:", error);
       // Fallback: load without key (tiles will be watermarked but functional)
     }
     await new Promise((resolve, reject) => {

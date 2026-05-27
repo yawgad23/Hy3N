@@ -136,6 +136,40 @@
       "type": "number",
       "default": 1.0,
       "description": "Surge pricing multiplier applied to base fare"
+    },
+    "stops": {
+      "type": "array",
+      "description": "Array of intermediate stops for multi-stop rides",
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" },
+          "order": { "type": "integer" },
+          "status": { "type": "string", "enum": ["pending", "completed"] }
+        }
+      },
+      "default": []
+    },
+    "safety_check_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable automatic safety check-ins during the trip"
+    },
+    "route_deviations": {
+      "type": "array",
+      "description": "Array of detected route deviations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": { "type": "string" },
+          "deviation_type": { "type": "string" },
+          "lat": { "type": "number" },
+          "lng": { "type": "number" }
+        }
+      },
+      "default": []
     }
   },
   "required": [
