@@ -4,7 +4,7 @@ export const DRIVER_LOGO_URL = "https://media.base44.com/images/public/6a0b47e69
 export const RIDE_CATEGORIES = [
   {
     id: "standard",
-    name: "HY3N Standard",
+    name: "Standard",
     description: "Affordable everyday rides",
     icon: "Car",
     basePrice: 3.10,
@@ -15,7 +15,7 @@ export const RIDE_CATEGORIES = [
   },
   {
     id: "okada",
-    name: "HY3N Okada",
+    name: "Okada",
     description: "Fast bike rides to beat traffic",
     icon: "Bike",
     basePrice: 2.00,
@@ -26,7 +26,7 @@ export const RIDE_CATEGORIES = [
   },
   {
     id: "comfort",
-    name: "HY3N Comfort",
+    name: "Comfort",
     description: "Comfortable rides with extra amenities",
     icon: "Star",
     basePrice: 5.00,
@@ -37,7 +37,7 @@ export const RIDE_CATEGORIES = [
   },
   {
     id: "kantanka",
-    name: "Kantanka HY3N",
+    name: "Kantanka",
     description: "Ride made in Ghana",
     icon: "Bus",
     basePrice: 4.00,
@@ -48,7 +48,7 @@ export const RIDE_CATEGORIES = [
   },
   {
     id: "executive",
-    name: "HY3N Executive",
+    name: "Executive",
     description: "Premium luxury rides",
     icon: "Crown",
     basePrice: 10.00,
@@ -59,7 +59,7 @@ export const RIDE_CATEGORIES = [
   },
   {
     id: "express_delivery",
-    name: "HY3N Express Delivery",
+    name: "Express Delivery",
     description: "Fast package delivery",
     icon: "Package",
     basePrice: 4.00,
