@@ -1,7 +1,7 @@
 // Service Worker for HY3N Rider App
 // Push notifications require VAPID keys configured via environment variables
 
-const CACHE_NAME = 'hy3n-rider-v3';
+const CACHE_NAME = 'hy3n-rider-v4';
 
 // Install event - cache assets
 self.addEventListener('install', (event) => {
