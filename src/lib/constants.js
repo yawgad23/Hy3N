@@ -14,17 +14,6 @@ export const RIDE_CATEGORIES = [
     seats: 4
   },
   {
-    id: "okada",
-    name: "Okada",
-    description: "Fast bike rides to beat traffic",
-    icon: "Bike",
-    basePrice: 2.00,
-    pricePerKm: 0.80,
-    pricePerMin: 0.25,
-    minFare: 5.00,
-    seats: 1
-  },
-  {
     id: "comfort",
     name: "Comfort",
     description: "Comfortable rides with extra amenities",
@@ -56,6 +45,17 @@ export const RIDE_CATEGORIES = [
     pricePerMin: 1.00,
     minFare: 20.00,
     seats: 4
+  },
+  {
+    id: "okada",
+    name: "Okada",
+    description: "Fast bike rides to beat traffic",
+    icon: "Bike",
+    basePrice: 2.00,
+    pricePerKm: 0.80,
+    pricePerMin: 0.25,
+    minFare: 5.00,
+    seats: 1
   },
   {
     id: "express_delivery",
