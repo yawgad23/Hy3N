@@ -11,6 +11,16 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Fallback categories for Kantanka if not available
+const FALLBACK_CATEGORIES = {
+  kantanka: ["standard", "comfort"],
+  okada: ["standard"],
+  executive: ["comfort", "standard"],
+  comfort: ["standard"],
+  standard: [],
+  express_delivery: []
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -62,27 +72,42 @@ Deno.serve(async (req) => {
 
     let matchedCount = 0;
     const alreadyAssigned = new Set(); // prevent double-assigning same driver in one run
+    const unmatchedRides = [];
 
     for (const ride of pendingRides) {
       if (!ride.pickup_lat || !ride.pickup_lng) continue;
 
-      // Find nearest available driver
+      // Determine which categories to search for (primary + fallbacks)
+      const categoriesToSearch = [ride.category, ...(FALLBACK_CATEGORIES[ride.category] || [])];
+
+      // Find nearest available driver that supports the requested category (or fallback)
       let nearest = null;
       let minDist = Infinity;
+      let matchedCategory = null;
 
-      for (const driver of availableDrivers) {
-        if (alreadyAssigned.has(driver.user_id)) continue;
-        if (!driver.current_lat || !driver.current_lng) continue;
+      for (const category of categoriesToSearch) {
+        for (const driver of availableDrivers) {
+          if (alreadyAssigned.has(driver.user_id)) continue;
+          if (!driver.current_lat || !driver.current_lng) continue;
 
-        const dist = haversineKm(
-          ride.pickup_lat, ride.pickup_lng,
-          driver.current_lat, driver.current_lng
-        );
+          // Check if driver supports this category
+          const driverCategories = driver.ride_categories || ["standard"];
+          if (!driverCategories.includes(category)) continue;
 
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = driver;
+          const dist = haversineKm(
+            ride.pickup_lat, ride.pickup_lng,
+            driver.current_lat, driver.current_lng
+          );
+
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = driver;
+            matchedCategory = category;
+          }
         }
+
+        // If we found a match for this category, don't check further categories
+        if (nearest) break;
       }
 
       // Only match if driver is within 15km
@@ -91,13 +116,19 @@ Deno.serve(async (req) => {
           status: "matched",
           driver_id: nearest.user_id,
           driver_name: nearest.full_name,
+          matched_category: matchedCategory // Track which category was actually matched
         });
         alreadyAssigned.add(nearest.user_id);
         matchedCount++;
 
-        console.log(`Matched ride ${ride.id} to driver ${nearest.full_name} (${minDist.toFixed(2)} km away)`);
+        console.log(`Matched ride ${ride.id} (${ride.category}) to driver ${nearest.full_name} as ${matchedCategory} (${minDist.toFixed(2)} km away)`);
       } else {
-        console.log(`No nearby driver for ride ${ride.id} (nearest: ${minDist === Infinity ? "none" : minDist.toFixed(2) + " km"})`);
+        unmatchedRides.push({
+          ride_id: ride.id,
+          requested_category: ride.category,
+          reason: minDist === Infinity ? "No drivers available" : `No drivers within 15km (nearest: ${minDist.toFixed(2)} km)`
+        });
+        console.log(`No nearby driver for ride ${ride.id} requesting ${ride.category} (nearest: ${minDist === Infinity ? "none" : minDist.toFixed(2) + " km"})`);
       }
     }
 
@@ -105,6 +136,8 @@ Deno.serve(async (req) => {
       matched: matchedCount,
       pending: pendingRides.length,
       available_drivers: availableDrivers.length,
+      unmatched_rides: unmatchedRides,
+      message: unmatchedRides.length > 0 ? `${matchedCount} matched, ${unmatchedRides.length} unmatched (no drivers available or too far)` : `All ${matchedCount} rides matched`
     });
   } catch (error) {
     console.error("autoMatchRides error:", error.message);

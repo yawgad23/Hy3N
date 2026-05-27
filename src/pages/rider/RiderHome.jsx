@@ -135,22 +135,41 @@ export default function RiderHome() {
     if (bookingData.split_fare) setSplitFare(bookingData.split_fare);
     setDestination(null);
 
-    if (isScheduled) {
-      // Save to ScheduledRide entity — backend will trigger it at the right time
-      const scheduled = await base44.entities.ScheduledRide.create({
-        ...baseData,
-        scheduled_for: bookingData.scheduled_for,
-        status: "pending"
-      });
-      setScheduledConfirm({ ...scheduled, destination_address: bookingData.destination.name });
-    } else {
-      setActiveRide(optimistic);
-      const ride = await base44.entities.Ride.create({
-        ...baseData,
-        ride_type: "on_demand",
-        status: "requested"
-      });
-      setActiveRide(ride);
+    try {
+      if (isScheduled) {
+        const scheduled = await base44.entities.ScheduledRide.create({
+          ...baseData,
+          scheduled_for: bookingData.scheduled_for,
+          status: "pending"
+        });
+        setScheduledConfirm({ ...scheduled, destination_address: bookingData.destination.name });
+        showNotification("Trip Scheduled!", `Your ${bookingData.category} ride is scheduled for ${format(new Date(bookingData.scheduled_for), "h:mm a")}.`, "success");
+      } else {
+        setActiveRide(optimistic);
+        const ride = await base44.entities.Ride.create({
+          ...baseData,
+          ride_type: "on_demand",
+          status: "requested"
+        });
+        setActiveRide(ride);
+        showNotification("Looking for a driver...", `Searching for nearby ${bookingData.category} drivers.`, "info");
+        
+        setTimeout(async () => {
+          try {
+            const updatedRide = await base44.entities.Ride.read(ride.id);
+            if (updatedRide.status === "requested") {
+              showNotification("No Drivers Available", `Sorry, no ${bookingData.category} drivers are available right now. Please try again in a few moments.`, "warning");
+            }
+          } catch (err) {
+            console.error("Error checking ride status:", err);
+          }
+        }, 30000);
+      }
+    } catch (err) {
+      console.error("Booking error:", err);
+      showNotification("Booking Failed", "Unable to book your ride. Please try again.", "error");
+      setActiveRide(null);
+      setDestination(bookingData.destination);
     }
   };
 

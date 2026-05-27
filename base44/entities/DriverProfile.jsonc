@@ -77,6 +77,22 @@
     "rating": {
       "type": "number",
       "default": 5
+    },
+    "ride_categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "comfort",
+          "kantanka",
+          "executive",
+          "okada",
+          "express_delivery"
+        ]
+      },
+      "default": ["standard"],
+      "description": "Ride categories this driver is certified to handle"
     }
   },
   "required": [
