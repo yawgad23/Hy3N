@@ -174,8 +174,23 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   };
 
   const handleCancel = async () => {
-    await base44.entities.Ride.update(currentRide.id, { status: "cancelled" });
-    onClose();
+    try {
+      if (currentRide.id.startsWith("optimistic-")) {
+        // Ride hasn't been created on server yet, just close the sheet
+        onClose();
+        return;
+      }
+      
+      toast.loading("Cancelling request...");
+      await base44.entities.Ride.update(currentRide.id, { status: "cancelled" });
+      toast.dismiss();
+      toast.success("Ride cancelled successfully");
+      onClose();
+    } catch (error) {
+      console.error("Cancellation error:", error);
+      toast.dismiss();
+      toast.error("Failed to cancel ride. Please try again.");
+    }
   };
 
   const handleRate = async ({ rating: ratingValue, feedback }) => {
