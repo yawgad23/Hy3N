@@ -3,11 +3,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    // Verify user is authenticated
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
     const body = await req.json();
     const { email, credential } = body;
 
     if (!email || !credential) {
       return Response.json({ error: 'Missing credentials' }, { status: 400 });
+    }
+    
+    // Only allow users to verify their own biometric
+    if (user.email !== email) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Verify the biometric credential
