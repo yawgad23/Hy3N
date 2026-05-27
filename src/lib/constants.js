@@ -28,7 +28,7 @@ export const RIDE_CATEGORIES = [
     id: "kantanka",
     name: "Kantanka",
     description: "Ride made in Ghana",
-    icon: "Bus",
+    icon: "Car",
     basePrice: 4.00,
     pricePerKm: 1.50,
     pricePerMin: 0.50,
