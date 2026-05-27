@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Zap, Users, TrendingUp, ChevronRight } from "lucide-react";
+import { X, Smartphone, Banknote, CreditCard, Wallet, MapPin, Navigation, CalendarClock, Clock, Zap, Users, TrendingUp, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
