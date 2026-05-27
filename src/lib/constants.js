@@ -3,9 +3,9 @@ export const DRIVER_LOGO_URL = "https://media.base44.com/images/public/6a0b47e69
 
 /**
  * Uber-like Pricing Calculation Reference:
- * For a 16.25km, 52min trip costing GH₵92:
+ * For a 16.25km, 52min trip targeting the 80-90 GHS range:
  * Formula: Base + (Dist * PerKm) + (Time * PerMin)
- * 10 + (16.25 * 3.80) + (52 * 0.40) = 10 + 61.75 + 20.8 = GH₵92.55
+ * 8 + (16.25 * 3.50) + (52 * 0.35) = 8 + 56.88 + 18.2 = GH₵83.08
  */
 
 export const RIDE_CATEGORIES = [
@@ -14,10 +14,10 @@ export const RIDE_CATEGORIES = [
     name: "Standard",
     description: "Affordable everyday rides",
     icon: "Car",
-    basePrice: 10.00,
-    pricePerKm: 3.80,
-    pricePerMin: 0.40,
-    minFare: 15.00,
+    basePrice: 8.00,
+    pricePerKm: 3.50,
+    pricePerMin: 0.35,
+    minFare: 12.00,
     seats: 4
   },
   {
@@ -25,10 +25,10 @@ export const RIDE_CATEGORIES = [
     name: "Comfort",
     description: "Comfortable rides with extra amenities",
     icon: "Star",
-    basePrice: 15.00,
-    pricePerKm: 4.50,
-    pricePerMin: 0.60,
-    minFare: 25.00,
+    basePrice: 12.00,
+    pricePerKm: 4.20,
+    pricePerMin: 0.50,
+    minFare: 20.00,
     seats: 4
   },
   {
@@ -36,10 +36,10 @@ export const RIDE_CATEGORIES = [
     name: "Kantanka",
     description: "Ride made in Ghana",
     icon: "Car",
-    basePrice: 12.00,
-    pricePerKm: 4.00,
-    pricePerMin: 0.50,
-    minFare: 20.00,
+    basePrice: 10.00,
+    pricePerKm: 3.80,
+    pricePerMin: 0.45,
+    minFare: 15.00,
     seats: 4
   },
   {
@@ -47,10 +47,10 @@ export const RIDE_CATEGORIES = [
     name: "Executive",
     description: "Premium luxury rides",
     icon: "Crown",
-    basePrice: 25.00,
-    pricePerKm: 6.00,
-    pricePerMin: 1.00,
-    minFare: 45.00,
+    basePrice: 20.00,
+    pricePerKm: 5.50,
+    pricePerMin: 0.90,
+    minFare: 40.00,
     seats: 4
   },
   {
@@ -58,10 +58,10 @@ export const RIDE_CATEGORIES = [
     name: "Okada",
     description: "Fast bike rides to beat traffic",
     icon: "Bike",
-    basePrice: 5.00,
-    pricePerKm: 2.50,
-    pricePerMin: 0.20,
-    minFare: 10.00,
+    basePrice: 4.00,
+    pricePerKm: 2.20,
+    pricePerMin: 0.15,
+    minFare: 8.00,
     seats: 1
   },
   {
@@ -69,10 +69,10 @@ export const RIDE_CATEGORIES = [
     name: "Express Delivery",
     description: "Fast package delivery",
     icon: "Package",
-    basePrice: 10.00,
-    pricePerKm: 3.00,
-    pricePerMin: 0.30,
-    minFare: 15.00,
+    basePrice: 8.00,
+    pricePerKm: 2.80,
+    pricePerMin: 0.25,
+    minFare: 12.00,
     seats: 0
   }
 ];
