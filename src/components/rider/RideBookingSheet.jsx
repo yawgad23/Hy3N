@@ -186,6 +186,7 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
                   selected={selectedCategory.id === cat.id}
                   onSelect={setSelectedCategory}
                   distance={distance}
+                  duration={duration}
                   surgeMultiplier={surge.multiplier}
                 />
               ))

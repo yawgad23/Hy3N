@@ -9,12 +9,22 @@ const iconMap = {
   Bike: Bike
 };
 
-export default function RideCategoryCard({ category, selected, onSelect, distance, surgeMultiplier = 1.0 }) {
+export default function RideCategoryCard({ category, selected, onSelect, distance, duration, surgeMultiplier = 1.0 }) {
   const Icon = iconMap[category.icon] || Car;
-  const baseFare = distance
-    ? (category.basePrice + category.pricePerKm * distance)
-    : category.basePrice;
-  const estimatedFare = (baseFare * surgeMultiplier).toFixed(2);
+  // Use real duration if provided, otherwise estimate duration assuming 3 mins per km
+  const finalDuration = duration !== undefined && duration !== null ? duration : (distance ? distance * 3 : 15);
+  
+  const calculateEstimatedFare = () => {
+    if (!distance) return category.basePrice;
+    const distanceFare = category.basePrice + (distance * category.pricePerKm);
+    const timeFare = finalDuration * category.pricePerMin;
+    const subtotal = distanceFare + timeFare;
+    const withSurge = subtotal * surgeMultiplier;
+    const final = Math.max(withSurge, category.minFare);
+    return final;
+  };
+
+  const estimatedFare = calculateEstimatedFare().toFixed(2);
   const isSurge = surgeMultiplier > 1.0;
 
   return (
