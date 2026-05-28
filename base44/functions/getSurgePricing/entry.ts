@@ -27,7 +27,37 @@ Deno.serve(async (req) => {
       return Response.json({ error: "lat and lng are required" }, { status: 400 });
     }
 
-    // Fetch active ride requests in the area
+    // ── AUTO-CLEANUP STALE RIDES ──
+    // Automatically cancel any requested, matched, or driver_arriving rides older than 30 minutes
+    const pendingRidesRaw = await base44.asServiceRole.entities.Ride.filter({ status: "requested" });
+    const matchedRidesRaw = await base44.asServiceRole.entities.Ride.filter({ status: "matched" });
+    const arrivingRidesRaw = await base44.asServiceRole.entities.Ride.filter({ status: "driver_arriving" });
+    
+    const allStaleCandidateRides = [...pendingRidesRaw, ...matchedRidesRaw, ...arrivingRidesRaw];
+    const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
+    let expiredCount = 0;
+
+    for (const ride of allStaleCandidateRides) {
+      // Check if created_at exists and is older than 30 minutes
+      const rideTime = ride.created_at ? new Date(ride.created_at).getTime() : 0;
+      if (rideTime && rideTime < thirtyMinutesAgo) {
+        try {
+          await base44.asServiceRole.entities.Ride.update(ride.id, {
+            status: "cancelled",
+            cancel_reason: "System auto-expired: Request timed out after 30 minutes."
+          });
+          expiredCount++;
+        } catch (err) {
+          console.error(`Failed to auto-expire stale ride ${ride.id}:`, err.message);
+        }
+      }
+    }
+
+    if (expiredCount > 0) {
+      console.log(`[Auto-Cleanup] Automatically expired ${expiredCount} stale ride requests older than 30 minutes.`);
+    }
+
+    // Fetch fresh active ride requests in the area (after cleanup)
     const pendingRides = await base44.asServiceRole.entities.Ride.filter({ status: "requested" });
     const activeRides = await base44.asServiceRole.entities.Ride.filter({ status: "matched" });
     const inProgressRides = await base44.asServiceRole.entities.Ride.filter({ status: "driver_arriving" });
@@ -51,11 +81,6 @@ Deno.serve(async (req) => {
 
     // Surge multiplier logic:
     // ratio = demand / max(supply, 1)
-    // 1.0x  → ratio <= 1   (supply meets demand)
-    // 1.2x  → ratio 1–1.5
-    // 1.5x  → ratio 1.5–2.5
-    // 1.8x  → ratio 2.5–4
-    // 2.0x  → ratio > 4    (very high demand)
     const supply = Math.max(nearbyDrivers, 1);
     const ratio = nearbyDemand / supply;
 
