@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2, Users } from "lucide-react";
+import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2, Users, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -71,6 +71,41 @@ export default function DriverProfile() {
              driver?.approval_status === "rejected" ? "Rejected" : "Pending Approval"}
           </div>
         </div>
+
+        {/* MoMo Payout Info */}
+        {driver && (
+          <div className="bg-card border border-border rounded-xl p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-primary" />
+                <span className="font-heading font-semibold text-sm">Mobile Money Payout</span>
+              </div>
+              <button 
+                onClick={() => {
+                  const num = prompt("Enter new MoMo Phone Number:", driver.momo_number || "");
+                  if (num !== null) {
+                    const prov = prompt("Enter Provider (mtn, vodafone, airteltigo):", driver.momo_provider || "mtn");
+                    if (prov) {
+                      base44.entities.DriverProfile.update(driver.id, {
+                        momo_number: num,
+                        momo_provider: prov.toLowerCase()
+                      }).then(updated => setDriver(updated));
+                    }
+                  }
+                }}
+                className="text-xs text-primary font-medium hover:underline"
+              >
+                Edit
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-y-2 text-sm">
+              <span className="text-muted-foreground">MoMo Provider</span>
+              <span className="capitalize">{driver.momo_provider === "vodafone" ? "Telecel" : driver.momo_provider || "Not Configured"}</span>
+              <span className="text-muted-foreground">MoMo Number</span>
+              <span>{driver.momo_number || "Not Configured"}</span>
+            </div>
+          </div>
+        )}
 
         {/* Vehicle Info */}
         {driver && (

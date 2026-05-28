@@ -34,7 +34,9 @@ export default function DriverSetup() {
     drivers_license_url: "",
     vehicle_registration_url: "",
     insurance_url: "",
-    roadworthy_url: ""
+    roadworthy_url: "",
+    momo_number: "",
+    momo_provider: "mtn"
   });
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function DriverSetup() {
   };
 
   const canProceed = () => {
-    if (step === 0) return form.full_name && form.phone;
+    if (step === 0) return form.full_name && form.phone && form.momo_number;
     if (step === 1) return form.vehicle_make && form.license_plate;
     if (step === 2) return form.ghana_card_url && form.drivers_license_url;
     return false;
@@ -132,6 +134,38 @@ export default function DriverSetup() {
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               className="bg-card border-border mt-1"
             />
+          </div>
+          <div className="border-t border-border pt-4 mt-4">
+            <h3 className="font-heading font-semibold text-sm mb-3 text-primary">Payout Mobile Money (MoMo) Details</h3>
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              {["mtn", "vodafone", "airteltigo"].map((prov) => (
+                <button
+                  key={prov}
+                  type="button"
+                  onClick={() => setForm({ ...form, momo_provider: prov })}
+                  className={`py-2 rounded-xl text-xs font-semibold border capitalize transition-all ${
+                    form.momo_provider === prov
+                      ? prov === "mtn"
+                        ? "bg-[#FFCC00] text-[#1A1A1A] border-[#FFCC00]"
+                        : prov === "vodafone"
+                        ? "bg-[#E60000] text-white border-[#E60000]"
+                        : "bg-[#FF6600] text-white border-[#FF6600]"
+                      : "bg-card border-border text-muted-foreground"
+                  }`}
+                >
+                  {prov === "vodafone" ? "Telecel" : prov === "airteltigo" ? "AirtelTigo" : "MTN MoMo"}
+                </button>
+              ))}
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">MoMo Phone Number</Label>
+              <Input
+                value={form.momo_number}
+                onChange={(e) => setForm({ ...form, momo_number: e.target.value })}
+                placeholder="024XXXXXXX"
+                className="bg-card border-border mt-1"
+              />
+            </div>
           </div>
         </div>
       )}

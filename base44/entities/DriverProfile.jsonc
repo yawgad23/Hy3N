@@ -93,6 +93,12 @@
       },
       "default": ["standard"],
       "description": "Ride categories this driver is certified to handle"
+    },
+    "momo_number": {
+      "type": "string"
+    },
+    "momo_provider": {
+      "type": "string"
     }
   },
   "required": [

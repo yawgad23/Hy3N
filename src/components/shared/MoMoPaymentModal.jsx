@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, CheckCircle2, Loader2, AlertCircle, Smartphone } from "lucide-react";
+import { X, CheckCircle2, Loader2, AlertCircle, Smartphone, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
@@ -11,7 +11,6 @@ const PROVIDERS = [
     name: "MTN MoMo",
     color: "#FFCC00",
     textColor: "#1A1A1A",
-    prefix: ["024", "054", "055", "059"],
     logo: "MTN"
   },
   {
@@ -19,7 +18,6 @@ const PROVIDERS = [
     name: "Telecel Cash",
     color: "#E60000",
     textColor: "#FFFFFF",
-    prefix: ["020", "050"],
     logo: "TCash"
   },
   {
@@ -27,66 +25,77 @@ const PROVIDERS = [
     name: "AirtelTigo",
     color: "#FF6600",
     textColor: "#FFFFFF",
-    prefix: ["026", "056", "027", "057"],
     logo: "AT"
   }
 ];
 
-function detectProvider(phone) {
-  const clean = phone.replace(/\s/g, "").replace(/^\+233/, "0");
-  return PROVIDERS.find(p => p.prefix.some(pfx => clean.startsWith(pfx))) || null;
-}
-
 export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, riderId, driverId, onSuccess }) {
-  const [phone, setPhone] = useState("");
-  const [provider, setProvider] = useState(null);
-  const [step, setStep] = useState("input"); // input | processing | success | failed
-  const [manualProvider, setManualProvider] = useState(null);
+  const [driverMoMo, setDriverMoMo] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [txRef, setTxRef] = useState("");
+  const [step, setStep] = useState("display"); // display | processing | success | failed
+  const [loadingDriver, setLoadingDriver] = useState(true);
 
-  const activeProvider = manualProvider || provider;
+  useEffect(() => {
+    if (isOpen && driverId) {
+      setLoadingDriver(true);
+      base44.entities.DriverProfile.filter({ user_id: driverId })
+        .then(profiles => {
+          if (profiles.length > 0) {
+            setDriverMoMo({
+              number: profiles[0].momo_number,
+              provider: profiles[0].momo_provider,
+              name: profiles[0].full_name
+            });
+          }
+          setLoadingDriver(false);
+        })
+        .catch(() => setLoadingDriver(false));
+    }
+  }, [isOpen, driverId]);
 
-  const handlePhoneChange = (val) => {
-    setPhone(val);
-    setProvider(detectProvider(val));
-    setManualProvider(null);
+  const handleCopy = () => {
+    if (!driverMoMo?.number) return;
+    navigator.clipboard.writeText(driverMoMo.number);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handlePay = async () => {
-    if (!phone || !activeProvider) return;
+  const handleConfirmPayment = async () => {
+    if (!txRef) return;
     setStep("processing");
 
     try {
-      const result = await base44.functions.invoke("processMoMoPayment", {
-        phone,
-        provider: activeProvider.id,
-        amount,
+      // Record manual payment reference in database
+      const payment = await base44.entities.Payment.create({
         ride_id: rideId,
         rider_id: riderId,
-        driver_id: driverId
+        driver_id: driverId,
+        amount,
+        method: "mobile_money",
+        status: "completed",
+        reference: txRef
       });
 
-      if (result.data?.success) {
-        setStep("success");
-        setTimeout(() => {
-          onSuccess && onSuccess(result.data);
-          onClose();
-          setStep("input");
-          setPhone("");
-        }, 2500);
-      } else {
-        setStep("failed");
-      }
+      // Update ride status to paid
+      await base44.entities.Ride.update(rideId, { 
+        payment_status: "paid",
+        payment_reference: txRef
+      });
+
+      setStep("success");
+      setTimeout(() => {
+        onSuccess && onSuccess(payment);
+        onClose();
+        setStep("display");
+        setTxRef("");
+      }, 2500);
     } catch {
       setStep("failed");
     }
   };
 
-  const reset = () => {
-    setStep("input");
-    setPhone("");
-    setProvider(null);
-    setManualProvider(null);
-  };
+  const providerInfo = PROVIDERS.find(p => p.id === driverMoMo?.provider) || PROVIDERS[0];
 
   return (
     <AnimatePresence>
@@ -97,10 +106,10 @@ export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, ride
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={step === "input" ? onClose : undefined}
+            onClick={step === "display" ? onClose : undefined}
           />
           <motion.div
-            className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-50"
+            className="fixed inset-x-0 bottom-0 bg-card border-t border-border rounded-t-3xl z-50 max-w-md mx-auto"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -110,10 +119,17 @@ export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, ride
               {/* Handle */}
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
 
-              {step === "input" && (
+              {loadingDriver && (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
+                  <p className="text-sm text-muted-foreground">Fetching driver's payment details...</p>
+                </div>
+              )}
+
+              {!loadingDriver && step === "display" && (
                 <>
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-heading font-bold text-lg">Pay with Mobile Money</h3>
+                    <h3 className="font-heading font-bold text-lg">Direct Mobile Money Transfer</h3>
                     <button onClick={onClose}>
                       <X className="w-5 h-5 text-muted-foreground" />
                     </button>
@@ -121,83 +137,79 @@ export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, ride
 
                   {/* Amount */}
                   <div className="bg-secondary rounded-xl p-4 mb-5 text-center">
-                    <p className="text-muted-foreground text-sm">Total Amount</p>
+                    <p className="text-muted-foreground text-sm">Send Exactly</p>
                     <p className="font-heading font-bold text-3xl text-primary mt-1">GH₵{amount?.toFixed(2)}</p>
                   </div>
 
-                  {/* Provider selector */}
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Select Provider</p>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {PROVIDERS.map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => setManualProvider(p)}
-                        className={`rounded-xl p-3 border-2 transition-all ${
-                          activeProvider?.id === p.id ? "border-primary scale-105" : "border-border"
-                        }`}
-                        style={{ backgroundColor: p.color + "20" }}
-                      >
-                        <div
-                          className="w-8 h-8 rounded-lg mx-auto mb-1 flex items-center justify-center text-[10px] font-bold"
-                          style={{ backgroundColor: p.color, color: p.textColor }}
-                        >
-                          {p.logo}
+                  {driverMoMo?.number ? (
+                    <div className="bg-card border border-border rounded-xl p-4 mb-5 space-y-4">
+                      <div className="flex items-center justify-between border-b border-border pb-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Recipient Driver</p>
+                          <p className="font-semibold text-sm">{driverMoMo.name}</p>
                         </div>
-                        <p className="text-[10px] font-medium text-center leading-tight">{p.name}</p>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Phone */}
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Mobile Number</p>
-                  <div className="relative mb-5">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <span className="text-sm font-medium text-muted-foreground">🇬🇭 +233</span>
-                    </div>
-                    <Input
-                      type="tel"
-                      placeholder="024 000 0000"
-                      value={phone}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
-                      className="pl-20 bg-secondary border-none h-12 text-foreground"
-                      maxLength={12}
-                    />
-                    {activeProvider && (
-                      <div
-                        className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-[10px] font-bold"
-                        style={{ backgroundColor: activeProvider.color, color: activeProvider.textColor }}
-                      >
-                        {activeProvider.logo}
+                        <div
+                          className="px-2 py-1 rounded text-[10px] font-bold uppercase"
+                          style={{ backgroundColor: providerInfo.color, color: providerInfo.textColor }}
+                        >
+                          {providerInfo.name}
+                        </div>
                       </div>
-                    )}
-                  </div>
 
-                  <Button
-                    onClick={handlePay}
-                    disabled={!phone || !activeProvider}
-                    className="w-full h-14 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-bold text-base rounded-xl disabled:opacity-40"
-                  >
-                    <Smartphone className="w-5 h-5 mr-2" />
-                    Pay GH₵{amount?.toFixed(2)} via {activeProvider?.name || "MoMo"}
-                  </Button>
-                  <p className="text-center text-xs text-muted-foreground mt-3">
-                    You will receive a prompt on your phone to confirm payment
-                  </p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-muted-foreground">MoMo Phone Number</p>
+                          <p className="font-mono font-bold text-lg text-foreground tracking-wider">{driverMoMo.number}</p>
+                        </div>
+                        <button
+                          onClick={handleCopy}
+                          className="p-2.5 bg-secondary hover:bg-secondary/80 rounded-xl transition-all"
+                        >
+                          {copied ? <Check className="w-4 h-4 text-ghana-green" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-5 text-center">
+                      <p className="text-sm font-medium text-destructive">Driver payment details not available</p>
+                      <p className="text-xs text-muted-foreground mt-1">Please ask the driver for their MoMo details directly or pay with Cash.</p>
+                    </div>
+                  )}
+
+                  {driverMoMo?.number && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transaction Reference / ID</label>
+                        <Input
+                          placeholder="Enter MoMo transaction ID/Ref"
+                          value={txRef}
+                          onChange={(e) => setTxRef(e.target.value)}
+                          className="bg-secondary border-none h-12 text-foreground text-sm"
+                        />
+                        <p className="text-[10px] text-muted-foreground">
+                          Please transfer GH₵{amount?.toFixed(2)} to the number above, then enter the Transaction ID/Reference to confirm.
+                        </p>
+                      </div>
+
+                      <Button
+                        onClick={handleConfirmPayment}
+                        disabled={!txRef}
+                        className="w-full h-14 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-bold text-base rounded-xl disabled:opacity-40"
+                      >
+                        Confirm Transfer
+                      </Button>
+                    </div>
+                  )}
                 </>
               )}
 
               {step === "processing" && (
                 <div className="text-center py-10">
-                  <div className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
-                    style={{ backgroundColor: (activeProvider?.color || "#FFCC00") + "20" }}
-                  >
-                    <Loader2 className="w-10 h-10 animate-spin" style={{ color: activeProvider?.color || "#FFCC00" }} />
+                  <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-5 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
                   </div>
-                  <h3 className="font-heading font-bold text-lg">Processing Payment</h3>
-                  <p className="text-muted-foreground text-sm mt-2">
-                    Approve the prompt on <span className="font-semibold text-foreground">{phone}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">via {activeProvider?.name}</p>
+                  <h3 className="font-heading font-bold text-lg">Verifying Reference</h3>
+                  <p className="text-muted-foreground text-sm mt-2">Recording your direct MoMo payment...</p>
                 </div>
               )}
 
@@ -206,8 +218,8 @@ export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, ride
                   <div className="w-20 h-20 rounded-full bg-ghana-green/20 mx-auto mb-5 flex items-center justify-center">
                     <CheckCircle2 className="w-10 h-10 text-ghana-green" />
                   </div>
-                  <h3 className="font-heading font-bold text-lg">Payment Successful!</h3>
-                  <p className="text-muted-foreground text-sm mt-2">GH₵{amount?.toFixed(2)} paid via {activeProvider?.name}</p>
+                  <h3 className="font-heading font-bold text-lg">Payment Confirmed!</h3>
+                  <p className="text-muted-foreground text-sm mt-2">GH₵{amount?.toFixed(2)} successfully sent directly to driver.</p>
                 </div>
               )}
 
@@ -216,10 +228,10 @@ export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, ride
                   <div className="w-20 h-20 rounded-full bg-destructive/20 mx-auto mb-5 flex items-center justify-center">
                     <AlertCircle className="w-10 h-10 text-destructive" />
                   </div>
-                  <h3 className="font-heading font-bold text-lg">Payment Failed</h3>
-                  <p className="text-muted-foreground text-sm mt-2">The payment could not be processed. Please try again.</p>
+                  <h3 className="font-heading font-bold text-lg">Confirmation Failed</h3>
+                  <p className="text-muted-foreground text-sm mt-2">We couldn't submit your reference. Please try again.</p>
                   <div className="flex gap-3 mt-6">
-                    <Button onClick={reset} className="flex-1 bg-primary text-primary-foreground">Try Again</Button>
+                    <Button onClick={() => setStep("display")} className="flex-1 bg-primary text-primary-foreground">Try Again</Button>
                     <Button onClick={onClose} variant="outline" className="flex-1">Cancel</Button>
                   </div>
                 </div>
