@@ -78,6 +78,18 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
 
   const handleSelectLocation = (location) => {
     saveToHistory(location);
+    
+    // IF we have no stops added: instantly confirm and close the modal! (No "Done" button needed)
+    if (stops.length === 0) {
+      onSelect({
+        ...location,
+        stops: []
+      });
+      onClose();
+      return;
+    }
+
+    // Otherwise, handle multi-stop inputs
     if (activeInputIndex === -1) {
       setDestination(location);
     } else {
@@ -163,7 +175,8 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
                 </button>
                 <h2 className="font-heading font-semibold text-lg">Plan your Route</h2>
               </div>
-              {destination && (
+              {/* Only show Done button if there are intermediate stops */}
+              {stops.length > 0 && destination && (
                 <Button 
                   onClick={handleConfirmRoute}
                   className="bg-primary text-primary-foreground font-heading font-semibold text-xs px-4 py-1.5 rounded-xl animate-fade-in"
