@@ -13,8 +13,13 @@ async function loadGoogleMaps() {
       const res = await base44.functions.invoke("getGoogleMapsKey", {});
       apiKey = res.data?.key || "";
     } catch (_) {
-      // Fallback: load without key (tiles will be watermarked but functional)
+      // Fallback
     }
+    
+    if (!apiKey) {
+      throw new Error("No API Key");
+    }
+
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
@@ -27,7 +32,6 @@ async function loadGoogleMaps() {
   return loadPromise;
 }
 
-// Generate grid points around a center location
 function generateGridPoints(centerLat, centerLng, radiusKm, gridSize = 8) {
   const points = [];
   const earthRadius = 6371;
@@ -44,30 +48,44 @@ function generateGridPoints(centerLat, centerLng, radiusKm, gridSize = 8) {
   return points;
 }
 
-// Get surge color based on multiplier
 function getSurgeColor(multiplier) {
-  if (multiplier <= 1.0) return null; // No heatmap for normal demand
-  if (multiplier <= 1.2) return "rgba(0, 107, 63, 0.4)"; // Green - low surge
-  if (multiplier <= 1.5) return "rgba(212, 175, 55, 0.5)"; // Gold - moderate surge
-  if (multiplier <= 1.8) return "rgba(255, 140, 0, 0.6)"; // Orange - high surge
-  return "rgba(206, 17, 38, 0.7)"; // Red - very high surge
+  if (multiplier <= 1.0) return null;
+  if (multiplier <= 1.2) return "rgba(0, 107, 63, 0.4)";
+  if (multiplier <= 1.5) return "rgba(212, 175, 55, 0.5)";
+  if (multiplier <= 1.8) return "rgba(255, 140, 0, 0.6)";
+  return "rgba(206, 17, 38, 0.7)";
 }
 
 export default function DemandHeatmap({ centerLat, centerLng, isOnline, radiusKm = 8 }) {
   const mapRef = useRef(null);
   const [loaded, setLoaded] = useState(googleMapsLoaded);
+  const [loadError, setLoadError] = useState(false);
   const [heatOverlay, setHeatOverlay] = useState(null);
   const [demandData, setDemandData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Load Google Maps SDK
   useEffect(() => {
-    loadGoogleMaps().then(() => setLoaded(true));
+    loadGoogleMaps()
+      .then(() => setLoaded(true))
+      .catch(() => setLoadError(true));
   }, []);
 
-  // Fetch demand data for grid points
+  // Monitor auth failure
   useEffect(() => {
-    if (!isOnline || !centerLat || !centerLng || !loaded) return;
+    const originalAuthFailure = window.gm_authFailure;
+    window.gm_authFailure = () => {
+      setLoadError(true);
+      if (originalAuthFailure) originalAuthFailure();
+    };
+    return () => {
+      window.gm_authFailure = originalAuthFailure;
+    };
+  }, []);
+
+  // Fetch demand data
+  useEffect(() => {
+    if (!isOnline || !centerLat || !centerLng || loadError) return;
 
     const fetchDemand = async () => {
       setLoading(true);
@@ -101,93 +119,108 @@ export default function DemandHeatmap({ centerLat, centerLng, isOnline, radiusKm
     };
 
     fetchDemand();
-    // Refresh demand data every 2 minutes when online
     const interval = setInterval(fetchDemand, 120000);
     return () => clearInterval(interval);
-  }, [centerLat, centerLng, isOnline, loaded, radiusKm]);
+  }, [centerLat, centerLng, isOnline, loadError, radiusKm]);
 
   // Initialize map
   useEffect(() => {
-    if (!loaded || !mapRef.current) return;
+    if (!loaded || loadError || !mapRef.current) return;
 
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: centerLat, lng: centerLng },
-      zoom: 12,
-      disableDefaultUI: true,
-      styles: [
-        { elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#8c8c8c" }] },
-        { elementType: "labels.text.stroke", stylers: [{ color: "#0a0a0a" }] },
-        { featureType: "road", elementType: "geometry", stylers: [{ color: "#222" }] },
-        { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#060d0f" }] },
-      ],
-    });
-
-    setHeatOverlay(map);
-  }, [loaded, centerLat, centerLng]);
+    try {
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: { lat: centerLat, lng: centerLng },
+        zoom: 12,
+        disableDefaultUI: true,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#8c8c8c" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#0a0a0a" }] },
+          { featureType: "road", elementType: "geometry", stylers: [{ color: "#222" }] },
+          { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#060d0f" }] },
+        ],
+      });
+      setHeatOverlay(map);
+    } catch (e) {
+      setLoadError(true);
+    }
+  }, [loaded, loadError, centerLat, centerLng]);
 
   // Draw heatmap polygons
   useEffect(() => {
-    if (!heatOverlay || demandData.length === 0) return;
+    if (!heatOverlay || loadError || demandData.length === 0) return;
 
-    // Clear existing polygons
-    heatOverlay.data.forEach((feature) => {
-      if (feature.getProperty("type") === "heatmap") {
-        heatOverlay.data.remove(feature);
-      }
-    });
-
-    // Create grid cells with colors based on surge multiplier
-    const earthRadius = 6371;
-    const latStep = (radiusKm / earthRadius) * (180 / Math.PI) / 6;
-    const lngStep = (radiusKm / earthRadius) * (180 / Math.PI) / 6 / Math.cos(centerLat * Math.PI / 180);
-
-    demandData.forEach((point) => {
-      const color = getSurgeColor(point.multiplier);
-      if (!color) return;
-
-      const bounds = {
-        north: point.lat + latStep / 2,
-        south: point.lat - latStep / 2,
-        east: point.lng + lngStep / 2,
-        west: point.lng - lngStep / 2,
-      };
-
-      const polygon = new window.google.maps.Data.Polygon([
-        [
-          { lat: bounds.north, lng: bounds.west },
-          { lat: bounds.north, lng: bounds.east },
-          { lat: bounds.south, lng: bounds.east },
-          { lat: bounds.south, lng: bounds.west },
-        ],
-      ]);
-
-      const feature = new window.google.maps.Data.Feature({
-        geometry: polygon,
-        properties: {
-          type: "heatmap",
-          multiplier: point.multiplier,
-          demand: point.demand,
-          drivers: point.drivers
-        },
+    try {
+      heatOverlay.data.forEach((feature) => {
+        if (feature.getProperty("type") === "heatmap") {
+          heatOverlay.data.remove(feature);
+        }
       });
 
-      heatOverlay.data.add(feature);
-    });
+      const earthRadius = 6371;
+      const latStep = (radiusKm / earthRadius) * (180 / Math.PI) / 6;
+      const lngStep = (radiusKm / earthRadius) * (180 / Math.PI) / 6 / Math.cos(centerLat * Math.PI / 180);
 
-    // Style the heatmap
-    heatOverlay.data.setStyle((feature) => {
-      if (feature.getProperty("type") !== "heatmap") return {};
-      return {
-        fillColor: feature.getProperty("multiplier") > 1.8 ? "rgba(206, 17, 38, 0.7)" :
-                   feature.getProperty("multiplier") > 1.5 ? "rgba(255, 140, 0, 0.6)" :
-                   feature.getProperty("multiplier") > 1.2 ? "rgba(212, 175, 55, 0.5)" :
-                   "rgba(0, 107, 63, 0.4)",
-        fillOpacity: 0.6,
-        strokeWeight: 0,
-      };
-    });
-  }, [heatOverlay, demandData, centerLat, radiusKm]);
+      demandData.forEach((point) => {
+        const color = getSurgeColor(point.multiplier);
+        if (!color) return;
+
+        const bounds = {
+          north: point.lat + latStep / 2,
+          south: point.lat - latStep / 2,
+          east: point.lng + lngStep / 2,
+          west: point.lng - lngStep / 2,
+        };
+
+        const polygon = new window.google.maps.Data.Polygon([
+          [
+            { lat: bounds.north, lng: bounds.west },
+            { lat: bounds.north, lng: bounds.east },
+            { lat: bounds.south, lng: bounds.east },
+            { lat: bounds.south, lng: bounds.west },
+          ],
+        ]);
+
+        const feature = new window.google.maps.Data.Feature({
+          geometry: polygon,
+          properties: {
+            type: "heatmap",
+            multiplier: point.multiplier,
+            demand: point.demand,
+            drivers: point.drivers
+          },
+        });
+
+        heatOverlay.data.add(feature);
+      });
+
+      heatOverlay.data.setStyle((feature) => {
+        if (feature.getProperty("type") !== "heatmap") return {};
+        return {
+          fillColor: feature.getProperty("multiplier") > 1.8 ? "rgba(206, 17, 38, 0.7)" :
+                     feature.getProperty("multiplier") > 1.5 ? "rgba(255, 140, 0, 0.6)" :
+                     feature.getProperty("multiplier") > 1.2 ? "rgba(212, 175, 55, 0.5)" :
+                     "rgba(0, 107, 63, 0.4)",
+          fillOpacity: 0.6,
+          strokeWeight: 0,
+        };
+      });
+    } catch (e) {
+      console.error("Heatmap rendering error:", e);
+    }
+  }, [heatOverlay, loadError, demandData, centerLat, radiusKm]);
+
+  if (loadError) {
+    return (
+      <div className="w-full h-full bg-[#0A0A0A] flex flex-col items-center justify-center p-6 text-center">
+        <span className="text-3xl mb-2">🗺️</span>
+        <h4 className="text-sm font-bold text-[#D4AF37] mb-1">Demand Heatmap</h4>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          Heatmap is currently unavailable due to Google Maps API restriction. Please check Cloud Console HTTP referrer settings.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">

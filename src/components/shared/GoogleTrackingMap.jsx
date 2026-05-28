@@ -1,11 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import LiveTrackingMap from "./LiveTrackingMap";
 
 // Load Google Maps SDK — key injected at runtime from backend
-// SECURITY: API key is restricted in Google Cloud Console to:
-// - Your domain (e.g., yourdomain.com)
-// - Specific APIs only: Maps JavaScript API, Places API, Routes API
-// - HTTP referrers limited to prevent unauthorized use
 let googleMapsLoaded = false;
 let loadPromise = null;
 
@@ -13,7 +10,6 @@ async function loadGoogleMaps() {
   if (googleMapsLoaded) return;
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
-    // Fetch the API key securely from the backend
     let apiKey = "";
     try {
       const res = await base44.functions.invoke("getGoogleMapsKey", {});
@@ -23,8 +19,12 @@ async function loadGoogleMaps() {
       }
     } catch (error) {
       console.warn("Failed to fetch Google Maps API key:", error);
-      // Fallback: load without key (tiles will be watermarked but functional)
     }
+    
+    if (!apiKey) {
+      throw new Error("No API Key");
+    }
+
     await new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
@@ -60,36 +60,60 @@ export default function GoogleTrackingMap({
   const lastRouteCallRef = useRef(0);          // throttle route API calls
   const lastRouteKeyRef = useRef(null);        // avoid redundant calls
   const [loaded, setLoaded] = useState(googleMapsLoaded);
+  const [loadError, setLoadError] = useState(false);
 
   // Load Google Maps SDK once
   useEffect(() => {
-    loadGoogleMaps().then(() => setLoaded(true));
+    loadGoogleMaps()
+      .then(() => setLoaded(true))
+      .catch((err) => {
+        console.warn("Google Maps load failed, falling back to Leaflet:", err);
+        setLoadError(true);
+      });
+  }, []);
+
+  // Monitor global Google Maps auth failure (e.g. invalid key or domain restriction)
+  useEffect(() => {
+    const originalAuthFailure = window.gm_authFailure;
+    window.gm_authFailure = () => {
+      console.warn("Google Maps authentication failed. Falling back to Leaflet.");
+      setLoadError(true);
+      if (originalAuthFailure) originalAuthFailure();
+    };
+    return () => {
+      window.gm_authFailure = originalAuthFailure;
+    };
   }, []);
 
   // Initialize map
   useEffect(() => {
-    if (!loaded || !mapRef.current) return;
-    const center = toLatLng(driverPos || userPos || pickupPos || [5.6037, -0.187]);
-    mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 15,
-      disableDefaultUI: true,
-      styles: darkMapStyles,
-    });
-    routeRendererRef.current = new window.google.maps.DirectionsRenderer({
-      suppressMarkers: true,
-      polylineOptions: {
-        strokeColor: "#D4AF37",
-        strokeWeight: 4,
-        strokeOpacity: 0.85,
-      },
-    });
-    routeRendererRef.current.setMap(mapInstanceRef.current);
-  }, [loaded]);
+    if (!loaded || loadError || !mapRef.current) return;
+    try {
+      const center = toLatLng(driverPos || userPos || pickupPos || [5.6037, -0.187]);
+      mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+        center,
+        zoom: 15,
+        disableDefaultUI: true,
+        styles: darkMapStyles,
+      });
+      routeRendererRef.current = new window.google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+        polylineOptions: {
+          strokeColor: "#D4AF37",
+          strokeWeight: 4,
+          strokeOpacity: 0.85,
+        },
+      });
+      routeRendererRef.current.setMap(mapInstanceRef.current);
+    } catch (e) {
+      console.error("Error initializing Google Maps:", e);
+      setLoadError(true);
+    }
+  }, [loaded, loadError]);
 
   // Update markers & route whenever positions change
   useEffect(() => {
-    if (!loaded || !mapInstanceRef.current) return;
+    if (!loaded || loadError || !mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
 
     // Clear nearby driver markers when an active ride starts
@@ -176,11 +200,9 @@ export default function GoogleTrackingMap({
 
     // Nearby available drivers markers (when no active ride)
     if (!driverPos && nearbyDrivers.length > 0) {
-      // Create or update nearby driver markers
       if (!markersRef.current.nearby) markersRef.current.nearby = {};
       
-      // Update existing or create new markers
-      nearbyDrivers.forEach((driver, idx) => {
+      nearbyDrivers.forEach((driver) => {
         const key = `nearby_${driver.id}`;
         const pos = toLatLng([driver.current_lat, driver.current_lng]);
         
@@ -194,7 +216,6 @@ export default function GoogleTrackingMap({
         markersRef.current.nearby[key].setPosition(pos);
       });
       
-      // Remove markers for drivers no longer in range
       Object.keys(markersRef.current.nearby).forEach(key => {
         if (!nearbyDrivers.find(d => `nearby_${d.id}` === key)) {
           markersRef.current.nearby[key].setMap(null);
@@ -202,16 +223,13 @@ export default function GoogleTrackingMap({
         }
       });
     } else if (!driverPos && markersRef.current.nearby) {
-      // Clear all nearby markers if there are no nearby drivers
       Object.values(markersRef.current.nearby).forEach(m => m.setMap(null));
       delete markersRef.current.nearby;
     }
 
-    // Pan map to follow driver (or user)
     const focusPos = driverPos || userPos || pickupPos;
     if (focusPos) map.panTo(toLatLng(focusPos));
 
-    // Draw Directions route + compute ETA (throttled to once every 10s)
     if (driverPos && (pickupPos || destPos)) {
       const destination = status === "in_progress" ? toLatLng(destPos) : toLatLng(pickupPos);
       if (destination) {
@@ -245,20 +263,32 @@ export default function GoogleTrackingMap({
     } else if (routeRendererRef.current) {
       routeRendererRef.current.setDirections({ routes: [] });
     }
-  }, [loaded, driverPos, pickupPos, destPos, userPos, status]);
+  }, [loaded, loadError, driverPos, pickupPos, destPos, userPos, status]);
+
+  // If loading Google Maps failed or timed out, seamlessly fall back to Leaflet Map
+  if (loadError) {
+    return (
+      <LiveTrackingMap
+        driverPos={driverPos}
+        pickupPos={pickupPos}
+        destPos={destPos}
+        userPos={userPos}
+        status={status}
+        height={height}
+      />
+    );
+  }
 
   if (!loaded) {
     return (
-      <div style={{ height }} className="w-full bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div style={{ height }} className="w-full bg-[#0A0A0A] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return <div ref={mapRef} style={{ height, width: "100%" }} />;
 }
-
-// ── helpers ────────────────────────────────────────────────────────────────
 
 function toLatLng([lat, lng]) {
   return { lat, lng };
@@ -304,7 +334,6 @@ function nearbyDriverIcon() {
   };
 }
 
-// Dark theme styles for Google Maps
 const darkMapStyles = [
   { elementType: "geometry", stylers: [{ color: "#0a0a0a" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#8c8c8c" }] },
