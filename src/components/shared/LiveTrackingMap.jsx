@@ -60,6 +60,22 @@ function MapUpdater({ center }) {
   return null;
 }
 
+// Custom nearby driver icon
+const nearbyDriverIcon = L.divIcon({
+  className: "",
+  html: `<div style="
+    width:24px;height:24px;border-radius:50%;
+    background:#006B3F;
+    border:2.5px solid #fff;
+    box-shadow:0 2px 6px rgba(0,107,63,0.4);
+    display:flex;align-items:center;justify-content:center;
+  ">
+    <div style="width:6px;height:6px;border-radius:50%;background:#fff;"/>
+  </div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
 export default function LiveTrackingMap({
   driverPos,
   pickupPos,
@@ -67,6 +83,7 @@ export default function LiveTrackingMap({
   userPos,
   status,
   height = "100%",
+  nearbyDrivers = [],
 }) {
   const center = driverPos || userPos || pickupPos || [5.6037, -0.187];
 
@@ -110,6 +127,18 @@ export default function LiveTrackingMap({
 
       {/* User position (rider only, no active driver) */}
       {userPos && !driverPos && <Marker position={userPos} />}
+
+      {/* Nearby available drivers */}
+      {!driverPos && nearbyDrivers.length > 0 && nearbyDrivers.map((driver) => {
+        if (!driver.current_lat || !driver.current_lng) return null;
+        return (
+          <Marker 
+            key={`nearby_${driver.id}`} 
+            position={[driver.current_lat, driver.current_lng]} 
+            icon={nearbyDriverIcon} 
+          />
+        );
+      })}
 
       <MapUpdater center={driverPos || userPos || pickupPos} />
     </MapContainer>
