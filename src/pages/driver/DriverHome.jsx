@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp } from "lucide-react";
+import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp, Smartphone, Banknote, CreditCard, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/shared/Logo";
@@ -302,6 +302,16 @@ export default function DriverHome() {
                 </p>
               )}
             </div>
+            {/* Payment method badge */}
+            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-secondary rounded-xl">
+              {incomingRide.payment_method === "mobile_money" && <Smartphone className="w-3.5 h-3.5 text-primary" />}
+              {incomingRide.payment_method === "cash" && <Banknote className="w-3.5 h-3.5 text-ghana-green" />}
+              {incomingRide.payment_method === "card" && <CreditCard className="w-3.5 h-3.5 text-primary" />}
+              {incomingRide.payment_method === "wallet" && <Wallet className="w-3.5 h-3.5 text-primary" />}
+              <span className="text-xs font-medium">
+                {incomingRide.payment_method === "mobile_money" ? "MoMo Payment" : incomingRide.payment_method === "cash" ? "Cash Payment" : incomingRide.payment_method === "card" ? "Card Payment" : "Wallet Payment"}
+              </span>
+            </div>
             <div className="flex gap-3 mt-4">
               <Button onClick={declineRide} variant="outline" className="flex-1 border-destructive text-destructive">
                 <X className="w-4 h-4 mr-2" /> Decline
@@ -338,7 +348,7 @@ export default function DriverHome() {
                 )}
               </div>
             </div>
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2 mb-3">
             <div className="flex items-center gap-2">
               <Navigation className="w-4 h-4 text-ghana-green" />
               <p className="text-sm truncate">{activeRide.pickup_address}</p>
@@ -347,6 +357,19 @@ export default function DriverHome() {
               <MapPin className="w-4 h-4 text-primary" />
               <p className="text-sm truncate">{activeRide.destination_address}</p>
             </div>
+          </div>
+          {/* Payment Method Indicator */}
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-secondary rounded-xl">
+            {activeRide.payment_method === "mobile_money" && <Smartphone className="w-4 h-4 text-primary" />}
+            {activeRide.payment_method === "cash" && <Banknote className="w-4 h-4 text-ghana-green" />}
+            {activeRide.payment_method === "card" && <CreditCard className="w-4 h-4 text-primary" />}
+            {activeRide.payment_method === "wallet" && <Wallet className="w-4 h-4 text-primary" />}
+            <span className="text-xs font-medium text-muted-foreground">
+              Payment: {activeRide.payment_method === "mobile_money" ? "MoMo (Direct Transfer)" : activeRide.payment_method === "cash" ? "Cash" : activeRide.payment_method === "card" ? "Card" : "Wallet"}
+            </span>
+            {activeRide.payment_method === "mobile_money" && driver?.momo_number && (
+              <span className="ml-auto text-[10px] text-ghana-green font-semibold">Your MoMo</span>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1 border-border relative" onClick={openChat}>

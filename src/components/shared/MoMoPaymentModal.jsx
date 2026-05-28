@@ -45,7 +45,7 @@ export default function MoMoPaymentModal({ isOpen, onClose, amount, rideId, ride
             setDriverMoMo({
               number: profiles[0].momo_number,
               provider: profiles[0].momo_provider,
-              name: profiles[0].full_name
+              name: profiles[0].momo_name || profiles[0].full_name
             });
           }
           setLoadingDriver(false);

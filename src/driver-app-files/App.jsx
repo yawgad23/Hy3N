@@ -20,6 +20,7 @@ import DriverRegister from '@/pages/driver/DriverRegister';
 import DriverEarnings from '@/pages/driver/DriverEarnings';
 import DriverHistory from '@/pages/driver/DriverHistory';
 import DriverProfile from '@/pages/driver/DriverProfile';
+import DriverMoMoSettings from '@/pages/driver/DriverMoMoSettings';
 import DriverSupport from '@/pages/driver/DriverSupport';
 import DriverScheduledRides from '@/pages/driver/DriverScheduledRides';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
             <Route path="/driver-app/earnings" element={<DriverEarnings />} />
             <Route path="/driver-app/history" element={<DriverHistory />} />
             <Route path="/driver-app/profile" element={<DriverProfile />} />
+            <Route path="/driver-app/momo-settings" element={<DriverMoMoSettings />} />
             <Route path="/driver-app/support" element={<DriverSupport />} />
             <Route path="/driver-app/scheduled" element={<DriverScheduledRides />} />
             <Route path="/admin" element={<AdminDashboard />} />

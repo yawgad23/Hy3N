@@ -10,6 +10,7 @@ Copy entire folder: `pages/driver/`
 - DriverEarnings.jsx
 - DriverHistory.jsx
 - DriverProfile.jsx
+- DriverMoMoSettings.jsx
 - DriverSupport.jsx
 - DriverScheduledRides.jsx
 - DriverHome.jsx

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2, Users, Smartphone } from "lucide-react";
+import { User, Car, Star, LogOut, ChevronRight, FileText, HelpCircle, Trash2, Users, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -74,37 +74,36 @@ export default function DriverProfile() {
 
         {/* MoMo Payout Info */}
         {driver && (
-          <div className="bg-card border border-border rounded-xl p-4 mb-4">
+          <button
+            onClick={() => navigate("/driver-app/momo-settings")}
+            className="w-full bg-card border border-border rounded-xl p-4 mb-4 text-left hover:border-primary/50 transition-all"
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-primary" />
-                <span className="font-heading font-semibold text-sm">Mobile Money Payout</span>
+                <span className="font-heading font-semibold text-sm">Mobile Money (MoMo)</span>
               </div>
-              <button 
-                onClick={() => {
-                  const num = prompt("Enter new MoMo Phone Number:", driver.momo_number || "");
-                  if (num !== null) {
-                    const prov = prompt("Enter Provider (mtn, vodafone, airteltigo):", driver.momo_provider || "mtn");
-                    if (prov) {
-                      base44.entities.DriverProfile.update(driver.id, {
-                        momo_number: num,
-                        momo_provider: prov.toLowerCase()
-                      }).then(updated => setDriver(updated));
-                    }
-                  }
-                }}
-                className="text-xs text-primary font-medium hover:underline"
-              >
-                Edit
-              </button>
+              <div className="flex items-center gap-2">
+                {driver.momo_number ? (
+                  <span className="flex items-center gap-1 text-xs text-ghana-green font-medium">
+                    <CheckCircle2 className="w-3 h-3" /> Active
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs text-destructive font-medium">
+                    <AlertCircle className="w-3 h-3" /> Not Set
+                  </span>
+                )}
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-y-2 text-sm">
-              <span className="text-muted-foreground">MoMo Provider</span>
-              <span className="capitalize">{driver.momo_provider === "vodafone" ? "Telecel" : driver.momo_provider || "Not Configured"}</span>
-              <span className="text-muted-foreground">MoMo Number</span>
-              <span>{driver.momo_number || "Not Configured"}</span>
+              <span className="text-muted-foreground">Provider</span>
+              <span className="capitalize">{driver.momo_provider === "vodafone" ? "Telecel" : driver.momo_provider === "airteltigo" ? "AirtelTigo" : driver.momo_provider === "mtn" ? "MTN MoMo" : "Not Set"}</span>
+              <span className="text-muted-foreground">Number</span>
+              <span className="font-mono">{driver.momo_number || "Tap to configure"}</span>
             </div>
-          </div>
+            <p className="text-[11px] text-muted-foreground mt-3">Tap to manage your MoMo payment details for receiving rider payments</p>
+          </button>
         )}
 
         {/* Vehicle Info */}

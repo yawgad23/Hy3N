@@ -36,7 +36,8 @@ export default function DriverSetup() {
     insurance_url: "",
     roadworthy_url: "",
     momo_number: "",
-    momo_provider: "mtn"
+    momo_provider: "mtn",
+    momo_name: ""
   });
 
   useEffect(() => {
@@ -165,6 +166,16 @@ export default function DriverSetup() {
                 placeholder="024XXXXXXX"
                 className="bg-card border-border mt-1"
               />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">MoMo Account Name</Label>
+              <Input
+                value={form.momo_name}
+                onChange={(e) => setForm({ ...form, momo_name: e.target.value })}
+                placeholder="Name on your MoMo account"
+                className="bg-card border-border mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">This name will be shown to riders when they pay you via MoMo</p>
             </div>
           </div>
         </div>

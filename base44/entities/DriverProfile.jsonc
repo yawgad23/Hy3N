@@ -99,6 +99,10 @@
     },
     "momo_provider": {
       "type": "string"
+    },
+    "momo_name": {
+      "type": "string",
+      "description": "The registered name on the driver's MoMo account, displayed to riders during payment"
     }
   },
   "required": [

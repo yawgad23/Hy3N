@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, Users, Smartphone, Banknote, CreditCard } from "lucide-react";
+import { X, Plus, Trash2, Users, Smartphone, Banknote, CreditCard, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PAYMENT_METHODS } from "@/lib/constants";
 
-const paymentIcons = { Smartphone, Banknote, CreditCard };
+const paymentIcons = { Smartphone, Banknote, CreditCard, Wallet };
 
 export default function SplitFareModal({ isOpen, onClose, totalFare, onConfirm }) {
   const [participants, setParticipants] = useState([
