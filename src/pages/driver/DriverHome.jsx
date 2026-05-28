@@ -50,12 +50,18 @@ export default function DriverHome() {
         subscribeToPush(user.id);
       }
     });
+    let watchId = null;
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      watchId = navigator.geolocation.watchPosition(
         (pos) => setLocation([pos.coords.latitude, pos.coords.longitude]),
-        () => {}
+        (err) => console.warn("Driver geolocation error:", err),
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
       );
     }
+
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
   }, [user?.id]);
 
   // Unread message counter

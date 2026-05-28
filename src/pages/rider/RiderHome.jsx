@@ -42,10 +42,16 @@ export default function RiderHome() {
       try {
         const me = await base44.auth.me();
         setUser(me);
+        let watchId = null;
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => setLocation([pos.coords.latitude, pos.coords.longitude]),
-            () => {}
+          watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+              setLocation([pos.coords.latitude, pos.coords.longitude]);
+            },
+            (err) => {
+              console.warn("Geolocation watch error:", err);
+            },
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
           );
         }
         const granted = await requestNotificationPermission();
@@ -56,12 +62,21 @@ export default function RiderHome() {
         setLoading(false);
       }
     };
-    init();
+    let watchId = null;
+    const runInit = async () => {
+      await init();
+    };
+    runInit();
+
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
       setDestination({ name: address, lat, lng });
       window.history.replaceState({}, "");
     }
+
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   // Fetch nearby drivers when no active ride
