@@ -143,6 +143,7 @@ export default function RiderHome() {
       payment_method: bookingData.payment_method,
       distance_km: bookingData.distance_km,
       surge_multiplier: bookingData.surge_multiplier || 1.0,
+      stops: bookingData.destination.stops || []
     };
 
     // Optimistic update

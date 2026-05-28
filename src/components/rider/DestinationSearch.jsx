@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Search, X, Clock } from "lucide-react";
+import { MapPin, Search, X, Clock, Plus, Trash2, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
@@ -14,40 +14,17 @@ const POPULAR_LOCATIONS = [
   { name: "Tema Station", address: "Accra", lat: 5.5503, lng: -0.2015 },
   { name: "Circle Odorkor", address: "Accra", lat: 5.5689, lng: -0.2314 },
   { name: "East Legon", address: "Accra", lat: 5.6389, lng: -0.1678 },
-  { name: "Spintex Road", address: "Accra", lat: 5.6147, lng: -0.1289 },
-  { name: "Labone", address: "Accra", lat: 5.5656, lng: -0.1739 },
-  { name: "Cantonments", address: "Accra", lat: 5.5789, lng: -0.1756 },
-  { name: "Adabraka", address: "Accra", lat: 5.5667, lng: -0.2089 },
-  { name: "Tema Community 1", address: "Tema", lat: 5.6698, lng: -0.0167 },
-  { name: "Tema Harbour", address: "Tema", lat: 5.6289, lng: -0.0089 },
-  { name: "Kasoa Market", address: "Kasoa", lat: 5.5347, lng: -0.4189 },
-  { name: "Dansoman", address: "Accra", lat: 5.5456, lng: -0.2567 },
-  { name: "Achimota", address: "Accra", lat: 5.6089, lng: -0.2289 },
-  { name: "Dome", address: "Accra", lat: 5.6456, lng: -0.2389 },
-  { name: "Lapaz", address: "Accra", lat: 5.5989, lng: -0.2456 },
-  { name: "Kaneshie", address: "Accra", lat: 5.5756, lng: -0.2289 },
-  { name: "Bubuashie", address: "Accra", lat: 5.5889, lng: -0.2356 },
-  { name: "Tesano", address: "Accra", lat: 5.6089, lng: -0.2089 },
-  { name: "Nima", address: "Accra", lat: 5.5889, lng: -0.1989 },
-  { name: "Kanda", address: "Accra", lat: 5.5789, lng: -0.1889 },
-  { name: "Ridge", address: "Accra", lat: 5.5689, lng: -0.1989 },
-  { name: "Ministries", address: "Accra", lat: 5.5589, lng: -0.1889 },
-  { name: "Victoriaborg", address: "Accra", lat: 5.5489, lng: -0.1789 },
-  { name: "Teshie", address: "Teshie-Nungua", lat: 5.5889, lng: -0.1089 },
-  { name: "Nungua", address: "Teshie-Nungua", lat: 5.6089, lng: -0.0889 },
-  { name: "Ashaiman", address: "Ashaiman", lat: 5.6289, lng: -0.0389 },
-  { name: "Madina", address: "Madina", lat: 5.6589, lng: -0.1689 },
-  { name: "Haatso", address: "Accra", lat: 5.6489, lng: -0.1889 },
-  { name: "Gbawe", address: "Accra", lat: 5.5689, lng: -0.2789 },
-  { name: "Mallam", address: "Accra", lat: 5.5589, lng: -0.2689 }
+  { name: "Spintex Road", address: "Accra", lat: 5.6147, lng: -0.1289 }
 ];
 
 export default function DestinationSearch({ isOpen, onClose, onSelect }) {
+  const [stops, setStops] = useState([]); // Array of { name, address, lat, lng }
+  const [activeInputIndex, setActiveInputIndex] = useState(0); // -1 for main destination, >= 0 for intermediate stops
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
-  const autocompleteRef = useRef(null);
+  const [destination, setDestination] = useState(null);
 
   // Load search history from localStorage
   useEffect(() => {
@@ -71,9 +48,7 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
       timestamp: Date.now()
     };
     setSearchHistory(prev => {
-      // Remove duplicate if exists
       const filtered = prev.filter(l => l.name !== location.name);
-      // Add new entry at the beginning, keep last 10
       const updated = [newEntry, ...filtered].slice(0, 10);
       localStorage.setItem("destinationSearchHistory", JSON.stringify(updated));
       return updated;
@@ -100,6 +75,18 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
     }
   }, [query, isOpen]);
 
+  const handleSelectLocation = (location) => {
+    saveToHistory(location);
+    if (activeInputIndex === -1) {
+      setDestination(location);
+    } else {
+      const newStops = [...stops];
+      newStops[activeInputIndex] = location;
+      setStops(newStops);
+    }
+    setQuery("");
+  };
+
   const handleSelectPlace = async (placeId) => {
     try {
       const res = await base44.functions.invoke("placeDetails", { placeId });
@@ -111,24 +98,42 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
           lat: data.geometry.location.lat,
           lng: data.geometry.location.lng
         };
-        saveToHistory(location);
-        onSelect(location);
-        onClose();
+        handleSelectLocation(location);
       }
     } catch (err) {
       console.error("Place details error:", err);
     }
   };
 
-  const handleSelectFromHistory = (location) => {
-    saveToHistory(location);
-    onSelect(location);
-    onClose();
+  const addStopField = () => {
+    if (stops.length >= 3) return; // Limit to 3 stops
+    setStops([...stops, null]);
+    setActiveInputIndex(stops.length);
+    setQuery("");
   };
 
-  const clearHistory = () => {
-    localStorage.removeItem("destinationSearchHistory");
-    setSearchHistory([]);
+  const removeStopField = (index) => {
+    const newStops = stops.filter((_, i) => i !== index);
+    setStops(newStops);
+    setActiveInputIndex(-1);
+    setQuery("");
+  };
+
+  const handleConfirmRoute = () => {
+    if (!destination) return;
+    
+    // Filter out empty stops
+    const validStops = stops.filter(s => s !== null).map((s, index) => ({
+      ...s,
+      order: index,
+      status: "pending"
+    }));
+
+    onSelect({
+      ...destination,
+      stops: validStops
+    });
+    onClose();
   };
 
   const filtered = query.length > 0 && suggestions.length === 0
@@ -142,67 +147,99 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-background z-50 flex flex-col"
+          className="fixed inset-0 bg-background z-50 flex flex-col max-w-md mx-auto"
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
         >
-          <div className="p-4 border-b border-border">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={onClose}>
-                <X className="w-6 h-6 text-foreground" />
-              </button>
-              <h2 className="font-heading font-semibold text-lg">Where to?</h2>
+          {/* Header & Inputs */}
+          <div className="p-4 border-b border-border bg-card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button onClick={onClose}>
+                  <X className="w-6 h-6 text-foreground" />
+                </button>
+                <h2 className="font-heading font-semibold text-lg">Plan your Route</h2>
+              </div>
+              {destination && (
+                <Button 
+                  onClick={handleConfirmRoute}
+                  className="bg-primary text-primary-foreground font-heading font-semibold text-xs px-4 py-1.5 rounded-xl"
+                >
+                  Done
+                </Button>
+              )}
             </div>
 
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                placeholder="Search destination..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-10 bg-secondary border-none h-12 text-foreground placeholder:text-muted-foreground"
-                autoFocus
-              />
+            <div className="space-y-3 relative">
+              {/* Vertical line indicator */}
+              <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-border flex flex-col justify-between items-center py-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                {stops.map((_, i) => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                ))}
+                <div className="w-1.5 h-1.5 bg-destructive rounded-sm" />
+              </div>
+
+              {/* Intermediate Stops */}
+              {stops.map((stop, index) => (
+                <div key={index} className="flex items-center gap-3 pl-10 relative">
+                  <div className="flex-1 relative">
+                    <Input
+                      placeholder={`Stop ${index + 1}`}
+                      value={activeInputIndex === index ? query : (stop?.name || "")}
+                      onFocus={() => {
+                        setActiveInputIndex(index);
+                        setQuery(stop?.name || "");
+                      }}
+                      onChange={(e) => activeInputIndex === index && setQuery(e.target.value)}
+                      className={`bg-secondary border-none h-11 text-foreground placeholder:text-muted-foreground text-sm rounded-xl ${
+                        activeInputIndex === index ? "ring-2 ring-primary/40" : ""
+                      }`}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => removeStopField(index)}
+                    className="p-2 hover:bg-secondary rounded-xl transition-colors text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Main Destination Input */}
+              <div className="flex items-center gap-3 pl-10 relative">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Where to? (Final Destination)"
+                    value={activeInputIndex === -1 ? query : (destination?.name || "")}
+                    onFocus={() => {
+                      setActiveInputIndex(-1);
+                      setQuery(destination?.name || "");
+                    }}
+                    onChange={(e) => activeInputIndex === -1 && setQuery(e.target.value)}
+                    className={`bg-secondary border-none h-11 text-foreground placeholder:text-muted-foreground text-sm rounded-xl font-medium ${
+                      activeInputIndex === -1 ? "ring-2 ring-primary/40" : ""
+                    }`}
+                    autoFocus={activeInputIndex === -1}
+                  />
+                </div>
+                {stops.length < 3 && (
+                  <button 
+                    onClick={addStopField}
+                    className="p-2.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Stop</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
+          {/* Results Suggestions */}
           <div className="flex-1 overflow-y-auto p-4">
-            {/* Search History - Show when no query */}
-            {!query && searchHistory.length > 0 && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Recent Searches
-                  </p>
-                  <button
-                    onClick={clearHistory}
-                    className="text-xs text-destructive hover:underline"
-                  >
-                    Clear All
-                  </button>
-                </div>
-                <div className="space-y-1">
-                  {searchHistory.map((location, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleSelectFromHistory(location)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                        <Clock className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div className="text-left flex-1">
-                        <p className="font-medium text-sm text-foreground">{location.name}</p>
-                        <p className="text-xs text-muted-foreground">{location.address}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {loading && (
               <div className="flex items-center justify-center py-8">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -211,9 +248,7 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
             
             {!loading && suggestions.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
-                  Suggestions
-                </p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">Suggestions</p>
                 <div className="space-y-1">
                   {suggestions.map((place) => (
                     <button
@@ -234,48 +269,61 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
               </div>
             )}
 
-            {!loading && suggestions.length === 0 && filtered.length > 0 && (
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
-                  {query ? "Popular Places" : "Popular Destinations"}
-                </p>
+            {!loading && suggestions.length === 0 && (
+              <>
+                {/* Search History */}
                 {!query && searchHistory.length > 0 && (
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Scroll up to see recent searches
-                  </p>
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Recent Searches</p>
+                      <button onClick={() => { localStorage.removeItem("destinationSearchHistory"); setSearchHistory([]); }} className="text-xs text-destructive hover:underline">
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="space-y-1">
+                      {searchHistory.map((location, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleSelectLocation(location)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                            <Clock className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div className="text-left flex-1">
+                            <p className="font-medium text-sm text-foreground">{location.name}</p>
+                            <p className="text-xs text-muted-foreground">{location.address}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
-                <div className="space-y-1">
-                  {filtered.map((location, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        onSelect(location);
-                        onClose();
-                      }}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                        {query ? (
-                          <MapPin className="w-5 h-5 text-primary" />
-                        ) : (
-                          <Clock className="w-5 h-5 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="text-left">
-                        <p className="font-medium text-sm text-foreground">{location.name}</p>
-                        <p className="text-xs text-muted-foreground">{location.address}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {!loading && suggestions.length === 0 && filtered.length === 0 && query.length > 2 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">No results found</p>
-                <p className="text-xs mt-1">Try a different search term</p>
-              </div>
+                {/* Popular Places */}
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
+                    {query ? "Popular Places" : "Popular Destinations"}
+                  </p>
+                  <div className="space-y-1">
+                    {filtered.map((location, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSelectLocation(location)}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div className="text-left flex-1">
+                          <p className="font-medium text-sm text-foreground">{location.name}</p>
+                          <p className="text-xs text-muted-foreground">{location.address}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </motion.div>

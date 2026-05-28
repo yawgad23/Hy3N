@@ -131,6 +131,12 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
                 <p className="text-xs text-muted-foreground">Pickup</p>
                 <p className="text-sm font-medium text-foreground">Current Location</p>
               </div>
+              {destination?.stops && destination.stops.map((stop, i) => (
+                <div key={i}>
+                  <p className="text-xs text-muted-foreground">Stop {i + 1}</p>
+                  <p className="text-sm font-medium text-foreground">{stop.name}</p>
+                </div>
+              ))}
               <div>
                 <p className="text-xs text-muted-foreground">Destination</p>
                 <p className="text-sm font-medium text-foreground">{destination?.name || "Selected destination"}</p>
