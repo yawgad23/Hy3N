@@ -20,7 +20,7 @@ const POPULAR_LOCATIONS = [
 
 export default function DestinationSearch({ isOpen, onClose, onSelect }) {
   const [stops, setStops] = useState([]); // Array of { name, address, lat, lng }
-  const [activeInputIndex, setActiveInputIndex] = useState(0); // -1 for main destination, >= 0 for intermediate stops
+  const [activeInputIndex, setActiveInputIndex] = useState(-1); // -1 for main destination, >= 0 for intermediate stops
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -166,7 +166,7 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
               {destination && (
                 <Button 
                   onClick={handleConfirmRoute}
-                  className="bg-primary text-primary-foreground font-heading font-semibold text-xs px-4 py-1.5 rounded-xl"
+                  className="bg-primary text-primary-foreground font-heading font-semibold text-xs px-4 py-1.5 rounded-xl animate-fade-in"
                 >
                   Done
                 </Button>
@@ -174,43 +174,19 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
             </div>
 
             <div className="space-y-3 relative">
-              {/* Vertical line indicator */}
-              <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-border flex flex-col justify-between items-center py-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                {stops.map((_, i) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
-                ))}
-                <div className="w-1.5 h-1.5 bg-destructive rounded-sm" />
-              </div>
-
-              {/* Intermediate Stops */}
-              {stops.map((stop, index) => (
-                <div key={index} className="flex items-center gap-3 pl-10 relative">
-                  <div className="flex-1 relative">
-                    <Input
-                      placeholder={`Stop ${index + 1}`}
-                      value={activeInputIndex === index ? query : (stop?.name || "")}
-                      onFocus={() => {
-                        setActiveInputIndex(index);
-                        setQuery(stop?.name || "");
-                      }}
-                      onChange={(e) => activeInputIndex === index && setQuery(e.target.value)}
-                      className={`bg-secondary border-none h-11 text-foreground placeholder:text-muted-foreground text-sm rounded-xl ${
-                        activeInputIndex === index ? "ring-2 ring-primary/40" : ""
-                      }`}
-                    />
-                  </div>
-                  <button 
-                    onClick={() => removeStopField(index)}
-                    className="p-2 hover:bg-secondary rounded-xl transition-colors text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+              {/* Vertical line indicator - Only show if there are stops */}
+              {stops.length > 0 && (
+                <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-border flex flex-col justify-between items-center py-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  {stops.map((_, i) => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
+                  ))}
+                  <div className="w-1.5 h-1.5 bg-destructive rounded-sm" />
                 </div>
-              ))}
+              )}
 
-              {/* Main Destination Input */}
-              <div className="flex items-center gap-3 pl-10 relative">
+              {/* Main Destination Input (Always on top for simplicity) */}
+              <div className={`flex items-center gap-3 relative ${stops.length > 0 ? "pl-10" : ""}`}>
                 <div className="flex-1">
                   <Input
                     placeholder="Where to? (Final Destination)"
@@ -226,7 +202,7 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
                     autoFocus={activeInputIndex === -1}
                   />
                 </div>
-                {stops.length < 3 && (
+                {stops.length === 0 && (
                   <button 
                     onClick={addStopField}
                     className="p-2.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold"
@@ -236,6 +212,49 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
                   </button>
                 )}
               </div>
+
+              {/* Intermediate Stops - Shown dynamically */}
+              {stops.map((stop, index) => (
+                <motion.div 
+                  key={index} 
+                  className="flex items-center gap-3 pl-10 relative"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <div className="flex-1 relative">
+                    <Input
+                      placeholder={`Stop ${index + 1}`}
+                      value={activeInputIndex === index ? query : (stop?.name || "")}
+                      onFocus={() => {
+                        setActiveInputIndex(index);
+                        setQuery(stop?.name || "");
+                      }}
+                      onChange={(e) => activeInputIndex === index && setQuery(e.target.value)}
+                      className={`bg-secondary border-none h-11 text-foreground placeholder:text-muted-foreground text-sm rounded-xl ${
+                        activeInputIndex === index ? "ring-2 ring-primary/40" : ""
+                      }`}
+                      autoFocus={activeInputIndex === index}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => removeStopField(index)}
+                      className="p-2 hover:bg-secondary rounded-xl transition-colors text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    {index === stops.length - 1 && stops.length < 3 && (
+                      <button 
+                        onClick={addStopField}
+                        className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
 
