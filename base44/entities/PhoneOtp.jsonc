@@ -8,11 +8,29 @@
     },
     "otp_code": {
       "type": "string",
-      "description": "6-digit OTP code"
+      "description": "6-digit OTP code (hashed)"
     },
     "created_date": {
       "type": "string",
       "description": "When OTP was created"
+    },
+    "attempt_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of failed verification attempts"
+    },
+    "send_count": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of OTPs sent to this phone in the current window"
+    },
+    "locked_until": {
+      "type": "string",
+      "description": "ISO datetime - phone is locked from OTP requests until this time"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address that requested the OTP (for abuse tracking)"
     }
   },
   "required": [

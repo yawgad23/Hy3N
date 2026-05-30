@@ -142,16 +142,22 @@ export default function TripHistoryCard({ ride, currentUserRole, onViewDetails }
                   <span className="text-muted-foreground">Base Fare</span>
                   <span className="font-medium">GH₵{(ride.fare_estimate || 0).toFixed(2)}</span>
                 </div>
-                {ride.final_fare && ride.final_fare !== ride.fare_estimate && (
+                {ride.waiting_fee > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Final Fare</span>
-                    <span className="font-medium">GH₵{ride.final_fare.toFixed(2)}</span>
+                    <span className="text-muted-foreground">Waiting Fee ({ride.waiting_time_minutes?.toFixed(0) || 0} min)</span>
+                    <span className="font-medium text-destructive">+GH₵{ride.waiting_fee.toFixed(2)}</span>
+                  </div>
+                )}
+                {ride.tip_amount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tip</span>
+                    <span className="font-medium text-ghana-green">+GH₵{ride.tip_amount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm pt-2 border-t border-border">
                   <span className="font-semibold">Total Paid</span>
                   <span className="font-heading font-bold text-primary">
-                    GH₵{(ride.final_fare || ride.fare_estimate || 0).toFixed(2)}
+                    GH₵{((ride.final_fare || ride.fare_estimate || 0) + (ride.tip_amount || 0)).toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground pt-1">

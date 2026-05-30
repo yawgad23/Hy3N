@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp, Smartphone, Banknote, CreditCard, Wallet } from "lucide-react";
+import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp, Smartphone, Banknote, CreditCard, Wallet, Clock, MapPinCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/shared/Logo";
@@ -13,6 +13,8 @@ import RideChatModal from "@/components/shared/RideChatModal";
 import RatingModal from "@/components/shared/RatingModal";
 import { requestNotificationPermission, showNotification } from "@/lib/notificationService";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import WaitingTimer from "@/components/shared/WaitingTimer";
+import { RIDE_CATEGORIES, FREE_WAITING_MINUTES } from "@/lib/constants";
 
 export default function DriverHome() {
   const [user, setUser] = useState(null);
@@ -134,25 +136,69 @@ export default function DriverHome() {
     setIncomingRide(null);
   };
 
+  // Driver presses "I've Arrived" at pickup location
+  const arrivedAtPickup = async () => {
+    if (!activeRide) return;
+    const arrivedAt = new Date().toISOString();
+    await base44.entities.Ride.update(activeRide.id, { 
+      driver_arrived_at: arrivedAt,
+      free_waiting_minutes: FREE_WAITING_MINUTES
+    });
+    setActiveRide({ ...activeRide, driver_arrived_at: arrivedAt, free_waiting_minutes: FREE_WAITING_MINUTES });
+    showNotification("Arrived at Pickup", "Waiting timer started. Rider has been notified.", "info");
+  };
+
+  // Calculate waiting fee based on elapsed time since arrival
+  const calculateWaitingFee = () => {
+    if (!activeRide?.driver_arrived_at) return { waitingMinutes: 0, waitingFee: 0 };
+    const arrivedAt = new Date(activeRide.driver_arrived_at).getTime();
+    const now = Date.now();
+    const totalMinutes = (now - arrivedAt) / (1000 * 60);
+    const chargeableMinutes = Math.max(0, totalMinutes - FREE_WAITING_MINUTES);
+    const categoryConfig = RIDE_CATEGORIES.find(c => c.id === activeRide.category) || RIDE_CATEGORIES[0];
+    const feePerMin = categoryConfig.waitingFeePerMin || 0.50;
+    const fee = parseFloat((chargeableMinutes * feePerMin).toFixed(2));
+    return { waitingMinutes: parseFloat(chargeableMinutes.toFixed(1)), waitingFee: fee };
+  };
+
   const startTrip = async () => {
     if (!activeRide) return;
-    await base44.entities.Ride.update(activeRide.id, { status: "in_progress" });
-    setActiveRide({ ...activeRide, status: "in_progress" });
+    const tripStartedAt = new Date().toISOString();
+    const { waitingMinutes, waitingFee } = calculateWaitingFee();
+    await base44.entities.Ride.update(activeRide.id, { 
+      status: "in_progress",
+      trip_started_at: tripStartedAt,
+      waiting_time_minutes: waitingMinutes,
+      waiting_fee: waitingFee
+    });
+    setActiveRide({ 
+      ...activeRide, 
+      status: "in_progress", 
+      trip_started_at: tripStartedAt,
+      waiting_time_minutes: waitingMinutes,
+      waiting_fee: waitingFee
+    });
   };
 
   const endTrip = async () => {
     if (!activeRide) return;
-    const fare = activeRide.fare_estimate;
-    await base44.entities.Ride.update(activeRide.id, { status: "completed", final_fare: fare });
+    const baseFare = activeRide.fare_estimate || 0;
+    const waitingFee = activeRide.waiting_fee || 0;
+    const totalFare = parseFloat((baseFare + waitingFee).toFixed(2));
+    await base44.entities.Ride.update(activeRide.id, { 
+      status: "completed", 
+      final_fare: totalFare,
+      waiting_fee: waitingFee
+    });
     await base44.entities.Earning.create({
       driver_id: user.id,
       ride_id: activeRide.id,
-      amount: fare,
-      commission: fare * 0.15,
-      net_amount: fare * 0.85,
+      amount: totalFare,
+      commission: totalFare * 0.15,
+      net_amount: totalFare * 0.85,
       status: "available"
     });
-    setCompletedRide(activeRide);
+    setCompletedRide({ ...activeRide, final_fare: totalFare, waiting_fee: waitingFee });
     setActiveRide(null);
     setShowRating(true);
   };
@@ -330,24 +376,45 @@ export default function DriverHome() {
           <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-xs text-ghana-green font-medium uppercase">
-                  {activeRide.status === "driver_arriving" ? "Navigate to Pickup" : "Trip in Progress"}
+                  {activeRide.status === "driver_arriving" 
+                    ? (activeRide.driver_arrived_at ? "Waiting for Rider" : "Navigate to Pickup") 
+                    : "Trip in Progress"}
                 </p>
                 <h3 className="font-heading font-bold">{activeRide.rider_name}</h3>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-2 justify-end">
-                  <p className="font-heading font-bold text-primary">GH₵{activeRide.fare_estimate}</p>
+                  <p className="font-heading font-bold text-primary">
+                    GH₵{activeRide.waiting_fee 
+                      ? (activeRide.fare_estimate + activeRide.waiting_fee).toFixed(2) 
+                      : activeRide.fare_estimate}
+                  </p>
                   {activeRide.surge_multiplier && activeRide.surge_multiplier > 1 && (
                     <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-lg font-bold">
                       {activeRide.surge_multiplier}x
                     </span>
                   )}
                 </div>
-                {eta && (
+                {activeRide.waiting_fee > 0 && (
+                  <p className="text-[10px] text-destructive mt-0.5">incl. GH₵{activeRide.waiting_fee.toFixed(2)} wait fee</p>
+                )}
+                {eta && !activeRide.driver_arrived_at && (
                   <p className="text-xs text-muted-foreground mt-0.5">{eta} min ETA</p>
                 )}
               </div>
             </div>
+
+          {/* Waiting Timer - shows when driver has arrived but trip hasn't started */}
+          {activeRide.status === "driver_arriving" && activeRide.driver_arrived_at && (
+            <div className="mb-3">
+              <WaitingTimer 
+                arrivedAt={activeRide.driver_arrived_at} 
+                category={activeRide.category}
+                isDriver={true}
+              />
+            </div>
+          )}
+
           <div className="space-y-2 mb-3">
             <div className="flex items-center gap-2">
               <Navigation className="w-4 h-4 text-ghana-green" />
@@ -381,9 +448,15 @@ export default function DriverHome() {
               )}
             </Button>
             {activeRide.status === "driver_arriving" ? (
-              <Button onClick={startTrip} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
-                Start Trip
-              </Button>
+              activeRide.driver_arrived_at ? (
+                <Button onClick={startTrip} className="flex-1 bg-ghana-green hover:bg-ghana-green/90 text-white">
+                  <Check className="w-4 h-4 mr-2" /> Start Trip
+                </Button>
+              ) : (
+                <Button onClick={arrivedAtPickup} className="flex-1 bg-amber-500 hover:bg-amber-500/90 text-white">
+                  <MapPinCheck className="w-4 h-4 mr-2" /> I've Arrived
+                </Button>
+              )
             ) : (
               <Button onClick={endTrip} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
                 End Trip

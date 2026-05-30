@@ -8,6 +8,9 @@ export const DRIVER_LOGO_URL = "https://media.base44.com/images/public/6a0b47e69
  * 10 + (16.25 * 3.80) + (52 * 0.40) = 10 + 61.75 + 20.8 = GH₵92.55 (upper range)
  */
 
+// Free waiting time before charges begin (in minutes)
+export const FREE_WAITING_MINUTES = 3;
+
 export const RIDE_CATEGORIES = [
   {
     id: "standard",
@@ -17,6 +20,7 @@ export const RIDE_CATEGORIES = [
     basePrice: 10.00,
     pricePerKm: 3.80,
     pricePerMin: 0.40,
+    waitingFeePerMin: 0.50,
     minFare: 15.00,
     seats: 4
   },
@@ -28,6 +32,7 @@ export const RIDE_CATEGORIES = [
     basePrice: 15.00,
     pricePerKm: 4.60,
     pricePerMin: 0.60,
+    waitingFeePerMin: 0.80,
     minFare: 25.00,
     seats: 4
   },
@@ -39,6 +44,7 @@ export const RIDE_CATEGORIES = [
     basePrice: 12.00,
     pricePerKm: 4.20,
     pricePerMin: 0.50,
+    waitingFeePerMin: 0.60,
     minFare: 20.00,
     seats: 4
   },
@@ -50,6 +56,7 @@ export const RIDE_CATEGORIES = [
     basePrice: 25.00,
     pricePerKm: 6.00,
     pricePerMin: 1.00,
+    waitingFeePerMin: 1.50,
     minFare: 40.00,
     seats: 4
   },
@@ -61,6 +68,7 @@ export const RIDE_CATEGORIES = [
     basePrice: 5.00,
     pricePerKm: 1.50,
     pricePerMin: 0.30,
+    waitingFeePerMin: 0.30,
     minFare: 8.00,
     seats: 1
   },
@@ -72,6 +80,7 @@ export const RIDE_CATEGORIES = [
     basePrice: 15.00,
     pricePerKm: 2.00,
     pricePerMin: 0.50,
+    waitingFeePerMin: 0.50,
     minFare: 20.00,
     seats: 0
   }

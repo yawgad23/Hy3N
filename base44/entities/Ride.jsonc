@@ -152,6 +152,29 @@
       },
       "default": []
     },
+    "driver_arrived_at": {
+      "type": "string",
+      "description": "ISO datetime when driver arrived at pickup and pressed 'I have Arrived'"
+    },
+    "trip_started_at": {
+      "type": "string",
+      "description": "ISO datetime when the trip actually started (rider got in)"
+    },
+    "waiting_time_minutes": {
+      "type": "number",
+      "default": 0,
+      "description": "Total waiting time in minutes (after free grace period)"
+    },
+    "waiting_fee": {
+      "type": "number",
+      "default": 0,
+      "description": "Waiting fee charged in GHS (waiting_time_minutes * per-minute rate)"
+    },
+    "free_waiting_minutes": {
+      "type": "number",
+      "default": 3,
+      "description": "Free waiting grace period in minutes before charges begin"
+    },
     "safety_check_enabled": {
       "type": "boolean",
       "default": true,

@@ -25,6 +25,7 @@ export default function TipModal({ isOpen, onClose, rideId, baseFare, onSuccess 
 
     setLoading(true);
     try {
+      // baseFare already includes waiting fee (final_fare = fare_estimate + waiting_fee)
       await base44.entities.Ride.update(rideId, {
         tip_amount: tipAmount,
         final_fare: baseFare + tipAmount

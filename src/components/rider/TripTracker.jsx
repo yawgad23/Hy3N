@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2 } from "lucide-react";
+import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -12,11 +12,13 @@ import TipModal from "@/components/rider/TipModal";
 import { useDriverTracking } from "@/hooks/useDriverTracking";
 import { showNotification } from "@/lib/notificationService";
 import SOSButton from "@/components/shared/SOSButton";
+import WaitingTimer from "@/components/shared/WaitingTimer";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
   matched: "Driver assigned!",
   driver_arriving: "Driver is on the way",
+  driver_arrived: "Driver is waiting at pickup",
   in_progress: "Trip in progress",
   completed: "Trip completed",
   cancelled: "Trip cancelled"
@@ -98,6 +100,15 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
           showNotification(
             "Driver is Arriving!",
             "Your driver will arrive soon. Be ready!",
+            "info"
+          );
+        }
+        
+        // Driver arrived at pickup - waiting timer starts
+        if (event.data?.driver_arrived_at && !currentRide?.driver_arrived_at) {
+          showNotification(
+            "Driver Has Arrived!",
+            "Your driver is waiting at the pickup point. Please hurry - waiting fees apply after 3 minutes.",
             "info"
           );
         }
@@ -306,7 +317,9 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                   </div>
                   <div>
                     <p className="text-xs text-ghana-green font-bold uppercase tracking-wider">
-                      {status === "driver_arriving" ? "Driver Arriving" : status === "matched" ? "Driver Assigned" : "On Trip"}
+                      {status === "driver_arriving" 
+                        ? (currentRide.driver_arrived_at ? "Driver Waiting at Pickup" : "Driver Arriving")
+                        : status === "matched" ? "Driver Assigned" : "On Trip"}
                     </p>
                     <p className="font-heading font-bold text-lg">{currentRide.driver_name || "Your Driver"}</p>
                   </div>
@@ -323,6 +336,17 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                 <SOSButton role="rider" rideId={currentRide?.id} location={userLocation} />
               </div>
             </div>
+
+            {/* Waiting Timer - shows when driver has arrived at pickup */}
+            {currentRide.driver_arrived_at && status === "driver_arriving" && (
+              <div className="mb-4">
+                <WaitingTimer 
+                  arrivedAt={currentRide.driver_arrived_at} 
+                  category={currentRide.category}
+                  isDriver={false}
+                />
+              </div>
+            )}
 
             {/* Driver Details */}
             <div className="flex items-center gap-3 p-3 bg-secondary rounded-xl mb-4">
@@ -353,7 +377,14 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-heading font-bold text-primary text-lg">GH₵{currentRide.fare_estimate}</p>
+                <p className="font-heading font-bold text-primary text-lg">
+                  GH₵{currentRide.waiting_fee 
+                    ? (currentRide.fare_estimate + currentRide.waiting_fee).toFixed(2)
+                    : currentRide.fare_estimate}
+                </p>
+                {currentRide.waiting_fee > 0 && (
+                  <p className="text-[10px] text-destructive">+GH₵{currentRide.waiting_fee.toFixed(2)} wait</p>
+                )}
                 {splitFare && (
                   <p className="text-xs text-ghana-green">÷{splitFare.totalPeople}</p>
                 )}
@@ -425,14 +456,19 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
           <div className="text-center py-6">
             <Navigation className="w-12 h-12 text-ghana-green mx-auto mb-3" />
             <h3 className="font-heading font-bold text-lg">Trip Complete!</h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Base Fare: GH₵{currentRide.fare_estimate || 0}
-              {currentRide.tip_amount > 0 && (
-                <span className="text-ghana-green"> • Tip: GH₵{currentRide.tip_amount}</span>
+            <div className="text-muted-foreground text-sm mt-2 space-y-1">
+              <p>Base Fare: GH₵{currentRide.fare_estimate || 0}</p>
+              {currentRide.waiting_fee > 0 && (
+                <p className="text-destructive">
+                  Waiting Fee ({currentRide.waiting_time_minutes?.toFixed(0) || 0} min): +GH₵{currentRide.waiting_fee?.toFixed(2)}
+                </p>
               )}
-            </p>
-            <p className="font-heading font-bold text-primary text-xl mt-1">
-              Total: GH₵{(currentRide.final_fare || currentRide.fare_estimate || 0) + (currentRide.tip_amount || 0)}
+              {currentRide.tip_amount > 0 && (
+                <p className="text-ghana-green">Tip: +GH₵{currentRide.tip_amount}</p>
+              )}
+            </div>
+            <p className="font-heading font-bold text-primary text-xl mt-2">
+              Total: GH₵{((currentRide.final_fare || currentRide.fare_estimate || 0) + (currentRide.tip_amount || 0)).toFixed(2)}
             </p>
 
             {!paid && (
@@ -443,7 +479,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                     className="w-full bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-semibold gap-2"
                   >
                     <Smartphone className="w-4 h-4" />
-                    Pay GH₵{currentRide.final_fare || currentRide.fare_estimate} via MoMo
+                    Pay GH₵{(currentRide.final_fare || currentRide.fare_estimate || 0).toFixed(2)} via MoMo
                   </Button>
                 )}
                 {currentRide.payment_method === "card" && (
@@ -452,7 +488,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-heading font-semibold gap-2"
                   >
                     <CreditCard className="w-4 h-4" />
-                    Pay GH₵{currentRide.final_fare || currentRide.fare_estimate} with Card
+                    Pay GH₵{(currentRide.final_fare || currentRide.fare_estimate || 0).toFixed(2)} with Card
                   </Button>
                 )}
                 {currentRide.payment_method === "wallet" && (
