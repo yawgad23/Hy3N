@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminRides from "@/components/admin/AdminRides";
@@ -12,7 +12,7 @@ import AdminCancellations from "@/components/admin/AdminCancellations";
 import AdminPromos from "@/components/admin/AdminPromos";
 import AdminRideReports from "@/components/admin/AdminRideReports";
 import { Shield } from "lucide-react";
-import { useEffect } from "react";
+
 import { base44 } from "@/api/base44Client";
 
 export default function AdminPortal() {
