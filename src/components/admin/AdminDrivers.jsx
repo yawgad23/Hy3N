@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCw, Search, CheckCircle, XCircle, Clock } from "lucide-react";
+import { RefreshCw, Search, CheckCircle, XCircle, Clock, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -75,6 +75,7 @@ export default function AdminDrivers() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Contact</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Vehicle</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Plate</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">MoMo</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Rides</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Rating</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Status</th>
@@ -102,6 +103,14 @@ export default function AdminDrivers() {
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{d.vehicle_year} {d.vehicle_make} {d.vehicle_model} {d.vehicle_color ? `(${d.vehicle_color})` : ""}</td>
                   <td className="px-4 py-3 font-mono text-xs font-bold">{d.license_plate || "—"}</td>
+                  <td className="px-4 py-3">
+                    {d.momo_number ? (
+                      <div className="flex items-center gap-1">
+                        <Smartphone className="w-3 h-3 text-yellow-500" />
+                        <span className="text-xs">{d.momo_number}</span>
+                      </div>
+                    ) : <span className="text-xs text-muted-foreground">Not set</span>}
+                  </td>
                   <td className="px-4 py-3 font-medium">{d.total_rides || 0}</td>
                   <td className="px-4 py-3 text-primary font-medium">★ {(d.rating || 5).toFixed(1)}</td>
                   <td className="px-4 py-3">
@@ -129,7 +138,7 @@ export default function AdminDrivers() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="text-center py-12 text-muted-foreground text-sm">No drivers found</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-muted-foreground text-sm">No drivers found</td></tr>
               )}
             </tbody>
           </table>

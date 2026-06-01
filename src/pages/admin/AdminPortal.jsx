@@ -6,11 +6,14 @@ import AdminDrivers from "@/components/admin/AdminDrivers";
 import AdminRiders from "@/components/admin/AdminRiders";
 import AdminSOS from "@/components/admin/AdminSOS";
 import AdminWithdrawals from "@/components/admin/AdminWithdrawals";
+import AdminLiveMap from "@/components/admin/AdminLiveMap";
+import AdminPayments from "@/components/admin/AdminPayments";
+import AdminCancellations from "@/components/admin/AdminCancellations";
+import AdminPromos from "@/components/admin/AdminPromos";
+import AdminRideReports from "@/components/admin/AdminRideReports";
 import { Shield } from "lucide-react";
 import { useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-
-const SECTIONS = ["overview", "rides", "drivers", "riders", "sos", "withdrawals"];
 
 export default function AdminPortal() {
   const [section, setSection] = useState("overview");
@@ -40,11 +43,16 @@ export default function AdminPortal() {
       <AdminSidebar active={section} onNavigate={setSection} />
       <main className="flex-1 overflow-y-auto">
         {section === "overview" && <AdminOverview onNavigate={setSection} />}
+        {section === "live-map" && <AdminLiveMap />}
         {section === "rides" && <AdminRides />}
         {section === "drivers" && <AdminDrivers />}
         {section === "riders" && <AdminRiders />}
+        {section === "payments" && <AdminPayments />}
+        {section === "cancellations" && <AdminCancellations />}
+        {section === "promos" && <AdminPromos />}
         {section === "sos" && <AdminSOS />}
         {section === "withdrawals" && <AdminWithdrawals />}
+        {section === "reports" && <AdminRideReports />}
       </main>
     </div>
   );

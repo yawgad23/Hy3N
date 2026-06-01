@@ -1,14 +1,19 @@
-import { LayoutDashboard, Car, UserCheck, Users, AlertTriangle, Banknote, LogOut } from "lucide-react";
+import { LayoutDashboard, Car, UserCheck, Users, AlertTriangle, Banknote, LogOut, Map, CreditCard, XCircle, Tag, FileText } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "live-map", label: "Live Map", icon: Map },
   { id: "rides", label: "Rides", icon: Car },
   { id: "drivers", label: "Drivers", icon: UserCheck },
   { id: "riders", label: "Riders", icon: Users },
+  { id: "payments", label: "Payments & MoMo", icon: CreditCard },
+  { id: "cancellations", label: "Cancellations", icon: XCircle },
+  { id: "promos", label: "Promo Codes", icon: Tag },
   { id: "sos", label: "SOS Incidents", icon: AlertTriangle },
   { id: "withdrawals", label: "Withdrawals", icon: Banknote },
+  { id: "reports", label: "Ride Reports", icon: FileText },
 ];
 
 export default function AdminSidebar({ active, onNavigate }) {
@@ -19,7 +24,7 @@ export default function AdminSidebar({ active, onNavigate }) {
         <p className="text-xs text-muted-foreground mt-1 font-medium tracking-wide uppercase">Admin Portal</p>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {NAV.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;
           return (
