@@ -6,6 +6,7 @@ import { RIDE_CATEGORIES, PAYMENT_METHODS } from "@/lib/constants";
 import RideCategoryCard from "./RideCategoryCard";
 import SplitFareModal from "./SplitFareModal";
 import CalendarPicker from "./CalendarPicker";
+import PromoCodeInput, { calculateDiscount } from "./PromoCodeInput";
 import { format, addMinutes } from "date-fns";
 import { base44 } from "@/api/base44Client";
 
@@ -38,6 +39,7 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [surge, setSurge] = useState({ multiplier: 1.0, is_surge: false });
+  const [appliedPromo, setAppliedPromo] = useState(null);
   const [surgeLoading, setSurgeLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -96,7 +98,9 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
   };
   
   const fare = calculateFare();
-  const yourShare = splitData ? splitData.perPersonFare : fare;
+  const promoDiscount = calculateDiscount(fare, appliedPromo);
+  const fareAfterPromo = Math.max(fare - promoDiscount, 0);
+  const yourShare = splitData ? splitData.perPersonFare : fareAfterPromo;
 
   const handleSplitConfirm = (data) => {
     setSplitData(data);
@@ -315,6 +319,15 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
           )}
         </div>
 
+        {/* Promo Code */}
+        <div className="mb-4">
+          <PromoCodeInput
+            onApply={setAppliedPromo}
+            appliedPromo={appliedPromo}
+            onRemove={() => setAppliedPromo(null)}
+          />
+        </div>
+
         {/* Total Fare Display */}
         <div className="mb-4">
           {surge.is_surge && (
@@ -323,6 +336,13 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
                 <TrendingUp className="w-4 h-4 text-destructive" />
                 <p className="text-xs text-destructive font-medium">Surge Pricing Active ({surge.multiplier}x)</p>
               </div>
+            </div>
+          )}
+
+          {promoDiscount > 0 && (
+            <div className="flex items-center justify-between p-3 bg-ghana-green/10 border border-ghana-green/30 rounded-xl mb-3">
+              <p className="text-xs text-ghana-green font-medium">Promo applied: -{appliedPromo.code}</p>
+              <p className="text-sm font-bold text-ghana-green">-GH₵{promoDiscount.toFixed(2)}</p>
             </div>
           )}
           
@@ -360,13 +380,15 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
             onBook({
               category: selectedCategory.id,
               payment_method: selectedPayment,
-              fare_estimate: parseFloat(fare.toFixed(2)),
+              fare_estimate: parseFloat(fareAfterPromo.toFixed(2)),
               distance_km: parseFloat(distance.toFixed(1)),
               destination,
               ride_type: isScheduled ? "scheduled" : "on_demand",
               scheduled_for: isScheduled ? scheduledFor.toISOString() : null,
               split_fare: splitData || null,
               surge_multiplier: surge.multiplier,
+              promo_code: appliedPromo?.code || null,
+              promo_discount: promoDiscount > 0 ? parseFloat(promoDiscount.toFixed(2)) : 0,
             });
           }}
           className="w-full h-14 bg-ghana-green hover:bg-ghana-green/90 text-white font-heading font-bold text-lg rounded-xl"

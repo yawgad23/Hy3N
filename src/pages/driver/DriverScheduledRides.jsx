@@ -65,7 +65,7 @@ export default function DriverScheduledRides() {
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-card border-b border-border px-4 py-4 flex items-center gap-3">
-        <button onClick={() => navigate("/driver")} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
+        <button onClick={() => navigate("/driver-app")} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <div>

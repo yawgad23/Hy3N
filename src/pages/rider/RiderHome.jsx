@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Search, MapPin, Bell, CheckCircle2, Clock } from "lucide-react";
+import { Search, MapPin, Bell, CheckCircle2, Clock, Home, Briefcase, Star, Plus } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
@@ -33,6 +33,7 @@ export default function RiderHome() {
   const [splitFare, setSplitFare] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedPlaces, setSavedPlaces] = useState([]);
   const { subscribeToPush } = usePushNotifications();
 
 
@@ -79,6 +80,17 @@ export default function RiderHome() {
             },
             { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
           );
+        }
+        // Load saved places
+        if (me?.id) {
+          try {
+            const profiles = await base44.entities.RiderProfile.filter({ user_id: me.id });
+            if (profiles.length > 0 && profiles[0].saved_locations) {
+              setSavedPlaces(profiles[0].saved_locations);
+            }
+          } catch (err) {
+            console.warn("Failed to load saved places:", err);
+          }
         }
         const granted = await requestNotificationPermission();
         if (granted && me?.id) subscribeToPush(me.id);
@@ -148,6 +160,21 @@ export default function RiderHome() {
   if (showOnboarding) {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
+
+  // Helper: get saved place by label
+  const getSavedPlace = (label) => savedPlaces.find(p => p.name.toLowerCase() === label.toLowerCase());
+  const homePlace = getSavedPlace("home");
+  const workPlace = getSavedPlace("work");
+
+  // Handle quick-tap on saved place
+  const handleQuickPlace = (place) => {
+    if (place && place.lat && place.lng) {
+      setDestination({ name: place.address || place.name, lat: place.lat, lng: place.lng });
+    } else {
+      // No saved place — open search to set it
+      setSearchOpen(true);
+    }
+  };
 
   const handleBookRide = async (bookingData) => {
     const isScheduled = bookingData.ride_type === "scheduled";
@@ -280,10 +307,11 @@ export default function RiderHome() {
         </div>
       )}
 
-      {/* Where To? Search Bar - Uber/Bolt Style */}
+      {/* Where To? Search Bar - Uber/Bolt Style with Saved Places */}
       {!destination && !activeRide && (
         <div className="absolute bottom-0 left-0 right-0 z-20" style={{paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)'}}>
           <div className="bg-card border-t border-border rounded-t-3xl p-4 shadow-2xl">
+            {/* Where to? Button */}
             <button
               onClick={() => setSearchOpen(true)}
               className="w-full bg-secondary hover:bg-secondary/80 rounded-2xl p-4 flex items-center gap-4 transition-colors"
@@ -298,19 +326,66 @@ export default function RiderHome() {
               <MapPin className="w-6 h-6 text-muted-foreground" />
             </button>
             
-            {/* Quick Actions */}
-            <div className="flex gap-3 mt-4 overflow-x-auto">
-              <button className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Home</span>
+            {/* Saved Places Quick Actions - Uber/Bolt Style */}
+            <div className="flex gap-3 mt-4 overflow-x-auto pb-1 scrollbar-hide">
+              {/* Home Button */}
+              <button 
+                onClick={() => handleQuickPlace(homePlace)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap min-w-fit"
+              >
+                <Home className="w-4 h-4 text-primary" />
+                <div className="text-left">
+                  <span className="text-sm font-semibold block">Home</span>
+                  {homePlace ? (
+                    <span className="text-[10px] text-muted-foreground block truncate max-w-[100px]">{homePlace.address}</span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground block">Set location</span>
+                  )}
+                </div>
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Work</span>
+
+              {/* Work Button */}
+              <button 
+                onClick={() => handleQuickPlace(workPlace)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap min-w-fit"
+              >
+                <Briefcase className="w-4 h-4 text-primary" />
+                <div className="text-left">
+                  <span className="text-sm font-semibold block">Work</span>
+                  {workPlace ? (
+                    <span className="text-[10px] text-muted-foreground block truncate max-w-[100px]">{workPlace.address}</span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground block">Set location</span>
+                  )}
+                </div>
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Recent</span>
+
+              {/* Other saved places */}
+              {savedPlaces
+                .filter(p => p.name.toLowerCase() !== "home" && p.name.toLowerCase() !== "work")
+                .slice(0, 3)
+                .map((place, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleQuickPlace(place)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-secondary rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap min-w-fit"
+                  >
+                    <Star className="w-4 h-4 text-primary" />
+                    <div className="text-left">
+                      <span className="text-sm font-semibold block">{place.name}</span>
+                      <span className="text-[10px] text-muted-foreground block truncate max-w-[100px]">{place.address}</span>
+                    </div>
+                  </button>
+                ))
+              }
+
+              {/* Add place button */}
+              <button 
+                onClick={() => navigate("/profile")}
+                className="flex items-center gap-2 px-4 py-2.5 bg-secondary/50 border border-dashed border-border rounded-xl hover:bg-secondary/80 transition-colors whitespace-nowrap min-w-fit"
+              >
+                <Plus className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Add</span>
               </button>
             </div>
           </div>

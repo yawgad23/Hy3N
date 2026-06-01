@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Search, X, Clock, Plus, Trash2, ArrowUpDown } from "lucide-react";
+import { MapPin, Search, X, Clock, Plus, Trash2, ArrowUpDown, Home, Briefcase, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,25 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
   const [loading, setLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
   const [destination, setDestination] = useState(null);
+  const [savedPlaces, setSavedPlaces] = useState([]);
+
+  // Load saved places from profile
+  useEffect(() => {
+    if (isOpen) {
+      base44.auth.me().then(async (me) => {
+        if (me) {
+          try {
+            const profiles = await base44.entities.RiderProfile.filter({ user_id: me.id });
+            if (profiles.length > 0 && profiles[0].saved_locations) {
+              setSavedPlaces(profiles[0].saved_locations);
+            }
+          } catch (err) {
+            console.warn("Failed to load saved places");
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 
   // Load search history from localStorage
   useEffect(() => {
@@ -304,6 +323,34 @@ export default function DestinationSearch({ isOpen, onClose, onSelect }) {
 
             {!loading && suggestions.length === 0 && (
               <>
+                {/* Saved Places - Home/Work (Uber/Bolt style) */}
+                {!query && savedPlaces.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">Saved Places</p>
+                    <div className="space-y-1">
+                      {savedPlaces.filter(p => p.lat && p.lng).map((place, i) => {
+                        const lower = place.name.toLowerCase();
+                        const Icon = lower === "home" ? Home : lower === "work" ? Briefcase : Star;
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => handleSelectLocation(place)}
+                            className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors"
+                          >
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="text-left flex-1">
+                              <p className="font-medium text-sm text-foreground">{place.name}</p>
+                              <p className="text-xs text-muted-foreground">{place.address}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Search History */}
                 {!query && searchHistory.length > 0 && (
                   <div className="mb-6">

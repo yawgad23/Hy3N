@@ -54,7 +54,7 @@ export default function DriverSupport() {
   return (
     <div className="min-h-screen bg-background">
       <div className="p-4 pt-6 flex items-center gap-3 border-b border-border">
-        <button onClick={() => navigate("/driver/profile")}>
+        <button onClick={() => navigate("/driver-app/profile")}>
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <Logo size="sm" />

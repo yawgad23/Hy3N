@@ -175,6 +175,24 @@
       "default": 3,
       "description": "Free waiting grace period in minutes before charges begin"
     },
+    "promo_code": {
+      "type": "string",
+      "description": "Applied promo/discount code"
+    },
+    "promo_discount": {
+      "type": "number",
+      "default": 0,
+      "description": "Discount amount applied from promo code in GHS"
+    },
+    "cancel_reason": {
+      "type": "string",
+      "description": "Reason for ride cancellation selected by rider"
+    },
+    "cancellation_fee": {
+      "type": "number",
+      "default": 0,
+      "description": "Fee charged to rider for cancelling after driver was assigned"
+    },
     "safety_check_enabled": {
       "type": "boolean",
       "default": true,

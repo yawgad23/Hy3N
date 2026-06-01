@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, AlertTriangle } from "lucide-react";
+import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, AlertTriangle, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -13,6 +13,8 @@ import { useDriverTracking } from "@/hooks/useDriverTracking";
 import { showNotification } from "@/lib/notificationService";
 import SOSButton from "@/components/shared/SOSButton";
 import WaitingTimer from "@/components/shared/WaitingTimer";
+import CancelRideModal from "@/components/rider/CancelRideModal";
+import TripReceipt from "@/components/rider/TripReceipt";
 
 const STATUS_LABELS = {
   requested: "Finding your driver...",
@@ -40,6 +42,8 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [unreadCount, setUnreadCount] = useState(0);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
@@ -185,20 +189,41 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   };
 
   const handleCancel = async () => {
-    try {
-      if (currentRide.id.startsWith("optimistic-")) {
-        // Ride hasn't been created on server yet, just close the sheet
+    if (currentRide.id.startsWith("optimistic-")) {
+      onClose();
+      return;
+    }
+    // For requested status, cancel immediately without reason
+    if (currentRide.status === "requested") {
+      try {
+        toast.loading("Cancelling request...");
+        await base44.entities.Ride.update(currentRide.id, { status: "cancelled" });
+        toast.dismiss();
+        toast.success("Ride cancelled successfully");
         onClose();
-        return;
+      } catch (error) {
+        toast.dismiss();
+        toast.error("Failed to cancel ride. Please try again.");
       }
-      
-      toast.loading("Cancelling request...");
-      await base44.entities.Ride.update(currentRide.id, { status: "cancelled" });
+      return;
+    }
+    // For matched/driver_arriving, show cancel modal with reason
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = async (reason, fee) => {
+    try {
+      toast.loading("Cancelling ride...");
+      await base44.entities.Ride.update(currentRide.id, {
+        status: "cancelled",
+        cancel_reason: reason,
+        cancellation_fee: fee
+      });
       toast.dismiss();
-      toast.success("Ride cancelled successfully");
+      toast.success(fee > 0 ? `Ride cancelled. Fee: GH₵${fee.toFixed(2)}` : "Ride cancelled successfully");
+      setShowCancelModal(false);
       onClose();
     } catch (error) {
-      console.error("Cancellation error:", error);
       toast.dismiss();
       toast.error("Failed to cancel ride. Please try again.");
     }
@@ -449,6 +474,13 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                 Cancel Ride
               </Button>
             )}
+
+            <CancelRideModal
+              isOpen={showCancelModal}
+              onClose={() => setShowCancelModal(false)}
+              onConfirm={handleConfirmCancel}
+              rideStatus={status}
+            />
           </div>
         )}
 
@@ -523,6 +555,13 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
                 >
                   <Star className="w-4 h-4 mr-2" /> Rate Your Driver
                 </Button>
+                <Button
+                  onClick={() => setShowReceipt(true)}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
+                  <Receipt className="w-4 h-4" /> View Receipt
+                </Button>
                 <button onClick={onClose} className="w-full text-sm text-muted-foreground py-2">
                   Skip
                 </button>
@@ -584,6 +623,14 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
         }));
       }}
     />
+
+    {showReceipt && (
+      <TripReceipt
+        ride={currentRide}
+        onClose={() => setShowReceipt(false)}
+        onRate={() => { setShowReceipt(false); setShowRating(true); }}
+      />
+    )}
     </>
   );
 }
