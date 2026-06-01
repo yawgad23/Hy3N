@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import React from 'react';
+import React, { useState } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -16,6 +16,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
 import { base44 } from '@/api/base44Client';
+import RiderSplashScreen from '@/components/shared/RiderSplashScreen';
 
 import RiderHome from '@/pages/rider/RiderHome';
 import RiderHistory from '@/pages/rider/RiderHistory';
@@ -30,11 +31,18 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
+  const [splashDone, setSplashDone] = useState(false);
 
+  // Always show splash screen first (Uber/Bolt style)
+  if (!splashDone) {
+    return <RiderSplashScreen onComplete={() => setSplashDone(true)} />;
+  }
+
+  // After splash, show loading spinner if auth is still checking
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex items-center justify-center bg-black">
+        <div className="w-8 h-8 border-4 border-[#D4AF37]/30 border-t-[#D4AF37] rounded-full animate-spin"></div>
       </div>
     );
   }
