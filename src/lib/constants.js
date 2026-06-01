@@ -2,10 +2,10 @@ export const LOGO_URL = "https://media.base44.com/images/public/6a0b47e6908611c9
 export const DRIVER_LOGO_URL = "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png";
 
 /**
- * Uber-like Pricing Calculation Reference:
- * For a 16.25km, 52min trip targeting the 80-90 GHS range:
+ * Uber-like Pricing Calculation Reference (Updated June 2026 - 10% fare increase):
+ * For a 16.25km, 52min trip:
  * Formula: Base + (Dist * PerKm) + (Time * PerMin)
- * 10 + (16.25 * 3.80) + (52 * 0.40) = 10 + 61.75 + 20.8 = GH₵92.55 (upper range)
+ * 11 + (16.25 * 4.18) + (52 * 0.44) = 11 + 67.93 + 22.88 = GH₵101.81
  */
 
 // Free waiting time before charges begin (in minutes)
@@ -17,11 +17,11 @@ export const RIDE_CATEGORIES = [
     name: "Standard",
     description: "Affordable everyday rides",
     icon: "Car",
-    basePrice: 10.00,
-    pricePerKm: 3.80,
-    pricePerMin: 0.40,
-    waitingFeePerMin: 0.50,
-    minFare: 15.00,
+    basePrice: 11.00,
+    pricePerKm: 4.18,
+    pricePerMin: 0.44,
+    waitingFeePerMin: 0.55,
+    minFare: 16.50,
     seats: 4
   },
   {
@@ -29,11 +29,11 @@ export const RIDE_CATEGORIES = [
     name: "Comfort",
     description: "Comfortable rides with extra amenities",
     icon: "Star",
-    basePrice: 15.00,
-    pricePerKm: 4.60,
-    pricePerMin: 0.60,
-    waitingFeePerMin: 0.80,
-    minFare: 25.00,
+    basePrice: 16.50,
+    pricePerKm: 5.06,
+    pricePerMin: 0.66,
+    waitingFeePerMin: 0.88,
+    minFare: 27.50,
     seats: 4
   },
   {
@@ -41,11 +41,11 @@ export const RIDE_CATEGORIES = [
     name: "Kantanka",
     description: "Proudly Ghanaian-made mini SUVs",
     icon: "Car",
-    basePrice: 12.00,
-    pricePerKm: 4.20,
-    pricePerMin: 0.50,
-    waitingFeePerMin: 0.60,
-    minFare: 20.00,
+    basePrice: 13.20,
+    pricePerKm: 4.62,
+    pricePerMin: 0.55,
+    waitingFeePerMin: 0.66,
+    minFare: 22.00,
     seats: 4
   },
   {
@@ -53,11 +53,11 @@ export const RIDE_CATEGORIES = [
     name: "Executive",
     description: "Luxury travel for special occasions",
     icon: "ShieldCheck",
-    basePrice: 25.00,
-    pricePerKm: 6.00,
-    pricePerMin: 1.00,
-    waitingFeePerMin: 1.50,
-    minFare: 40.00,
+    basePrice: 27.50,
+    pricePerKm: 6.60,
+    pricePerMin: 1.10,
+    waitingFeePerMin: 1.65,
+    minFare: 44.00,
     seats: 4
   },
   {
@@ -65,11 +65,11 @@ export const RIDE_CATEGORIES = [
     name: "Okada",
     description: "Fast bike rides to beat traffic",
     icon: "Bike",
-    basePrice: 5.00,
-    pricePerKm: 1.50,
-    pricePerMin: 0.30,
-    waitingFeePerMin: 0.30,
-    minFare: 8.00,
+    basePrice: 5.50,
+    pricePerKm: 1.65,
+    pricePerMin: 0.33,
+    waitingFeePerMin: 0.33,
+    minFare: 8.80,
     seats: 1
   },
   {
@@ -77,11 +77,11 @@ export const RIDE_CATEGORIES = [
     name: "Express Delivery",
     description: "Fast package delivery across the city",
     icon: "Package",
-    basePrice: 15.00,
-    pricePerKm: 2.00,
-    pricePerMin: 0.50,
-    waitingFeePerMin: 0.50,
-    minFare: 20.00,
+    basePrice: 16.50,
+    pricePerKm: 2.20,
+    pricePerMin: 0.55,
+    waitingFeePerMin: 0.55,
+    minFare: 22.00,
     seats: 0
   }
 ];
