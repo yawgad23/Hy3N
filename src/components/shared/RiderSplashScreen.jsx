@@ -40,7 +40,7 @@ export default function RiderSplashScreen({ onComplete }) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 1 }}
           >
-            <div className="w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.12)_0%,transparent_70%)]" />
+            <div className="w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.08)_0%,transparent_70%)]" />
           </motion.div>
 
           {/* Logo - Bolt/Uber style: centered, clean, animated */}
@@ -50,18 +50,22 @@ export default function RiderSplashScreen({ onComplete }) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ 
               duration: 0.8, 
-              ease: [0.16, 1, 0.3, 1] // Spring-like ease
+              ease: [0.16, 1, 0.3, 1]
             }}
           >
-            {/* Main Logo Image */}
-            <motion.img
-              src={LOGO_URL}
-              alt="HY3N"
-              className="w-48 h-48 object-contain drop-shadow-2xl"
+            {/* Logo container - clips white edges, rounded to match logo shape */}
+            <motion.div
+              className="w-52 h-52 rounded-[2.5rem] overflow-hidden bg-black"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            />
+            >
+              <img
+                src={LOGO_URL}
+                alt="HY3N"
+                className="w-full h-full object-cover scale-[1.15]"
+              />
+            </motion.div>
           </motion.div>
 
           {/* Bottom loading indicator - Uber/Bolt style thin line */}
