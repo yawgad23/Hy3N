@@ -37,12 +37,38 @@ export default function RiderHome() {
 
 
 
+  // Get location immediately on mount (before auth check)
   useEffect(() => {
+    if (navigator.geolocation) {
+      // Get current position IMMEDIATELY (fast, low accuracy first)
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLocation([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (err) => {
+          console.warn("Quick geolocation error:", err);
+        },
+        { enableHighAccuracy: false, maximumAge: 60000, timeout: 5000 }
+      );
+      // Then get high-accuracy position
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLocation([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (err) => {
+          console.warn("Accurate geolocation error:", err);
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    let watchId = null;
     const init = async () => {
       try {
         const me = await base44.auth.me();
         setUser(me);
-        let watchId = null;
         if (navigator.geolocation) {
           watchId = navigator.geolocation.watchPosition(
             (pos) => {
@@ -51,7 +77,7 @@ export default function RiderHome() {
             (err) => {
               console.warn("Geolocation watch error:", err);
             },
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+            { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
           );
         }
         const granted = await requestNotificationPermission();
@@ -62,11 +88,7 @@ export default function RiderHome() {
         setLoading(false);
       }
     };
-    let watchId = null;
-    const runInit = async () => {
-      await init();
-    };
-    runInit();
+    init();
 
     if (routeLocation.state?.bookAgain) {
       const { address, lat, lng } = routeLocation.state.bookAgain;
