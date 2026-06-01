@@ -31,7 +31,7 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
     return () => window.removeEventListener("popstate", onPop);
   }, []);
   const [selectedCategory, setSelectedCategory] = useState(RIDE_CATEGORIES[0]);
-  const [selectedPayment, setSelectedPayment] = useState("mobile_money");
+  const [selectedPayment, setSelectedPayment] = useState("cash");
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledFor, setScheduledFor] = useState(null);
   const [showSplitModal, setShowSplitModal] = useState(false);
