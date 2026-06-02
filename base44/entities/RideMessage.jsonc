@@ -46,11 +46,7 @@
     "create": {
       "data.sender_id": "{{user.id}}"
     },
-    "read": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
+    "read": null,
     "update": {
       "user_condition": {
         "role": "admin"

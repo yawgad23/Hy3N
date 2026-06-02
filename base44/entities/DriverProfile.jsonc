@@ -91,7 +91,9 @@
           "express_delivery"
         ]
       },
-      "default": ["standard"],
+      "default": [
+        "standard"
+      ],
       "description": "Ride categories this driver is certified to handle"
     },
     "momo_number": {
@@ -123,6 +125,9 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "data.approval_status": "approved"
         }
       ]
     },
