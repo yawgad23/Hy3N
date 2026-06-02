@@ -13,8 +13,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Use the provided Paystack Secret Key
-    const PAYSTACK_KEY = "sk_test_e9c0141048c05017f126b578da1ac9d49945f45a";
+    // Use environment variable for Paystack Secret Key (set in Base44 project settings)
+    const PAYSTACK_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
 
     // If Paystack key is configured, use real API
     if (PAYSTACK_KEY) {
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, reference: paystackData.data?.reference, payment_id: payment.id });
     }
 
-    // Simulated payment (no API key) — for demo/testing
+    // Simulated payment (no API key configured) — for demo/testing
     await new Promise(r => setTimeout(r, 2500));
 
     const reference = `HY3N-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;

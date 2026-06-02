@@ -24,6 +24,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Ride not found' }, { status: 404 });
     }
 
+    // Authorization check: Only the rider who completed the ride can trigger referral credit
+    // This prevents any authenticated user from manipulating referral credits
+    if (ride.rider_id !== user.id) {
+      return Response.json({ 
+        error: 'Forbidden: You can only claim referral credits for your own rides' 
+      }, { status: 403 });
+    }
+
+    // Verify the ride is actually completed
+    if (ride.status !== "completed") {
+      return Response.json({ 
+        error: 'Ride must be completed before referral credit can be applied' 
+      }, { status: 400 });
+    }
+
     // Check if this is already credited
     const existingReferral = await base44.asServiceRole.entities.Referral.filter({
       referee_id: ride.rider_id,
