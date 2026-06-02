@@ -9,6 +9,7 @@ const QUICK_AMOUNTS = [10, 20, 50, 100, 200];
 export default function WalletTopUpModal({ isOpen, onClose, onSuccess, currentBalance }) {
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
+  const [provider, setProvider] = useState("mtn");
   const [step, setStep] = useState("input"); // input | processing | success
   const [error, setError] = useState("");
 
@@ -19,48 +20,55 @@ export default function WalletTopUpModal({ isOpen, onClose, onSuccess, currentBa
     setError("");
     setStep("processing");
 
-    const res = await base44.functions.invoke("processMoMoPayment", {
-      amount: amt,
-      phone_number: phone,
-      reference: `WALLET-${Date.now()}`,
-      description: "HY3N Wallet Top-Up"
-    });
-
-    if (res.data?.success || res.data?.status === "success") {
-      // Record the top-up transaction
-      const me = await base44.auth.me();
-      const wallets = await base44.entities.Wallet.filter({ user_id: me.id });
-      let wallet = wallets[0];
-      const newBalance = (wallet?.balance || 0) + amt;
-
-      if (wallet) {
-        await base44.entities.Wallet.update(wallet.id, {
-          balance: newBalance,
-          total_topped_up: (wallet.total_topped_up || 0) + amt
-        });
-      } else {
-        wallet = await base44.entities.Wallet.create({
-          user_id: me.id,
-          balance: newBalance,
-          total_topped_up: amt,
-          total_spent: 0
-        });
-      }
-
-      await base44.entities.WalletTransaction.create({
-        user_id: me.id,
-        type: "top_up",
+    try {
+      const res = await base44.functions.invoke("processMoMoPayment", {
         amount: amt,
-        balance_after: newBalance,
-        description: `Top-up via Mobile Money (${phone})`,
-        status: "completed",
-        reference: `WALLET-${Date.now()}`
+        phone: phone,
+        provider: provider,
+        reference: `WALLET-${Date.now()}`,
+        description: "HY3N Wallet Top-Up"
       });
 
-      setStep("success");
-      onSuccess(newBalance);
-    } else {
-      setError("Payment failed. Please try again.");
+      if (res.data?.success || res.data?.status === "success") {
+        // Record the top-up transaction
+        const me = await base44.auth.me();
+        const wallets = await base44.entities.Wallet.filter({ user_id: me.id });
+        let wallet = wallets[0];
+        const newBalance = (wallet?.balance || 0) + amt;
+
+        if (wallet) {
+          await base44.entities.Wallet.update(wallet.id, {
+            balance: newBalance,
+            total_topped_up: (wallet.total_topped_up || 0) + amt
+          });
+        } else {
+          wallet = await base44.entities.Wallet.create({
+            user_id: me.id,
+            balance: newBalance,
+            total_topped_up: amt,
+            total_spent: 0
+          });
+        }
+
+        await base44.entities.WalletTransaction.create({
+          user_id: me.id,
+          type: "top_up",
+          amount: amt,
+          balance_after: newBalance,
+          description: `Top-up via Mobile Money (${phone})`,
+          status: "completed",
+          reference: `WALLET-${Date.now()}`
+        });
+
+        setStep("success");
+        onSuccess(newBalance);
+      } else {
+        setError(res.data?.error || "Payment failed. Please try again.");
+        setStep("input");
+      }
+    } catch (err) {
+      console.error("Top-up error:", err);
+      setError("An error occurred. Please check your connection.");
       setStep("input");
     }
   };
@@ -128,16 +136,32 @@ export default function WalletTopUpModal({ isOpen, onClose, onSuccess, currentBa
                 className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary mb-4"
               />
 
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">MoMo Phone Number</p>
-              <div className="relative mb-4">
-                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="tel"
-                  placeholder="0241234567"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Provider</p>
+                  <select
+                    value={provider}
+                    onChange={(e) => setProvider(e.target.value)}
+                    className="w-full bg-secondary border border-border rounded-xl px-3 py-3 text-sm text-foreground focus:outline-none"
+                  >
+                    <option value="mtn">MTN</option>
+                    <option value="vodafone">Telecel</option>
+                    <option value="airteltigo">AT</option>
+                  </select>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">MoMo Number</p>
+                  <div className="relative">
+                    <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type="tel"
+                      placeholder="0241234567"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                </div>
               </div>
 
               {error && <p className="text-xs text-destructive mb-3">{error}</p>}

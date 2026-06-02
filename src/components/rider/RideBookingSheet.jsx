@@ -183,23 +183,25 @@ export default function RideBookingSheet({ destination, onClose, onBook, pickupL
         {/* Ride Category Selection */}
         <div className="mb-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Choose Ride</p>
-          <div className="space-y-2">
-            {calculatingFare ? (
-              <div className="flex items-center justify-center p-8 bg-secondary rounded-xl">
+          <div className="space-y-2 relative">
+            {/* Show categories even while calculating to prevent flashing */}
+            {RIDE_CATEGORIES.map((cat) => (
+              <RideCategoryCard
+                key={cat.id}
+                category={cat}
+                selected={selectedCategory.id === cat.id}
+                onSelect={setSelectedCategory}
+                distance={distance}
+                duration={duration}
+                surgeMultiplier={surge.multiplier}
+              />
+            ))}
+            
+            {/* Overlay loading indicator if calculating for the first time or updating */}
+            {calculatingFare && !distance && (
+              <div className="absolute inset-0 flex items-center justify-center bg-card/50 backdrop-blur-[1px] rounded-xl z-10">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
-            ) : (
-              RIDE_CATEGORIES.map((cat) => (
-                <RideCategoryCard
-                  key={cat.id}
-                  category={cat}
-                  selected={selectedCategory.id === cat.id}
-                  onSelect={setSelectedCategory}
-                  distance={distance}
-                  duration={duration}
-                  surgeMultiplier={surge.multiplier}
-                />
-              ))
             )}
           </div>
         </div>

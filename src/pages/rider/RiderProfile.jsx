@@ -279,11 +279,14 @@ export default function RiderProfile() {
               <span className="flex-1 text-left text-sm font-medium">Refer a Friend</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
-            <div className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl">
-              <CreditCard className="w-5 h-5 text-muted-foreground" />
-              <span className="flex-1 text-left text-sm">Payment Methods</span>
+            <button
+              onClick={() => navigate("/wallet")}
+              className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl"
+            >
+              <CreditCard className="w-5 h-5 text-primary" />
+              <span className="flex-1 text-left text-sm font-medium">Payment Methods</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </div>
+            </button>
             <div className="w-full flex items-center gap-3 p-4 bg-card border border-border rounded-xl">
               <Shield className="w-5 h-5 text-muted-foreground" />
               <span className="flex-1 text-left text-sm">Safety</span>
