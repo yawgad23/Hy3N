@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LOGO_URL } from "@/lib/constants";
+import Logo from "./Logo";
 
 export default function RiderSplashScreen({ onComplete }) {
   const [show, setShow] = useState(true);
@@ -43,7 +43,7 @@ export default function RiderSplashScreen({ onComplete }) {
             <div className="w-80 h-80 rounded-full bg-[radial-gradient(circle,rgba(212,175,55,0.08)_0%,transparent_70%)]" />
           </motion.div>
 
-          {/* Logo - Bolt/Uber style: centered, clean, animated */}
+          {/* Logo - Using the clean SVG Logo component (text only) */}
           <motion.div
             className="relative z-10 flex flex-col items-center"
             initial={{ opacity: 0, scale: 0.7 }}
@@ -53,19 +53,7 @@ export default function RiderSplashScreen({ onComplete }) {
               ease: [0.16, 1, 0.3, 1]
             }}
           >
-            {/* Logo container - clips white edges, rounded to match logo shape */}
-            <motion.div
-              className="w-52 h-52 rounded-[2.5rem] overflow-hidden bg-black"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            >
-              <img
-                src={LOGO_URL}
-                alt="HY3N"
-                className="w-full h-full object-cover scale-[1.15]"
-              />
-            </motion.div>
+            <Logo size="xl" />
           </motion.div>
 
           {/* Bottom loading indicator - Uber/Bolt style thin line */}
@@ -77,7 +65,7 @@ export default function RiderSplashScreen({ onComplete }) {
           >
             <div className="w-12 h-0.5 bg-white/10 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-[#D4AF37] rounded-full"
+                className="h-full bg-[#FCD116] rounded-full"
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
                 transition={{ delay: 0.9, duration: 1.2, ease: "easeInOut" }}
