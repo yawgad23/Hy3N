@@ -36,7 +36,6 @@
     }
   },
   "required": [
-    "ride_id",
     "amount",
     "method"
   ],
