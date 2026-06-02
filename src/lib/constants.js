@@ -1,4 +1,4 @@
-export const LOGO_URL = "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/ea1f43578_ChatGPTImageMay19202605_37_18PM.png";
+export const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663640908615/QchlmNwbiHfwJrgE.png";
 export const DRIVER_LOGO_URL = "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png";
 
 /**
