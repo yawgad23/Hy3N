@@ -19,8 +19,8 @@ import { base44 } from "@/api/base44Client";
 // ADMIN SECURITY CONFIGURATION
 // ============================================================
 // Use environment variables for security. Fallback provided for local dev only.
-const MASTER_ACCESS_CODE = import.meta.env.VITE_ADMIN_ACCESS_CODE || "HY3N-ADMIN-2024";
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "yawgad23@gmail.com").split(",").map(e => e.trim().toLowerCase());
+const MASTER_ACCESS_CODE = import.meta.env.VITE_ADMIN_ACCESS_CODE || "";
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
 // ============================================================
 
 export default function AdminPortal() {
