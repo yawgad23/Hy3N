@@ -13,7 +13,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const PAYSTACK_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
+    // Use the provided Paystack Secret Key
+    const PAYSTACK_KEY = "sk_test_e9c0141048c05017f126b578da1ac9d49945f45a";
 
     // If Paystack key is configured, use real API
     if (PAYSTACK_KEY) {
