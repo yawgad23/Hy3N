@@ -46,7 +46,35 @@
     "create": {
       "data.sender_id": "{{user.id}}"
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.ride_id": {
+            "$in": {
+              "$query": {
+                "entity": "Ride",
+                "field": "id",
+                "filter": {
+                  "$or": [
+                    {
+                      "data.rider_id": "{{user.id}}"
+                    },
+                    {
+                      "data.driver_id": "{{user.id}}"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"
