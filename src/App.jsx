@@ -24,6 +24,7 @@ import RiderProfile from '@/pages/rider/RiderProfile';
 import RiderSupport from '@/pages/rider/RiderSupport';
 import ScheduledTrips from '@/pages/rider/ScheduledTrips';
 import RiderWallet from '@/pages/rider/RiderWallet';
+import Safety from '@/pages/rider/Safety';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminPortal from '@/pages/admin/AdminPortal';
 import AdminRideReports from '@/components/admin/AdminRideReports';
@@ -81,6 +82,7 @@ const AuthenticatedApp = () => {
             <Route path="/support" element={<RiderSupport />} />
             <Route path="/scheduled" element={<ScheduledTrips />} />
             <Route path="/wallet" element={<RiderWallet />} />
+            <Route path="/safety" element={<Safety />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* Admin Dashboard */}

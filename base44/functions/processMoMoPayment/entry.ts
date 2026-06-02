@@ -6,7 +6,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { phone, provider, amount, ride_id, rider_id, driver_id } = await req.json();
+    const body = await req.json();
+    const { phone, provider, amount, ride_id, rider_id, driver_id } = body;
 
     if (!phone || !provider || !amount) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -44,22 +45,27 @@ Deno.serve(async (req) => {
       }
 
       // Record payment
-      const payment = await base44.asServiceRole.entities.Payment.create({
-        ride_id,
+      const paymentData: any = {
         rider_id: rider_id || user.id,
-        driver_id,
         amount,
         method: "mobile_money",
         status: "completed",
         reference: paystackData.data?.reference || ""
-      });
+      };
+      
+      if (ride_id) paymentData.ride_id = ride_id;
+      if (driver_id) paymentData.driver_id = driver_id;
 
-      // Update ride status to paid
-      await base44.asServiceRole.entities.Ride.update(ride_id, { 
-        status: "completed",
-        payment_status: "paid",
-        payment_reference: payment.reference
-      });
+      const payment = await base44.asServiceRole.entities.Payment.create(paymentData);
+
+      // Update ride status to paid if it's a ride payment
+      if (ride_id) {
+        await base44.asServiceRole.entities.Ride.update(ride_id, { 
+          status: "completed",
+          payment_status: "paid",
+          payment_reference: payment.reference
+        });
+      }
 
       return Response.json({ success: true, reference: paystackData.data?.reference, payment_id: payment.id });
     }
@@ -69,26 +75,32 @@ Deno.serve(async (req) => {
 
     const reference = `HY3N-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
 
-    const payment = await base44.asServiceRole.entities.Payment.create({
-      ride_id,
+    const paymentData: any = {
       rider_id: rider_id || user.id,
-      driver_id,
       amount,
       method: "mobile_money",
       status: "completed",
       reference
-    });
+    };
 
-    // Update ride status to paid
-    await base44.asServiceRole.entities.Ride.update(ride_id, { 
-      status: "completed",
-      payment_status: "paid",
-      payment_reference: payment.reference
-    });
+    if (ride_id) paymentData.ride_id = ride_id;
+    if (driver_id) paymentData.driver_id = driver_id;
+
+    const payment = await base44.asServiceRole.entities.Payment.create(paymentData);
+
+    // Update ride status to paid if it's a ride payment
+    if (ride_id) {
+      await base44.asServiceRole.entities.Ride.update(ride_id, { 
+        status: "completed",
+        payment_status: "paid",
+        payment_reference: payment.reference
+      });
+    }
 
     return Response.json({ success: true, reference, simulated: true, payment_id: payment.id });
 
   } catch (error) {
+    console.error("MoMo payment function error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
