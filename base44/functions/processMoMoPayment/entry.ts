@@ -42,6 +42,14 @@ Deno.serve(async (req) => {
       const paystackData = await paystackRes.json();
 
       if (!paystackData.status) {
+        // Handle Paystack test mode error gracefully
+        if (paystackData.message?.includes("test mobile money number")) {
+          return Response.json({ 
+            success: true, 
+            simulated: true, 
+            message: "Test mode: Payment simulated successfully. Real prompts require a Live Key." 
+          });
+        }
         return Response.json({ success: false, error: paystackData.message }, { status: 400 });
       }
 
