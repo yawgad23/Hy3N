@@ -1,0 +1,61 @@
+{
+  "id": "com.hy3n.driver",
+  "name": "HY3N Driver - Earn & Drive",
+  "short_name": "HY3N Driver",
+  "description": "Earn money driving in Ghana. Accept ride requests, track earnings, and get paid instantly via Mobile Money.",
+  "start_url": "/driver-app",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.hy3n.driver",
+      "id": "com.hy3n.driver"
+    }
+  ],
+  "icons": [
+    {
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Go Online",
+      "short_name": "Drive",
+      "description": "Start accepting rides",
+      "url": "/driver-app",
+      "icons": [
+        {
+          "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Earnings",
+      "short_name": "Earnings",
+      "description": "View your earnings",
+      "url": "/driver-app/earnings",
+      "icons": [
+        {
+          "src": "https://media.base44.com/images/public/6a0b47e6908611c99d7673ac/5acac13a0_ChatGPTImageMay19202602_44_02AM.png",
+          "sizes": "512x512"
+        }
+      ]
+    }
+  ],
+  "categories": ["business", "transportation"]
+}
