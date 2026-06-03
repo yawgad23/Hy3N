@@ -44,6 +44,8 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [userLocation, setUserLocation] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(false); // true after 90s with no driver
+  const [noDriverReason, setNoDriverReason] = useState(""); // "no_drivers" | "busy"
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
@@ -83,6 +85,34 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
 
 
+
+  // 90-second timeout: if still "requested" after 90s, show no-driver message
+  useEffect(() => {
+    if (currentRide?.status !== "requested") return;
+    const timer = setTimeout(async () => {
+      // Still in requested state after 90s — check if any drivers are online
+      try {
+        const onlineDrivers = await base44.entities.DriverProfile.filter({ is_online: true });
+        if (onlineDrivers.length === 0) {
+          setNoDriverReason("no_drivers");
+        } else {
+          setNoDriverReason("busy");
+        }
+        setSearchTimeout(true);
+      } catch {
+        setNoDriverReason("no_drivers");
+        setSearchTimeout(true);
+      }
+    }, 90000); // 90 seconds
+    return () => clearTimeout(timer);
+  }, [currentRide?.status]);
+
+  // Reset timeout if a driver gets assigned
+  useEffect(() => {
+    if (currentRide?.status !== "requested") {
+      setSearchTimeout(false);
+    }
+  }, [currentRide?.status]);
 
   // Real-time ride status updates via subscription (handles auto-matching from backend)
   useEffect(() => {
@@ -316,7 +346,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
       exit={{ y: "100%" }}
     >
       <div className="p-5">
-        {status === "requested" && (
+        {status === "requested" && !searchTimeout && (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full border-3 border-primary border-t-transparent animate-spin" />
             <h3 className="font-heading font-bold text-lg">{STATUS_LABELS[status]}</h3>
@@ -328,6 +358,40 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
             >
               Cancel Request
             </Button>
+          </div>
+        )}
+
+        {status === "requested" && searchTimeout && (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 flex items-center justify-center">
+              <span className="text-3xl">{noDriverReason === "no_drivers" ? "🚗" : "⏳"}</span>
+            </div>
+            <h3 className="font-heading font-bold text-lg text-amber-500">
+              {noDriverReason === "no_drivers" ? "No Drivers Available" : "All Drivers Are Busy"}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-2 max-w-xs mx-auto">
+              {noDriverReason === "no_drivers"
+                ? "There are no drivers in your area right now. Please try again in a few minutes."
+                : "All nearby drivers are currently on trips. Please wait a moment and try again."}
+            </p>
+            <div className="flex flex-col gap-3 mt-6">
+              <Button
+                onClick={() => {
+                  setSearchTimeout(false);
+                  setNoDriverReason("");
+                }}
+                className="bg-primary text-primary-foreground"
+              >
+                Try Again
+              </Button>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="border-destructive text-destructive"
+              >
+                Cancel Request
+              </Button>
+            </div>
           </div>
         )}
 
