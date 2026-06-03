@@ -103,7 +103,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
         setNoDriverReason("no_drivers");
         setSearchTimeout(true);
       }
-    }, 90000); // 90 seconds
+    }, 30000); // 30 seconds - show message if no driver assigned
     return () => clearTimeout(timer);
   }, [currentRide?.status]);
 
