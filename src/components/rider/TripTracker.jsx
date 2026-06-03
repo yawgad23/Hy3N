@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, AlertTriangle, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,10 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [userLocation, setUserLocation] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState(false); // true after 90s with no driver
+  const [searchTimeout, setSearchTimeout] = useState(false); // true after 30s with no driver
   const [noDriverReason, setNoDriverReason] = useState(""); // "no_drivers" | "busy"
+  const searchTimerRef = useRef(null); // persistent timer ref so re-renders don't reset it
+  const searchStartedRef = useRef(false); // ensure timer only starts once per ride request
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
@@ -86,30 +88,29 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
 
 
-  // 90-second timeout: if still "requested" after 90s, show no-driver message
+  // 30-second timeout: start once when ride is in "requested" state
+  // Uses a ref so re-renders don't accidentally clear and restart the timer
   useEffect(() => {
-    if (currentRide?.status !== "requested") return;
-    const timer = setTimeout(async () => {
-      // Still in requested state after 90s — check if any drivers are online
-      try {
-        const onlineDrivers = await base44.entities.DriverProfile.filter({ is_online: true });
-        if (onlineDrivers.length === 0) {
+    if (currentRide?.status === "requested" && !searchStartedRef.current) {
+      searchStartedRef.current = true;
+      searchTimerRef.current = setTimeout(async () => {
+        // Still searching after 30s — check if any drivers are online
+        try {
+          const onlineDrivers = await base44.entities.DriverProfile.filter({ is_online: true });
+          setNoDriverReason(onlineDrivers.length === 0 ? "no_drivers" : "busy");
+        } catch {
           setNoDriverReason("no_drivers");
-        } else {
-          setNoDriverReason("busy");
         }
         setSearchTimeout(true);
-      } catch {
-        setNoDriverReason("no_drivers");
-        setSearchTimeout(true);
+      }, 30000);
+    }
+    // If driver assigned or ride cancelled, clear timer and reset
+    if (currentRide?.status && currentRide.status !== "requested") {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+        searchTimerRef.current = null;
       }
-    }, 30000); // 30 seconds - show message if no driver assigned
-    return () => clearTimeout(timer);
-  }, [currentRide?.status]);
-
-  // Reset timeout if a driver gets assigned
-  useEffect(() => {
-    if (currentRide?.status !== "requested") {
+      searchStartedRef.current = false;
       setSearchTimeout(false);
     }
   }, [currentRide?.status]);
