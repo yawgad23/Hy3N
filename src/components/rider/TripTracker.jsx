@@ -44,7 +44,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
   const [userLocation, setUserLocation] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState(false); // true after 30s with no driver
+  const [searchTimeout, setSearchTimeout] = useState(false); // true after 6min with no driver
   const [noDriverReason, setNoDriverReason] = useState(""); // "no_drivers" | "busy"
   const searchTimerRef = useRef(null); // persistent timer ref so re-renders don't reset it
   const searchStartedRef = useRef(false); // ensure timer only starts once per ride request
@@ -88,13 +88,14 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
 
 
 
-  // 30-second timeout: start once when ride is in "requested" state
+  // 6-minute timeout: start once when ride is in "requested" state
+  // Base44 auto-match runs every 5 minutes, so we wait 6 min before giving up
   // Uses a ref so re-renders don't accidentally clear and restart the timer
   useEffect(() => {
     if (currentRide?.status === "requested" && !searchStartedRef.current) {
       searchStartedRef.current = true;
       searchTimerRef.current = setTimeout(async () => {
-        // Still searching after 30s — check if any drivers are online
+        // Still searching after 6 minutes — check if any drivers are online
         try {
           const onlineDrivers = await base44.entities.DriverProfile.filter({ is_online: true });
           setNoDriverReason(onlineDrivers.length === 0 ? "no_drivers" : "busy");
@@ -102,7 +103,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
           setNoDriverReason("no_drivers");
         }
         setSearchTimeout(true);
-      }, 30000);
+      }, 360000);
     }
     // If driver assigned or ride cancelled, clear timer and reset
     if (currentRide?.status && currentRide.status !== "requested") {
@@ -351,7 +352,7 @@ export default function TripTracker({ ride, onClose, onDriverPosUpdate, eta, spl
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full border-3 border-primary border-t-transparent animate-spin" />
             <h3 className="font-heading font-bold text-lg">{STATUS_LABELS[status]}</h3>
-            <p className="text-muted-foreground text-sm mt-1">This usually takes 30 seconds</p>
+            <p className="text-muted-foreground text-sm mt-1">This usually takes 1–5 minutes</p>
             <Button
               onClick={handleCancel}
               variant="outline"
