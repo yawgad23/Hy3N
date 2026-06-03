@@ -83,9 +83,10 @@ Deno.serve(async (req) => {
     // Only apply surge if there are actual drivers nearby.
     // If no drivers are online, return no surge (not a demand problem).
     let multiplier = 1.0;
+    let ratio = 0;
 
     if (nearbyDrivers > 0) {
-      const ratio = nearbyDemand / nearbyDrivers;
+      ratio = nearbyDemand / nearbyDrivers;
       if (ratio > 4) multiplier = 2.0;
       else if (ratio > 2.5) multiplier = 1.8;
       else if (ratio > 1.5) multiplier = 1.5;
@@ -93,7 +94,6 @@ Deno.serve(async (req) => {
     }
 
     const isSurge = multiplier > 1.0;
-
 
     console.log(`Surge check @ (${lat},${lng}) r=${radius_km}km: demand=${nearbyDemand}, drivers=${nearbyDrivers}, ratio=${ratio.toFixed(2)}, multiplier=${multiplier}`);
 
