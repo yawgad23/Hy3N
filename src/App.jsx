@@ -15,7 +15,6 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import { registerServiceWorker } from '@/hooks/useServiceWorker';
 import AppEffects from '@/components/AppEffects';
-import { base44 } from '@/api/base44Client';
 import RiderSplashScreen from '@/components/shared/RiderSplashScreen';
 
 // Rider Pages
