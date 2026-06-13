@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Tag, X, CheckCircle2, Loader2 } from "lucide-react";
+import { Tag, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Hardcoded promo codes for now (in production, validate via backend)
 const VALID_PROMOS = {

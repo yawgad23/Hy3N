@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Phone, MapPin, Share2, AlertTriangle, CheckCircle2, UserCheck, MessageSquare } from "lucide-react";
+import { ArrowLeft, Shield, Phone, Share2, AlertTriangle, CheckCircle2, UserCheck, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Safety() {

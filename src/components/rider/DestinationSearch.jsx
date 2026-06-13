@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { MapPin, Search, X, Clock, Plus, Trash2, ArrowUpDown, Home, Briefcase, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, X, Clock, Plus, Trash2, Home, Briefcase, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";

@@ -23,6 +23,7 @@ export default function Register() {
   const [refereeId, setRefereeId] = useState(null);
   const [authMethod, setAuthMethod] = useState("email"); // "email" or "phone"
   const [sentPhone, setSentPhone] = useState("");
+  const [showPhoneRegister, setShowPhoneRegister] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +35,7 @@ export default function Register() {
     setLoading(true);
     try {
       await base44.auth.register({ email, password });
+      setAuthMethod("email");
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -97,8 +99,6 @@ export default function Register() {
     }
   };
 
-
-
   const handleResend = async () => {
     setError("");
     try {
@@ -123,8 +123,8 @@ export default function Register() {
       const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
       const result = await base44.functions.invoke("sendPhoneLoginOtp", { phone: formattedPhone });
       setSentPhone(formattedPhone);
-      setShowOtp(true);
       setAuthMethod("phone");
+      setShowOtp(true);
       
       // Production mode - OTP sent via SMS
       toast({
@@ -236,7 +236,6 @@ export default function Register() {
         title="Verify your phone"
         subtitle={`We sent a code to ${sentPhone}`}
       >
-
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
@@ -284,11 +283,68 @@ export default function Register() {
           </button>
         </p>
         <button
-          onClick={() => { setShowOtp(false); setAuthMethod("email"); }}
+          onClick={() => { setShowOtp(false); setShowPhoneRegister(true); }}
           className="w-full text-sm text-muted-foreground mt-4 hover:text-foreground"
         >
           ← Back to registration
         </button>
+      </AuthLayout>
+    );
+  }
+
+  if (showPhoneRegister) {
+    return (
+      <AuthLayout
+        icon={Phone}
+        title="Sign up with phone"
+        subtitle="Enter your phone number"
+      >
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error}
+          </div>
+        )}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              <Input
+                id="phone"
+                type="tel"
+                autoFocus
+                placeholder="+233 24 123 4567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\s/g, ''))}
+                className="pl-10 h-12"
+                required
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              We'll send you a verification code
+            </p>
+          </div>
+          <Button
+            className="w-full h-12 font-medium"
+            onClick={handleSendPhoneOtp}
+            disabled={loading || phone.length < 10}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sending code...
+              </>
+            ) : (
+              "Send Code"
+            )}
+          </Button>
+          <button
+            onClick={() => setShowPhoneRegister(false)}
+            className="w-full text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← Back to email sign up
+          </button>
+        </div>
       </AuthLayout>
     );
   }
@@ -319,7 +375,7 @@ export default function Register() {
       <Button
         variant="outline"
         className="w-full h-12 text-sm font-medium mb-6"
-        onClick={() => { setAuthMethod("phone"); setShowOtp(true); }}
+        onClick={() => { setAuthMethod("phone"); setShowPhoneRegister(true); }}
       >
         <Phone className="w-5 h-5 mr-2 text-primary" />
         Sign up with Phone
@@ -342,61 +398,19 @@ export default function Register() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number (for sign up)</Label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="phone"
-              type="tel"
-              autoFocus
-              placeholder="+233 24 123 4567"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\s/g, ''))}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            We'll send you a verification code
-          </p>
-        </div>
-        <Button
-          type="button"
-          className="w-full h-12 font-medium"
-          onClick={handleSendPhoneOtp}
-          disabled={loading || phone.length < 10}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Sending code...
-            </>
-          ) : (
-            "Send Code"
-          )}
-        </Button>
-
-        <div className="relative mb-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-3 text-muted-foreground">or</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email">Email (alternative)</Label>
+          <Label htmlFor="email">Email</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
               id="email"
               type="email"
               autoComplete="email"
+              autoFocus
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
+              required
             />
           </div>
         </div>

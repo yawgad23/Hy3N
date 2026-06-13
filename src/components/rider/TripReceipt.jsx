@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, MapPin, Clock, Route, CreditCard, Download, Share2, Star } from "lucide-react";
+import { X, MapPin, Clock, Route, CreditCard, Share2, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";

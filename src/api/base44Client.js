@@ -45,6 +45,8 @@ import {
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithRedirect,
+  signInWithPopup,
+  getRedirectResult,
   onAuthStateChanged,
   confirmPasswordReset,
 } from 'firebase/auth';
@@ -89,6 +91,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+// Auto-run redirect result handler on load
+getRedirectResult(auth)
+  .then((result) => {
+    if (result?.user) {
+      const redirectTo = sessionStorage.getItem('auth_redirect') || '/';
+      sessionStorage.removeItem('auth_redirect');
+      window.location.href = redirectTo;
+    }
+  })
+  .catch((err) => {
+    console.error("[Firebase] Redirect auth error on load:", err);
+  });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -353,6 +368,7 @@ for (const [entityName, collectionName] of Object.entries(ENTITY_COLLECTIONS)) {
  * base44 user fields used in the apps: id, email, full_name, role
  */
 async function getCurrentUser() {
+  await auth.authStateReady();
   const firebaseUser = auth.currentUser;
   if (!firebaseUser) return null;
   return {
@@ -377,6 +393,7 @@ const authAPI = {
    * Returns true if a user is currently signed in.
    */
   async isAuthenticated() {
+    await auth.authStateReady();
     return auth.currentUser !== null;
   },
 
@@ -394,14 +411,22 @@ const authAPI = {
 
   /**
    * Sign in with a provider (currently supports "google").
-   * Uses redirect flow.
+   * Tries popup flow first (best for localhost/desktop), falls back to redirect flow.
    */
-  loginWithProvider(provider, redirectTo = '/') {
+  async loginWithProvider(provider, redirectTo = '/') {
     if (provider === 'google') {
       const googleProvider = new GoogleAuthProvider();
-      // Store redirect destination
-      sessionStorage.setItem('auth_redirect', redirectTo);
-      signInWithRedirect(auth, googleProvider);
+      try {
+        await signInWithPopup(auth, googleProvider);
+        if (redirectTo) {
+          window.location.href = redirectTo;
+        }
+      } catch (err) {
+        console.warn("[Firebase] Popup sign-in blocked or failed, falling back to redirect flow:", err);
+        // Store redirect destination
+        sessionStorage.setItem('auth_redirect', redirectTo);
+        await signInWithRedirect(auth, googleProvider);
+      }
     } else {
       throw new Error(`Provider "${provider}" is not supported`);
     }
