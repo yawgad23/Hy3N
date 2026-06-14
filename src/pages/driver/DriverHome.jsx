@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp, Smartphone, Banknote, CreditCard, Wallet, Clock, MapPinCheck } from "lucide-react";
+import { Power, MapPin, Navigation, Check, X, MessageSquare, TrendingUp, Smartphone, Banknote, CreditCard, Wallet, MapPinCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/shared/Logo";

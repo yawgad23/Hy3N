@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, AlertTriangle, Receipt } from "lucide-react";
+import { MessageSquare, Star, Navigation, Clock, Users, CreditCard, Smartphone, ChevronDown, ChevronUp, Map, DollarSign, Share2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";

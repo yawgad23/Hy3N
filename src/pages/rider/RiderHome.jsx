@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Search, MapPin, Bell, CheckCircle2, Clock, Home, Briefcase, Star, Plus } from "lucide-react";
+import { Search, MapPin, Bell, CheckCircle2, Home, Briefcase, Star, Plus } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";

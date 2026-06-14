@@ -25,6 +25,40 @@ export const AuthProvider = ({ children }) => {
         setUser(userObj);
         setIsAuthenticated(true);
         setAuthError(null);
+
+        // Check and initialize RiderProfile and Wallet in background
+        const initializeProfileAndWallet = async () => {
+          try {
+            const profiles = await base44.entities.RiderProfile.filter({ user_id: firebaseUser.uid });
+            if (profiles.length === 0) {
+              await base44.entities.RiderProfile.create({
+                user_id: firebaseUser.uid,
+                full_name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Rider',
+                phone: firebaseUser.phoneNumber || '',
+                email: firebaseUser.email || '',
+                rating: 5.0,
+                saved_locations: []
+              });
+            }
+          } catch (err) {
+            console.warn("[AuthContext] Failed to ensure RiderProfile exists:", err);
+          }
+
+          try {
+            const wallets = await base44.entities.Wallet.filter({ user_id: firebaseUser.uid });
+            if (wallets.length === 0) {
+              await base44.entities.Wallet.create({
+                user_id: firebaseUser.uid,
+                balance: 0,
+                total_topped_up: 0,
+                total_spent: 0
+              });
+            }
+          } catch (err) {
+            console.warn("[AuthContext] Failed to ensure Wallet exists:", err);
+          }
+        };
+        initializeProfileAndWallet();
       } else {
         setUser(null);
         setIsAuthenticated(false);

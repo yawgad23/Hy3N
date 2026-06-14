@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCw, Tag, Plus, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { RefreshCw, Tag, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
 
 export default function AdminPromos() {
   const [promos, setPromos] = useState([]);
