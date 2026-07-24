@@ -84,7 +84,10 @@ export default function DriverHome() {
     if (!user?.id) return;
     const unsubscribe = base44.entities.Ride.subscribe((event) => {
       if (event.type === "update" && event.data?.status === "matched" && event.data?.driver_id === user.id) {
-        if (!activeRide) {
+        // Only show incoming ride if:
+        // 1. No active ride is in progress
+        // 2. No incoming ride is already shown (avoid showing same ride twice)
+        if (!activeRide && !incomingRide) {
           setIncomingRide(event.data);
           // Show notification for new ride assignment
           showNotification(
@@ -96,7 +99,7 @@ export default function DriverHome() {
       }
     });
     return unsubscribe;
-  }, [user?.id, activeRide]);
+  }, [user?.id, activeRide, incomingRide]);
 
   // Live position simulation — driver side
   const driverPos = useDriverTracking({
