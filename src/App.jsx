@@ -37,10 +37,8 @@ import DriverSupport from '@/pages/driver/DriverSupport';
 import DriverScheduledRides from '@/pages/driver/DriverScheduledRides';
 import DriverMoMoSettings from '@/pages/driver/DriverMoMoSettings';
 
-// Admin Pages
-import AdminDashboard from '@/pages/admin/AdminDashboard';
+// Legacy admin route handoff
 import AdminPortal from '@/pages/admin/AdminPortal';
-import AdminRideReports from '@/components/admin/AdminRideReports';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 
 const AuthenticatedApp = () => {
@@ -100,6 +98,13 @@ const AuthenticatedApp = () => {
           <Route path="/driver-app/login" element={<DriverLogin />} />
           <Route path="/driver-app/register" element={<DriverRegister />} />
 
+          {/*
+            Administrative operations live in the dedicated secured dashboard.
+            Redirect every legacy Rider-web admin path before rider auth so an
+            administrator never encounters the obsolete browser access-code gate.
+          */}
+          <Route path="/admin/*" element={<AdminPortal />} />
+
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             {/* Rider App */}
             <Route path="/" element={<RiderHome />} />
@@ -120,10 +125,6 @@ const AuthenticatedApp = () => {
             <Route path="/driver-app/scheduled" element={<DriverScheduledRides />} />
             <Route path="/driver-app/momo-settings" element={<DriverMoMoSettings />} />
 
-            {/* Admin Dashboard */}
-            <Route path="/admin" element={<AdminPortal />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/reports" element={<AdminRideReports />} />
           </Route>
 
           <Route path="*" element={<PageNotFound />} />
